@@ -1,6 +1,6 @@
 # ADR 0001: Begin with a route-free modular-monolith skeleton
 
-- Status: Accepted for skeleton phase
+- Status: Superseded by ADR 0002
 - Date: 2026-09-04
 
 ## Context
@@ -17,4 +17,3 @@ Create the ownership-aligned directories and a route-free FastAPI application fa
 - Data and integration implementations can later attach through provider-neutral ports.
 - No endpoint is accidentally treated as a stable contract before review.
 - The next implementation step must define and test versioned contracts before registering routers.
-

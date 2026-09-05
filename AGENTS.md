@@ -28,5 +28,4 @@
 
 ## Verification
 
-Run formatting/lint, type checks, unit tests, contract tests, and the relevant recommendation evaluation subset before completion. This skeleton phase must continue to publish zero routes.
-
+Run formatting/lint, type checks, unit tests, contract tests, and the relevant recommendation evaluation subset before completion. The generated OpenAPI artifact must match the running application's schema.

@@ -1,4 +1,3 @@
 # Plant specialist
 
-Reserved for plant compatibility, placement, maintenance, and toxicity-aware recommendation orchestration.
-
+Implements the plant-only ranking subgraph after toxicity and household exclusions have run.

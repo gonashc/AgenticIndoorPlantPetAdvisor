@@ -4,12 +4,14 @@ build-backend = "hatchling.build"
 
 [project]
 name = "indoor-plant-pet-advisor-api"
-version = "0.0.0"
-description = "Engineer 2 application API and recommendation-intelligence skeleton"
+version = "0.1.0"
+description = "Application API and recommendation-intelligence service"
 requires-python = ">=3.12"
 dependencies = [
   "fastapi",
+  "langgraph>=1.1,<2.0",
   "pydantic-settings",
+  "uvicorn[standard]",
 ]
 
 [dependency-groups]
@@ -21,7 +23,11 @@ dev = [
 ]
 
 [tool.hatch.build.targets.wheel]
-packages = ["apps/api/src/advisor_api"]
+packages = [
+  "apps/api/src/advisor_api",
+  "agents",
+  "services",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -37,5 +43,4 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["apps/api/src"]
-
+files = ["apps/api/src", "agents", "services"]

@@ -1,8 +1,8 @@
 # Shared contracts — review required
 
-This directory is reserved for the approved, versioned boundary shared by React, FastAPI, data, and integrations. It contains no schema yet.
+This directory contains the generated, versioned OpenAPI boundary shared by React and FastAPI. Python source contracts live in `apps/api/src/advisor_api/contracts`.
 
-Before implementation, freeze and review:
+The v1 contract covers:
 
 - v1 recommendation and care-plan requests/responses;
 - validation rules and the public error envelope;
@@ -13,5 +13,4 @@ Before implementation, freeze and review:
 - correlation, trace, redaction, and version fields;
 - golden examples for success, exclusions, missing input, and degraded dependencies.
 
-Every observable change requires compatibility notes, updated fixtures, and affected-consumer review.
-
+Every observable change requires compatibility notes, an updated OpenAPI artifact and fixtures, and affected-consumer review.

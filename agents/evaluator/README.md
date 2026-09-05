@@ -1,4 +1,3 @@
 # Evaluator
 
-Reserved for deterministic constraints, evidence, calculations, schema, freshness, and safety checks.
-
+Implements deterministic result-count, score, explanation, and evidence checks after the selected specialist completes.

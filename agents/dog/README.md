@@ -1,4 +1,3 @@
 # Dog specialist
 
-Reserved for dog profile fit, care requirements, and adoption-discovery orchestration. Profile recommendations must precede individual animal results.
-
+Implements dog-profile ranking. Profile recommendations precede individual animal discovery, which remains behind the adoption integration port.

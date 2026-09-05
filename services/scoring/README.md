@@ -1,4 +1,3 @@
 # Scoring service
 
-Reserved for deterministic category-specific scoring and calibration. LLMs may explain a score but cannot calculate or alter the authoritative score.
-
+Implements deterministic category-specific scoring with the initial architecture weights. LLMs may explain a score but cannot calculate or alter it.

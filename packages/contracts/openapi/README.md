@@ -1,6 +1,5 @@
 # OpenAPI artifacts
 
-Reserved for the reviewed source contract and generated artifacts. Nothing is generated during the skeleton phase.
+`openapi.json` is generated from the FastAPI application and is the source for React client generation.
 
-The future contract should document `/v1`, authentication, idempotency where needed, errors, examples, deprecation policy, and streaming semantics without exposing provider-specific payloads.
-
+Regenerate it with `uv run python scripts/export_openapi.py`. CI should fail when the generated file differs from the running application schema.

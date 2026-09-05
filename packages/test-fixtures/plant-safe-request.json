@@ -1,0 +1,22 @@
+{
+  "category": "PLANT",
+  "destination": {
+    "state_code": "NY",
+    "zip_code": "10001"
+  },
+  "questionnaire": {
+    "available_space": "MEDIUM",
+    "children_present": true,
+    "experience": "BEGINNER",
+    "humidity": "AVERAGE",
+    "indoor_temperature_f": 72,
+    "light_level": "BRIGHT_INDIRECT",
+    "monthly_budget": 30,
+    "pets_present": [
+      "CAT"
+    ],
+    "watering_availability": "LOW"
+  },
+  "session_id": "c0a8012e-6d1a-4c8b-9fcb-6d27ea0cb911",
+  "use_saved_preferences": false
+}

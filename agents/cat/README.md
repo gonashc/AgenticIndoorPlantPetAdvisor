@@ -1,4 +1,3 @@
 # Cat specialist
 
-Reserved for cat age/temperament/energy profile fit, indoor suitability, care, and adoption-discovery orchestration.
-
+Implements cat-profile ranking. Current individual-animal discovery remains behind the adoption integration port.

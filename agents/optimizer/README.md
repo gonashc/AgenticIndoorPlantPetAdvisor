@@ -1,4 +1,3 @@
 # Optimizer
 
-Reserved for targeted repair of evaluator failures. The future loop is bounded to two attempts and cannot weaken hard constraints.
-
+Implements targeted explanation repair. The loop is bounded to two attempts and cannot change candidates, hard constraints, ordering, or scores.

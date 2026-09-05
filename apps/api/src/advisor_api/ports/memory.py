@@ -1,4 +1,11 @@
-"""Reserved port for consented preference recall and deletion.
+"""Provider-neutral port for consented preference recall and deletion."""
 
-Memory is never authoritative for identity, consent, schedules, or health data.
-"""
+from collections.abc import Mapping
+from typing import Protocol
+from uuid import UUID
+
+
+class PreferenceMemory(Protocol):
+    async def recall(self, session_id: UUID) -> Mapping[str, object]: ...
+
+    async def delete(self, session_id: UUID) -> None: ...

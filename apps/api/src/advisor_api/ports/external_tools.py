@@ -1,4 +1,16 @@
-"""Reserved ports for current places, adoption, climate, regulation, and web data.
+"""Provider-neutral port for current places, adoption, climate, rules, and web data."""
 
-Engineer 4 owns MCP and provider adapters. This file must remain provider-neutral.
-"""
+from collections.abc import Sequence
+from typing import Protocol
+
+from advisor_api.contracts.base import Category, LocalSource
+
+
+class CurrentSourceGateway(Protocol):
+    async def find_sources(
+        self,
+        *,
+        category: Category,
+        candidate_id: str,
+        zip_code: str,
+    ) -> Sequence[LocalSource]: ...

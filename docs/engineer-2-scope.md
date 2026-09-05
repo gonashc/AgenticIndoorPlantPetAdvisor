@@ -22,7 +22,8 @@ The user asked Engineer 2 to eventually publish the FastAPI surface consumed by 
 - Engineer 1 receives the OpenAPI artifact/generated client and must not consume provider-specific types.
 - Shared contracts and fixtures require all affected owners to review changes.
 
-## Skeleton-phase decision
+## Implemented Engineer 2 slice
 
-No application routes, Pydantic transport models, OpenAPI artifact, streaming event schema, graph, prompt, scoring rule, safety rule, persistence call, or external tool call is implemented. The folders and ownership boundaries exist so those contracts can be agreed before coding begins.
+The application now publishes strict Pydantic v1 transport contracts, a uniform error envelope, generated OpenAPI, discriminated SSE progress events, and care-plan preview/confirmation/lifecycle endpoints. A hierarchical LangGraph Supervisor deterministically routes to exactly one category subgraph, applies safety before scoring, evaluates outputs, and permits at most two explanation-only repairs.
 
+Engineer 3 and Engineer 4 dependencies remain provider-neutral ports. Deterministic in-memory fixtures make the slice runnable while clearly returning `DEGRADED` when current local-source data is unavailable.

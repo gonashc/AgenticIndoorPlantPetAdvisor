@@ -1,0 +1,21 @@
+{
+  "category": "DOG",
+  "destination": {
+    "state_code": "GA",
+    "zip_code": "30301"
+  },
+  "questionnaire": {
+    "activity_level": "LOW",
+    "children_present": false,
+    "existing_pets": [],
+    "experience": "BEGINNER",
+    "grooming_tolerance": "LOW",
+    "home_size": "SMALL",
+    "hours_alone": 4,
+    "housing_type": "APARTMENT",
+    "monthly_budget": 200,
+    "outdoor_space": "NONE",
+    "rental_allows_pets": false
+  },
+  "session_id": "7649ff84-05a3-4509-9ae5-62dfaf05d952"
+}

@@ -1,0 +1,2050 @@
+{
+  "components": {
+    "schemas": {
+      "Cadence": {
+        "enum": [
+          "DAILY",
+          "WEEKLY",
+          "MONTHLY",
+          "QUARTERLY",
+          "ANNUALLY"
+        ],
+        "title": "Cadence",
+        "type": "string"
+      },
+      "CarePlan": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "item_name": {
+            "title": "Item Name",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "plan_id": {
+            "format": "uuid",
+            "title": "Plan Id",
+            "type": "string"
+          },
+          "recommendation_id": {
+            "title": "Recommendation Id",
+            "type": "string"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/CarePlanStatus"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/CareTask"
+            },
+            "minItems": 1,
+            "title": "Tasks",
+            "type": "array"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metadata",
+          "plan_id",
+          "session_id",
+          "recommendation_id",
+          "category",
+          "item_name",
+          "timezone",
+          "status",
+          "tasks",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CarePlan",
+        "type": "object"
+      },
+      "CarePlanCreateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmed": {
+            "const": true,
+            "title": "Confirmed",
+            "type": "boolean"
+          },
+          "preview_id": {
+            "format": "uuid",
+            "title": "Preview Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "preview_id",
+          "confirmed"
+        ],
+        "title": "CarePlanCreateRequest",
+        "type": "object"
+      },
+      "CarePlanPreviewRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "item_name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Item Name",
+            "type": "string"
+          },
+          "recommendation_id": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Recommendation Id",
+            "type": "string"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "timezone": {
+            "pattern": "^[A-Za-z_]+(?:/[A-Za-z0-9_+\\-]+)+$",
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "recommendation_id",
+          "category",
+          "item_name",
+          "start_date",
+          "timezone"
+        ],
+        "title": "CarePlanPreviewRequest",
+        "type": "object"
+      },
+      "CarePlanPreviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "confirmation_required": {
+            "const": true,
+            "default": true,
+            "title": "Confirmation Required",
+            "type": "boolean"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "item_name": {
+            "title": "Item Name",
+            "type": "string"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "preview_id": {
+            "format": "uuid",
+            "title": "Preview Id",
+            "type": "string"
+          },
+          "recommendation_id": {
+            "title": "Recommendation Id",
+            "type": "string"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "tasks": {
+            "items": {
+              "$ref": "#/components/schemas/CareTask"
+            },
+            "minItems": 1,
+            "title": "Tasks",
+            "type": "array"
+          },
+          "timezone": {
+            "title": "Timezone",
+            "type": "string"
+          }
+        },
+        "required": [
+          "metadata",
+          "preview_id",
+          "expires_at",
+          "session_id",
+          "recommendation_id",
+          "category",
+          "item_name",
+          "timezone",
+          "tasks"
+        ],
+        "title": "CarePlanPreviewResponse",
+        "type": "object"
+      },
+      "CarePlanStatus": {
+        "enum": [
+          "ACTIVE",
+          "PAUSED"
+        ],
+        "title": "CarePlanStatus",
+        "type": "string"
+      },
+      "CarePlanUpdateRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/CarePlanStatus"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "CarePlanUpdateRequest",
+        "type": "object"
+      },
+      "CareTask": {
+        "additionalProperties": false,
+        "properties": {
+          "cadence": {
+            "$ref": "#/components/schemas/Cadence"
+          },
+          "completed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At"
+          },
+          "instructions": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Instructions",
+            "type": "string"
+          },
+          "next_due_on": {
+            "format": "date",
+            "title": "Next Due On",
+            "type": "string"
+          },
+          "task_id": {
+            "format": "uuid",
+            "title": "Task Id",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "task_id",
+          "title",
+          "instructions",
+          "cadence",
+          "next_due_on"
+        ],
+        "title": "CareTask",
+        "type": "object"
+      },
+      "CatQuestionnaire": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_level": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "title": "Activity Level",
+            "type": "string"
+          },
+          "affection_preference": {
+            "enum": [
+              "INDEPENDENT",
+              "BALANCED",
+              "AFFECTIONATE"
+            ],
+            "title": "Affection Preference",
+            "type": "string"
+          },
+          "children_present": {
+            "default": false,
+            "title": "Children Present",
+            "type": "boolean"
+          },
+          "existing_pets": {
+            "items": {
+              "enum": [
+                "DOG",
+                "CAT"
+              ],
+              "type": "string"
+            },
+            "title": "Existing Pets",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "experience": {
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "EXPERT"
+            ],
+            "title": "Experience",
+            "type": "string"
+          },
+          "grooming_tolerance": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "title": "Grooming Tolerance",
+            "type": "string"
+          },
+          "home_size": {
+            "enum": [
+              "SMALL",
+              "MEDIUM",
+              "LARGE"
+            ],
+            "title": "Home Size",
+            "type": "string"
+          },
+          "hours_alone": {
+            "maximum": 24.0,
+            "minimum": 0.0,
+            "title": "Hours Alone",
+            "type": "number"
+          },
+          "housing_type": {
+            "enum": [
+              "APARTMENT",
+              "CONDO",
+              "HOUSE"
+            ],
+            "title": "Housing Type",
+            "type": "string"
+          },
+          "monthly_budget": {
+            "maximum": 5000.0,
+            "minimum": 0.0,
+            "title": "Monthly Budget",
+            "type": "number"
+          },
+          "outdoor_space": {
+            "enum": [
+              "NONE",
+              "BALCONY",
+              "YARD"
+            ],
+            "title": "Outdoor Space",
+            "type": "string"
+          },
+          "rental_allows_pets": {
+            "title": "Rental Allows Pets",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "housing_type",
+          "home_size",
+          "rental_allows_pets",
+          "outdoor_space",
+          "hours_alone",
+          "activity_level",
+          "grooming_tolerance",
+          "monthly_budget",
+          "experience",
+          "affection_preference"
+        ],
+        "title": "CatQuestionnaire",
+        "type": "object"
+      },
+      "CatRecommendationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "const": "CAT",
+            "title": "Category",
+            "type": "string"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Destination"
+          },
+          "questionnaire": {
+            "$ref": "#/components/schemas/CatQuestionnaire"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "use_saved_preferences": {
+            "default": false,
+            "title": "Use Saved Preferences",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "destination",
+          "session_id",
+          "category",
+          "questionnaire"
+        ],
+        "title": "CatRecommendationRequest",
+        "type": "object"
+      },
+      "Category": {
+        "enum": [
+          "PLANT",
+          "DOG",
+          "CAT"
+        ],
+        "title": "Category",
+        "type": "string"
+      },
+      "Confidence": {
+        "enum": [
+          "CONFIRMED",
+          "RECENTLY_OBSERVED",
+          "UNVERIFIED"
+        ],
+        "title": "Confidence",
+        "type": "string"
+      },
+      "CostEstimate": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "default": "USD",
+            "pattern": "^[A-Z]{3}$",
+            "title": "Currency",
+            "type": "string"
+          },
+          "initial_max": {
+            "minimum": 0,
+            "title": "Initial Max",
+            "type": "number"
+          },
+          "initial_min": {
+            "minimum": 0,
+            "title": "Initial Min",
+            "type": "number"
+          },
+          "monthly_max": {
+            "minimum": 0,
+            "title": "Monthly Max",
+            "type": "number"
+          },
+          "monthly_min": {
+            "minimum": 0,
+            "title": "Monthly Min",
+            "type": "number"
+          }
+        },
+        "required": [
+          "initial_min",
+          "initial_max",
+          "monthly_min",
+          "monthly_max"
+        ],
+        "title": "CostEstimate",
+        "type": "object"
+      },
+      "Destination": {
+        "additionalProperties": false,
+        "properties": {
+          "state_code": {
+            "anyOf": [
+              {
+                "pattern": "^[A-Z]{2}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "State Code"
+          },
+          "zip_code": {
+            "examples": [
+              "10001"
+            ],
+            "pattern": "^\\d{5}$",
+            "title": "Zip Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "zip_code"
+        ],
+        "title": "Destination",
+        "type": "object"
+      },
+      "DogRecommendationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "const": "DOG",
+            "title": "Category",
+            "type": "string"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Destination"
+          },
+          "questionnaire": {
+            "$ref": "#/components/schemas/PetQuestionnaire"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "use_saved_preferences": {
+            "default": false,
+            "title": "Use Saved Preferences",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "destination",
+          "session_id",
+          "category",
+          "questionnaire"
+        ],
+        "title": "DogRecommendationRequest",
+        "type": "object"
+      },
+      "ErrorBody": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "contract_version": {
+            "const": "v1",
+            "default": "v1",
+            "title": "Contract Version",
+            "type": "string"
+          },
+          "details": {
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "title": "Details",
+            "type": "array"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message",
+          "request_id"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Field"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorDetail",
+        "type": "object"
+      },
+      "ErrorEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "error": {
+            "$ref": "#/components/schemas/ErrorBody"
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "title": "ErrorEnvelope",
+        "type": "object"
+      },
+      "EvidenceReference": {
+        "additionalProperties": false,
+        "properties": {
+          "content_version": {
+            "title": "Content Version",
+            "type": "string"
+          },
+          "evidence_id": {
+            "title": "Evidence Id",
+            "type": "string"
+          },
+          "reviewed_at": {
+            "format": "date-time",
+            "title": "Reviewed At",
+            "type": "string"
+          },
+          "source_name": {
+            "title": "Source Name",
+            "type": "string"
+          },
+          "source_url": {
+            "title": "Source Url",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_id",
+          "title",
+          "source_name",
+          "source_url",
+          "reviewed_at",
+          "content_version"
+        ],
+        "title": "EvidenceReference",
+        "type": "object"
+      },
+      "LocalSource": {
+        "additionalProperties": false,
+        "properties": {
+          "confidence": {
+            "$ref": "#/components/schemas/Confidence"
+          },
+          "distance_miles": {
+            "anyOf": [
+              {
+                "minimum": 0,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Distance Miles"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "source_type": {
+            "title": "Source Type",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "verified_at": {
+            "format": "date-time",
+            "title": "Verified At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "source_type",
+          "url",
+          "verified_at",
+          "confidence"
+        ],
+        "title": "LocalSource",
+        "type": "object"
+      },
+      "PetQuestionnaire": {
+        "additionalProperties": false,
+        "properties": {
+          "activity_level": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "title": "Activity Level",
+            "type": "string"
+          },
+          "children_present": {
+            "default": false,
+            "title": "Children Present",
+            "type": "boolean"
+          },
+          "existing_pets": {
+            "items": {
+              "enum": [
+                "DOG",
+                "CAT"
+              ],
+              "type": "string"
+            },
+            "title": "Existing Pets",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "experience": {
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "EXPERT"
+            ],
+            "title": "Experience",
+            "type": "string"
+          },
+          "grooming_tolerance": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "title": "Grooming Tolerance",
+            "type": "string"
+          },
+          "home_size": {
+            "enum": [
+              "SMALL",
+              "MEDIUM",
+              "LARGE"
+            ],
+            "title": "Home Size",
+            "type": "string"
+          },
+          "hours_alone": {
+            "maximum": 24.0,
+            "minimum": 0.0,
+            "title": "Hours Alone",
+            "type": "number"
+          },
+          "housing_type": {
+            "enum": [
+              "APARTMENT",
+              "CONDO",
+              "HOUSE"
+            ],
+            "title": "Housing Type",
+            "type": "string"
+          },
+          "monthly_budget": {
+            "maximum": 5000.0,
+            "minimum": 0.0,
+            "title": "Monthly Budget",
+            "type": "number"
+          },
+          "outdoor_space": {
+            "enum": [
+              "NONE",
+              "BALCONY",
+              "YARD"
+            ],
+            "title": "Outdoor Space",
+            "type": "string"
+          },
+          "rental_allows_pets": {
+            "title": "Rental Allows Pets",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "housing_type",
+          "home_size",
+          "rental_allows_pets",
+          "outdoor_space",
+          "hours_alone",
+          "activity_level",
+          "grooming_tolerance",
+          "monthly_budget",
+          "experience"
+        ],
+        "title": "PetQuestionnaire",
+        "type": "object"
+      },
+      "PlantQuestionnaire": {
+        "additionalProperties": false,
+        "properties": {
+          "available_space": {
+            "enum": [
+              "SMALL",
+              "MEDIUM",
+              "LARGE"
+            ],
+            "title": "Available Space",
+            "type": "string"
+          },
+          "children_present": {
+            "default": false,
+            "title": "Children Present",
+            "type": "boolean"
+          },
+          "experience": {
+            "enum": [
+              "BEGINNER",
+              "INTERMEDIATE",
+              "EXPERT"
+            ],
+            "title": "Experience",
+            "type": "string"
+          },
+          "humidity": {
+            "enum": [
+              "LOW",
+              "AVERAGE",
+              "HIGH"
+            ],
+            "title": "Humidity",
+            "type": "string"
+          },
+          "indoor_temperature_f": {
+            "maximum": 95.0,
+            "minimum": 50.0,
+            "title": "Indoor Temperature F",
+            "type": "integer"
+          },
+          "light_level": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "BRIGHT_INDIRECT",
+              "DIRECT"
+            ],
+            "title": "Light Level",
+            "type": "string"
+          },
+          "monthly_budget": {
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Monthly Budget",
+            "type": "number"
+          },
+          "pets_present": {
+            "items": {
+              "enum": [
+                "DOG",
+                "CAT"
+              ],
+              "type": "string"
+            },
+            "title": "Pets Present",
+            "type": "array",
+            "uniqueItems": true
+          },
+          "watering_availability": {
+            "enum": [
+              "LOW",
+              "MEDIUM",
+              "HIGH"
+            ],
+            "title": "Watering Availability",
+            "type": "string"
+          }
+        },
+        "required": [
+          "light_level",
+          "humidity",
+          "indoor_temperature_f",
+          "available_space",
+          "experience",
+          "watering_availability",
+          "monthly_budget"
+        ],
+        "title": "PlantQuestionnaire",
+        "type": "object"
+      },
+      "PlantRecommendationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "const": "PLANT",
+            "title": "Category",
+            "type": "string"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/Destination"
+          },
+          "questionnaire": {
+            "$ref": "#/components/schemas/PlantQuestionnaire"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "use_saved_preferences": {
+            "default": false,
+            "title": "Use Saved Preferences",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "destination",
+          "session_id",
+          "category",
+          "questionnaire"
+        ],
+        "title": "PlantRecommendationRequest",
+        "type": "object"
+      },
+      "ProgressData": {
+        "additionalProperties": false,
+        "properties": {
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "percent": {
+            "maximum": 99,
+            "minimum": 0,
+            "title": "Percent",
+            "type": "integer"
+          },
+          "stage": {
+            "$ref": "#/components/schemas/ProgressStage"
+          }
+        },
+        "required": [
+          "stage",
+          "percent",
+          "message"
+        ],
+        "title": "ProgressData",
+        "type": "object"
+      },
+      "ProgressStage": {
+        "enum": [
+          "ACCEPTED",
+          "VALIDATING",
+          "APPLYING_SAFETY",
+          "SCORING",
+          "EVALUATING",
+          "OPTIMIZING"
+        ],
+        "type": "string"
+      },
+      "RecommendationCompletedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/RecommendationResponse"
+          },
+          "emitted_at": {
+            "format": "date-time",
+            "title": "Emitted At",
+            "type": "string"
+          },
+          "event": {
+            "const": "completed",
+            "default": "completed",
+            "title": "Event",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "v1",
+            "default": "v1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "sequence",
+          "request_id",
+          "session_id",
+          "emitted_at",
+          "data"
+        ],
+        "title": "RecommendationCompletedEvent",
+        "type": "object"
+      },
+      "RecommendationFailedEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ErrorBody"
+          },
+          "emitted_at": {
+            "format": "date-time",
+            "title": "Emitted At",
+            "type": "string"
+          },
+          "event": {
+            "const": "failed",
+            "default": "failed",
+            "title": "Event",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "v1",
+            "default": "v1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "sequence",
+          "request_id",
+          "session_id",
+          "emitted_at",
+          "data"
+        ],
+        "title": "RecommendationFailedEvent",
+        "type": "object"
+      },
+      "RecommendationItem": {
+        "additionalProperties": false,
+        "properties": {
+          "best_match": {
+            "title": "Best Match",
+            "type": "boolean"
+          },
+          "care_summary": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 1,
+            "title": "Care Summary",
+            "type": "array"
+          },
+          "concerns": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Concerns",
+            "type": "array"
+          },
+          "cost": {
+            "$ref": "#/components/schemas/CostEstimate"
+          },
+          "evidence": {
+            "items": {
+              "$ref": "#/components/schemas/EvidenceReference"
+            },
+            "minItems": 1,
+            "title": "Evidence",
+            "type": "array"
+          },
+          "local_sources": {
+            "items": {
+              "$ref": "#/components/schemas/LocalSource"
+            },
+            "maxItems": 3,
+            "title": "Local Sources",
+            "type": "array"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "profile": {
+            "title": "Profile",
+            "type": "string"
+          },
+          "reasons": {
+            "items": {
+              "type": "string"
+            },
+            "minItems": 3,
+            "title": "Reasons",
+            "type": "array"
+          },
+          "recommendation_id": {
+            "title": "Recommendation Id",
+            "type": "string"
+          },
+          "safety": {
+            "$ref": "#/components/schemas/SafetyDisclosure"
+          },
+          "scientific_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "title": "Scientific Name"
+          },
+          "score": {
+            "maximum": 100,
+            "minimum": 0,
+            "title": "Score",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "recommendation_id",
+          "name",
+          "profile",
+          "score",
+          "best_match",
+          "reasons",
+          "evidence",
+          "care_summary",
+          "cost",
+          "safety"
+        ],
+        "title": "RecommendationItem",
+        "type": "object"
+      },
+      "RecommendationProgressEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ProgressData"
+          },
+          "emitted_at": {
+            "format": "date-time",
+            "title": "Emitted At",
+            "type": "string"
+          },
+          "event": {
+            "const": "progress",
+            "default": "progress",
+            "title": "Event",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": "v1",
+            "default": "v1",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "sequence": {
+            "minimum": 1,
+            "title": "Sequence",
+            "type": "integer"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "sequence",
+          "request_id",
+          "session_id",
+          "emitted_at",
+          "data"
+        ],
+        "title": "RecommendationProgressEvent",
+        "type": "object"
+      },
+      "RecommendationResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/Category"
+          },
+          "metadata": {
+            "$ref": "#/components/schemas/RequestMetadata"
+          },
+          "recommendations": {
+            "items": {
+              "$ref": "#/components/schemas/RecommendationItem"
+            },
+            "maxItems": 3,
+            "minItems": 1,
+            "title": "Recommendations",
+            "type": "array"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          },
+          "validation_status": {
+            "$ref": "#/components/schemas/ValidationStatus"
+          },
+          "warnings": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Warnings",
+            "type": "array"
+          }
+        },
+        "required": [
+          "metadata",
+          "session_id",
+          "category",
+          "recommendations",
+          "validation_status"
+        ],
+        "title": "RecommendationResponse",
+        "type": "object"
+      },
+      "RecommendationStreamEvent": {
+        "discriminator": {
+          "mapping": {
+            "completed": "#/components/schemas/RecommendationCompletedEvent",
+            "failed": "#/components/schemas/RecommendationFailedEvent",
+            "progress": "#/components/schemas/RecommendationProgressEvent"
+          },
+          "propertyName": "event"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/RecommendationProgressEvent"
+          },
+          {
+            "$ref": "#/components/schemas/RecommendationCompletedEvent"
+          },
+          {
+            "$ref": "#/components/schemas/RecommendationFailedEvent"
+          }
+        ]
+      },
+      "RequestMetadata": {
+        "additionalProperties": false,
+        "properties": {
+          "generated_at": {
+            "format": "date-time",
+            "title": "Generated At",
+            "type": "string"
+          },
+          "request_id": {
+            "format": "uuid",
+            "title": "Request Id",
+            "type": "string"
+          },
+          "versions": {
+            "$ref": "#/components/schemas/VersionInfo"
+          }
+        },
+        "required": [
+          "request_id",
+          "generated_at",
+          "versions"
+        ],
+        "title": "RequestMetadata",
+        "type": "object"
+      },
+      "SafetyDisclosure": {
+        "additionalProperties": false,
+        "properties": {
+          "cat_toxicity": {
+            "enum": [
+              "TOXIC",
+              "NON_TOXIC",
+              "UNKNOWN",
+              "NOT_APPLICABLE"
+            ],
+            "title": "Cat Toxicity",
+            "type": "string"
+          },
+          "child_toxicity": {
+            "enum": [
+              "TOXIC",
+              "NON_TOXIC",
+              "UNKNOWN",
+              "NOT_APPLICABLE"
+            ],
+            "title": "Child Toxicity",
+            "type": "string"
+          },
+          "dog_toxicity": {
+            "enum": [
+              "TOXIC",
+              "NON_TOXIC",
+              "UNKNOWN",
+              "NOT_APPLICABLE"
+            ],
+            "title": "Dog Toxicity",
+            "type": "string"
+          },
+          "hard_constraints_passed": {
+            "const": true,
+            "default": true,
+            "title": "Hard Constraints Passed",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "child_toxicity",
+          "dog_toxicity",
+          "cat_toxicity"
+        ],
+        "title": "SafetyDisclosure",
+        "type": "object"
+      },
+      "ValidationStatus": {
+        "enum": [
+          "PASSED",
+          "DEGRADED"
+        ],
+        "title": "ValidationStatus",
+        "type": "string"
+      },
+      "VersionInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "api": {
+            "default": "v1",
+            "title": "Api",
+            "type": "string"
+          },
+          "graph": {
+            "default": "recommendation-graph-v1",
+            "title": "Graph",
+            "type": "string"
+          },
+          "knowledge": {
+            "default": "fake-catalog-v1",
+            "title": "Knowledge",
+            "type": "string"
+          },
+          "model": {
+            "default": "none",
+            "title": "Model",
+            "type": "string"
+          },
+          "prompt": {
+            "default": "deterministic-explanations-v1",
+            "title": "Prompt",
+            "type": "string"
+          },
+          "rules": {
+            "default": "rules-v1",
+            "title": "Rules",
+            "type": "string"
+          },
+          "scoring": {
+            "default": "scoring-v1",
+            "title": "Scoring",
+            "type": "string"
+          }
+        },
+        "title": "VersionInfo",
+        "type": "object"
+      }
+    }
+  },
+  "info": {
+    "description": "Versioned application API for deterministic Plant, Dog, and Cat recommendations and explicitly confirmed care plans.",
+    "title": "Indoor Plant and Pet Advisor API",
+    "version": "1.0.0",
+    "x-api-version": "v1",
+    "x-error-contract-version": "v1"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/care-plans": {
+      "post": {
+        "operationId": "createCarePlan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CarePlanCreateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarePlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Persist an explicitly confirmed preview",
+        "tags": [
+          "care-plans"
+        ]
+      }
+    },
+    "/v1/care-plans/preview": {
+      "post": {
+        "operationId": "previewCarePlan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CarePlanPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarePlanPreviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Preview a care plan without saving it",
+        "tags": [
+          "care-plans"
+        ]
+      }
+    },
+    "/v1/care-plans/{plan_id}": {
+      "get": {
+        "operationId": "getCarePlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarePlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Retrieve a saved care plan",
+        "tags": [
+          "care-plans"
+        ]
+      },
+      "patch": {
+        "operationId": "updateCarePlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CarePlanUpdateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarePlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Pause or activate a care plan",
+        "tags": [
+          "care-plans"
+        ]
+      }
+    },
+    "/v1/care-plans/{plan_id}/tasks/{task_id}/complete": {
+      "post": {
+        "operationId": "completeCareTask",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "plan_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Plan Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "task_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Task Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CarePlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Mark a care task complete",
+        "tags": [
+          "care-plans"
+        ]
+      }
+    },
+    "/v1/recommendations": {
+      "post": {
+        "operationId": "createRecommendation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "discriminator": {
+                  "mapping": {
+                    "CAT": "#/components/schemas/CatRecommendationRequest",
+                    "DOG": "#/components/schemas/DogRecommendationRequest",
+                    "PLANT": "#/components/schemas/PlantRecommendationRequest"
+                  },
+                  "propertyName": "category"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PlantRecommendationRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DogRecommendationRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CatRecommendationRequest"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Create up to three recommendations",
+        "tags": [
+          "recommendations"
+        ]
+      }
+    },
+    "/v1/recommendations/stream": {
+      "post": {
+        "operationId": "streamRecommendation",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "Last-Event-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Last-Event-Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "discriminator": {
+                  "mapping": {
+                    "CAT": "#/components/schemas/CatRecommendationRequest",
+                    "DOG": "#/components/schemas/DogRecommendationRequest",
+                    "PLANT": "#/components/schemas/PlantRecommendationRequest"
+                  },
+                  "propertyName": "category"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/PlantRecommendationRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DogRecommendationRequest"
+                  },
+                  {
+                    "$ref": "#/components/schemas/CatRecommendationRequest"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecommendationStreamEvent"
+                },
+                "x-sse": {
+                  "eventField": "event",
+                  "idField": "event_id",
+                  "resumeHeader": "Last-Event-ID",
+                  "retryMilliseconds": 3000
+                }
+              }
+            },
+            "description": "Versioned recommendation progress events"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Resource not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "State conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Validation or eligibility failure"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unexpected server failure"
+          }
+        },
+        "summary": "Stream recommendation workflow progress",
+        "tags": [
+          "recommendations"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Recommendation execution and progress.",
+      "name": "recommendations"
+    },
+    {
+      "description": "Care-plan preview and confirmed actions.",
+      "name": "care-plans"
+    }
+  ],
+  "x-versioning-policy": {
+    "breakingChanges": "Require a new major URL prefix",
+    "current": "v1",
+    "strategy": "URL major version"
+  }
+}

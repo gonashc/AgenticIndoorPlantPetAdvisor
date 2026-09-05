@@ -1,4 +1,3 @@
 # Safety service
 
-Reserved for hard exclusions and deterministic safety validation. Excluded candidates cannot be reinstated by an LLM or optimizer.
-
+Implements toxicity, housing, time-alone, child, and existing-pet hard exclusions. Excluded candidates cannot be reinstated by an LLM or optimizer.
