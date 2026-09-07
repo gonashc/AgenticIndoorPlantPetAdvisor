@@ -45,6 +45,7 @@ def run_migrations_online() -> None:
         section,
         prefix="sqlalchemy.",
         poolclass=pool.NullPool,
+        connect_args={"options": "-csearch_path=public"},
     )
     with connectable.connect() as connection:
         context.configure(

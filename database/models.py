@@ -24,6 +24,9 @@ from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 SCHEMA = "advisor"
+OWNER_ID_EXPAND_COMMENT = (
+    "Expand-phase ownership column; make NOT NULL after authentication rollout."
+)
 
 
 class Base(DeclarativeBase):
@@ -108,7 +111,9 @@ class CarePlanPreviewRow(TimestampMixin, Base):
     )
 
     preview_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
-    owner_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True))
+    owner_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), comment=OWNER_ID_EXPAND_COMMENT
+    )
     session_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
     recommendation_id: Mapped[str] = mapped_column(String(120), nullable=False)
     category: Mapped[str] = mapped_column(String(8), nullable=False)
@@ -132,7 +137,9 @@ class CarePlanRow(TimestampMixin, Base):
     )
 
     plan_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True)
-    owner_id: Mapped[UUID | None] = mapped_column(PG_UUID(as_uuid=True))
+    owner_id: Mapped[UUID | None] = mapped_column(
+        PG_UUID(as_uuid=True), comment=OWNER_ID_EXPAND_COMMENT
+    )
     session_id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), nullable=False)
     recommendation_id: Mapped[str] = mapped_column(String(120), nullable=False)
     category: Mapped[str] = mapped_column(String(8), nullable=False)
