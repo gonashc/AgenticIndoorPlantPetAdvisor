@@ -4,8 +4,8 @@ from datetime import UTC, datetime
 from uuid import UUID
 
 from advisor_api.contracts.base import Category, CostEstimate, EvidenceReference, LocalSource
-from advisor_api.contracts.care_plans import CarePlan
-from advisor_api.ports.data import CandidateRecord
+from advisor_api.contracts.care_plans import CarePlan, CarePlanPreviewResponse
+from advisor_api.ports.data import CandidateRecord, PreviewClaimStatus
 
 
 def _evidence(entity_id: str, title: str) -> tuple[EvidenceReference, ...]:
@@ -216,18 +216,46 @@ class InMemoryCatalogRepository:
 class InMemoryCarePlanRepository:
     def __init__(self) -> None:
         self._plans: dict[UUID, CarePlan] = {}
+        self._previews: dict[UUID, tuple[CarePlanPreviewResponse, datetime | None]] = {}
 
-    async def save(self, plan: CarePlan) -> CarePlan:
-        stored = plan.model_copy(deep=True)
-        self._plans[plan.plan_id] = stored
+    async def save_preview(self, preview: CarePlanPreviewResponse) -> CarePlanPreviewResponse:
+        stored = preview.model_copy(deep=True)
+        self._previews[preview.preview_id] = (stored, None)
         return stored.model_copy(deep=True)
+
+    async def get_preview(self, preview_id: UUID) -> CarePlanPreviewResponse | None:
+        entry = self._previews.get(preview_id)
+        return entry[0].model_copy(deep=True) if entry is not None else None
+
+    async def confirm_preview(
+        self,
+        preview_id: UUID,
+        claimed_at: datetime,
+        plan: CarePlan,
+    ) -> PreviewClaimStatus:
+        entry = self._previews.get(preview_id)
+        if entry is None:
+            return PreviewClaimStatus.NOT_FOUND
+        preview, consumed_at = entry
+        if consumed_at is not None:
+            return PreviewClaimStatus.ALREADY_CONSUMED
+        if preview.expires_at <= claimed_at:
+            return PreviewClaimStatus.EXPIRED
+        self._previews[preview_id] = (preview, claimed_at)
+        self._plans[plan.plan_id] = plan.model_copy(deep=True)
+        return PreviewClaimStatus.CLAIMED
 
     async def get(self, plan_id: UUID) -> CarePlan | None:
         plan = self._plans.get(plan_id)
         return plan.model_copy(deep=True) if plan else None
 
-    async def update(self, plan: CarePlan) -> CarePlan:
-        return await self.save(plan)
+    async def update(self, plan: CarePlan, *, expected_version: int) -> CarePlan | None:
+        stored = self._plans.get(plan.plan_id)
+        if stored is None or stored.version != expected_version:
+            return None
+        updated = plan.model_copy(deep=True)
+        self._plans[plan.plan_id] = updated
+        return updated.model_copy(deep=True)
 
 
 class UnavailableCurrentSourceGateway:

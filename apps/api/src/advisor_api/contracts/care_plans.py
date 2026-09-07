@@ -72,6 +72,7 @@ class CarePlan(ContractModel):
     item_name: str
     timezone: str
     status: CarePlanStatus
+    version: int = Field(default=1, ge=1)
     tasks: list[CareTask] = Field(min_length=1)
     created_at: datetime
     updated_at: datetime

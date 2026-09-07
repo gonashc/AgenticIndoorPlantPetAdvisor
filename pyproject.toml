@@ -8,9 +8,13 @@ version = "0.1.0"
 description = "Application API and recommendation-intelligence service"
 requires-python = ">=3.12"
 dependencies = [
+  "alembic>=1.16,<2.0",
+  "asyncpg>=0.30,<1.0",
+  "cloud-sql-python-connector[asyncpg]>=1.18,<2.0",
   "fastapi",
   "langgraph>=1.1,<2.0",
   "pydantic-settings",
+  "sqlalchemy[asyncio]>=2.0,<3.0",
   "uvicorn[standard]",
 ]
 
@@ -18,7 +22,9 @@ dependencies = [
 dev = [
   "httpx",
   "mypy",
+  "psycopg[binary]>=3.2,<4.0",
   "pytest",
+  "pytest-asyncio",
   "ruff",
 ]
 
@@ -26,12 +32,16 @@ dev = [
 packages = [
   "apps/api/src/advisor_api",
   "agents",
+  "database",
   "services",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+markers = [
+  "postgres: requires TEST_DATABASE_URL pointing to an isolated PostgreSQL database",
+]
 
 [tool.ruff]
 target-version = "py312"
@@ -43,4 +53,4 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["apps/api/src", "agents", "services"]
+files = ["apps/api/src", "agents", "database", "services"]

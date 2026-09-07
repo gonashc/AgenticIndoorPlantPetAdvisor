@@ -26,11 +26,11 @@ router = APIRouter(prefix="/care-plans", tags=["care-plans"])
     operation_id="previewCarePlan",
     summary="Preview a care plan without saving it",
 )
-def preview_care_plan(
+async def preview_care_plan(
     payload: CarePlanPreviewRequest,
     request: Request,
 ) -> CarePlanPreviewResponse:
-    return get_container(request).care_plans.preview(payload, request_id(request))
+    return await get_container(request).care_plans.preview(payload, request_id(request))
 
 
 @router.post(

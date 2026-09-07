@@ -1,9 +1,12 @@
 """FastAPI application composition root."""
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 from advisor_api.config import Settings
-from advisor_api.container import ApplicationContainer, build_container
+from advisor_api.container import ApplicationContainer, build_configured_container
 from advisor_api.http.context import RequestContextMiddleware
 from advisor_api.http.errors import register_error_handlers
 from advisor_api.http.openapi import configure_openapi
@@ -16,14 +19,31 @@ def create_app(
 ) -> FastAPI:
     resolved_settings = settings or Settings()
     openapi_url = "/openapi.json" if resolved_settings.openapi_enabled else None
+
+    @asynccontextmanager
+    async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+        database_runtime = None
+        if container is not None:
+            application.state.container = container
+        else:
+            configured_container, database_runtime = await build_configured_container(
+                resolved_settings
+            )
+            application.state.container = configured_container
+        try:
+            yield
+        finally:
+            if database_runtime is not None:
+                await database_runtime.close()
+
     app = FastAPI(
         title=resolved_settings.app_name,
         version="1.0.0",
         openapi_url=openapi_url,
         docs_url="/docs" if openapi_url else None,
         redoc_url="/redoc" if openapi_url else None,
+        lifespan=lifespan,
     )
-    app.state.container = container or build_container()
     app.add_middleware(RequestContextMiddleware)
     register_error_handlers(app)
     app.include_router(v1_router)

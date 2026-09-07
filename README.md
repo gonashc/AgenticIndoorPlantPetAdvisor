@@ -40,3 +40,9 @@ uv run python scripts/export_openapi.py
 ```
 
 The fixture adapters are intentionally labeled degraded and never claim current inventory or local-source availability.
+
+## PostgreSQL and Google Cloud SQL
+
+Set `DATABASE_MODE=url` for local PostgreSQL or `DATABASE_MODE=cloud_sql` for Google Cloud SQL. The API initializes its connection pool during application lifespan, verifies the expected Alembic revision, and closes the pool and Cloud SQL connector during shutdown. Migrations are always a separate release step.
+
+See [Google Cloud SQL setup](docs/gcp-cloud-sql-postgres.md) and [migration instructions](database/migrations/README.md).

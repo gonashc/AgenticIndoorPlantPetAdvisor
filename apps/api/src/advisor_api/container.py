@@ -11,10 +11,13 @@ from advisor_api.adapters.in_memory import (
     InMemoryCatalogRepository,
     UnavailableCurrentSourceGateway,
 )
+from advisor_api.config import Settings
 from advisor_api.ports.data import CarePlanRepository, CatalogRepository
 from advisor_api.ports.external_tools import CurrentSourceGateway
 from advisor_api.ports.memory import PreferenceMemory
 from agents.supervisor import build_supervisor_graph
+from database.repositories import PostgresCarePlanRepository, PostgresCatalogRepository
+from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plans import CarePlanService
 from services.orchestration.service import RecommendationService
 from services.safety import SafetyService
@@ -48,6 +51,26 @@ def build_container(
     return ApplicationContainer(
         recommendations=RecommendationService(graph),
         care_plans=CarePlanService(resolved_plan_repository),
+    )
+
+
+async def build_configured_container(
+    settings: Settings,
+) -> tuple[ApplicationContainer, DatabaseRuntime | None]:
+    if settings.database_mode == "memory":
+        return build_container(), None
+    runtime = await create_database_runtime(settings)
+    try:
+        await runtime.verify()
+    except Exception:
+        await runtime.close()
+        raise
+    return (
+        build_container(
+            catalog=PostgresCatalogRepository(runtime.session_factory),
+            care_plan_repository=PostgresCarePlanRepository(runtime.session_factory),
+        ),
+        runtime,
     )
 
 

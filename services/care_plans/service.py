@@ -15,15 +15,16 @@ from advisor_api.contracts.care_plans import (
     CareTask,
 )
 from advisor_api.http.errors import ConflictError, NotFoundError
-from advisor_api.ports.data import CarePlanRepository
+from advisor_api.ports.data import CarePlanRepository, PreviewClaimStatus
 
 
 class CarePlanService:
     def __init__(self, repository: CarePlanRepository) -> None:
         self._repository = repository
-        self._previews: dict[UUID, CarePlanPreviewResponse] = {}
 
-    def preview(self, request: CarePlanPreviewRequest, request_id: UUID) -> CarePlanPreviewResponse:
+    async def preview(
+        self, request: CarePlanPreviewRequest, request_id: UUID
+    ) -> CarePlanPreviewResponse:
         now = datetime.now(UTC)
         preview = CarePlanPreviewResponse(
             metadata=self._metadata(request_id, now),
@@ -36,17 +37,13 @@ class CarePlanService:
             timezone=request.timezone,
             tasks=self._tasks(request),
         )
-        self._previews[preview.preview_id] = preview
-        return preview
+        return await self._repository.save_preview(preview)
 
     async def create(self, request: CarePlanCreateRequest, request_id: UUID) -> CarePlan:
-        preview = self._previews.get(request.preview_id)
+        now = datetime.now(UTC)
+        preview = await self._repository.get_preview(request.preview_id)
         if preview is None:
             raise NotFoundError("care_plan_preview", str(request.preview_id))
-        now = datetime.now(UTC)
-        if preview.expires_at <= now:
-            self._previews.pop(request.preview_id, None)
-            raise ConflictError("CARE_PLAN_PREVIEW_EXPIRED", "The care-plan preview has expired.")
         plan = CarePlan(
             metadata=self._metadata(request_id, now),
             plan_id=uuid4(),
@@ -56,12 +53,22 @@ class CarePlanService:
             item_name=preview.item_name,
             timezone=preview.timezone,
             status=CarePlanStatus.ACTIVE,
+            version=1,
             tasks=preview.tasks,
             created_at=now,
             updated_at=now,
         )
-        self._previews.pop(request.preview_id, None)
-        return await self._repository.save(plan)
+        status = await self._repository.confirm_preview(request.preview_id, now, plan)
+        if status == PreviewClaimStatus.NOT_FOUND:
+            raise NotFoundError("care_plan_preview", str(request.preview_id))
+        if status == PreviewClaimStatus.EXPIRED:
+            raise ConflictError("CARE_PLAN_PREVIEW_EXPIRED", "The care-plan preview has expired.")
+        if status == PreviewClaimStatus.ALREADY_CONSUMED:
+            raise ConflictError(
+                "CARE_PLAN_PREVIEW_ALREADY_CONSUMED",
+                "The care-plan preview has already been confirmed.",
+            )
+        return plan.model_copy(deep=True)
 
     async def get(self, plan_id: UUID, request_id: UUID | None = None) -> CarePlan:
         plan = await self._repository.get(plan_id)
@@ -85,10 +92,17 @@ class CarePlanService:
             update={
                 "metadata": self._metadata(request_id, now),
                 "status": request.status,
+                "version": plan.version + 1,
                 "updated_at": now,
             }
         )
-        return await self._repository.update(updated)
+        persisted = await self._repository.update(updated, expected_version=plan.version)
+        if persisted is None:
+            raise ConflictError(
+                "CARE_PLAN_VERSION_CONFLICT",
+                "The care plan changed while this request was being processed.",
+            )
+        return persisted
 
     async def complete_task(self, plan_id: UUID, task_id: UUID, request_id: UUID) -> CarePlan:
         plan = await self.get(plan_id)
@@ -109,10 +123,17 @@ class CarePlanService:
             update={
                 "metadata": self._metadata(request_id, now),
                 "tasks": tasks,
+                "version": plan.version + 1,
                 "updated_at": now,
             }
         )
-        return await self._repository.update(updated)
+        persisted = await self._repository.update(updated, expected_version=plan.version)
+        if persisted is None:
+            raise ConflictError(
+                "CARE_PLAN_VERSION_CONFLICT",
+                "The care plan changed while this request was being processed.",
+            )
+        return persisted
 
     @staticmethod
     def _metadata(request_id: UUID, generated_at: datetime) -> RequestMetadata:
