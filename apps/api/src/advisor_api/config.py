@@ -28,6 +28,13 @@ class Settings(BaseSettings):
     db_max_overflow: int = 2
     db_pool_timeout_seconds: int = 30
     db_pool_recycle_seconds: int = 1800
+    langsmith_tracing: bool = False
+    langsmith_api_key: SecretStr | None = None
+    langsmith_project: str = "advisor-local"
+    langsmith_workspace_id: str | None = None
+    langsmith_endpoint: str = "https://api.smith.langchain.com"
+    langsmith_hide_inputs: bool = True
+    langsmith_hide_outputs: bool = True
 
     @model_validator(mode="after")
     def database_configuration_is_complete(self) -> "Settings":
@@ -58,4 +65,13 @@ class Settings(BaseSettings):
             raise ValueError("Database pool size must be positive and overflow cannot be negative")
         if self.db_pool_timeout_seconds < 1 or self.db_pool_recycle_seconds < 1:
             raise ValueError("Database pool timeout and recycle values must be positive")
+        if self.langsmith_tracing:
+            if self.langsmith_api_key is None:
+                raise ValueError("LANGSMITH_API_KEY is required when LANGSMITH_TRACING=true")
+            if not self.langsmith_api_key.get_secret_value().strip():
+                raise ValueError("LANGSMITH_API_KEY cannot be empty when tracing is enabled")
+            if not self.langsmith_project.strip():
+                raise ValueError("LANGSMITH_PROJECT cannot be empty when tracing is enabled")
+            if not self.langsmith_endpoint.startswith(("https://", "http://")):
+                raise ValueError("LANGSMITH_ENDPOINT must be an HTTP(S) URL")
         return self

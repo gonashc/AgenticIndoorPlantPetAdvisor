@@ -9,11 +9,12 @@ from database.models import SCHEMA, Base
 
 def test_production_rejects_in_memory_persistence() -> None:
     with pytest.raises(ValidationError, match="Production cannot use"):
-        Settings(app_env="production", database_mode="memory")
+        Settings(_env_file=None, app_env="production", database_mode="memory")
 
 
 def test_url_mode_requires_asyncpg_url() -> None:
     settings = Settings(
+        _env_file=None,
         app_env="test",
         database_mode="url",
         database_url=SecretStr("postgresql+asyncpg://user:secret@localhost/advisor"),
@@ -26,6 +27,7 @@ def test_url_mode_requires_asyncpg_url() -> None:
 def test_url_mode_rejects_sync_driver() -> None:
     with pytest.raises(ValidationError, match=r"postgresql\+asyncpg"):
         Settings(
+            _env_file=None,
             app_env="test",
             database_mode="url",
             database_url=SecretStr("postgresql+psycopg://user:secret@localhost/advisor"),
@@ -34,12 +36,13 @@ def test_url_mode_rejects_sync_driver() -> None:
 
 def test_cloud_sql_mode_requires_connection_identity() -> None:
     with pytest.raises(ValidationError, match="Missing Cloud SQL settings"):
-        Settings(app_env="staging", database_mode="cloud_sql")
+        Settings(_env_file=None, app_env="staging", database_mode="cloud_sql")
 
 
 def test_cloud_sql_iam_mode_rejects_password() -> None:
     with pytest.raises(ValidationError, match="DB_PASSWORD must be unset"):
         Settings(
+            _env_file=None,
             app_env="staging",
             database_mode="cloud_sql",
             instance_connection_name="project:region:instance",

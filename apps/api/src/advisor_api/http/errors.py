@@ -42,6 +42,15 @@ class ConflictError(ApiError):
         super().__init__(HTTPStatus.CONFLICT, code, message)
 
 
+class ServiceUnavailableError(ApiError):
+    def __init__(self) -> None:
+        super().__init__(
+            HTTPStatus.SERVICE_UNAVAILABLE,
+            "SERVICE_UNAVAILABLE",
+            "The service is not ready to accept traffic.",
+        )
+
+
 class NoEligibleCandidatesError(ApiError):
     def __init__(self, category: Category) -> None:
         super().__init__(

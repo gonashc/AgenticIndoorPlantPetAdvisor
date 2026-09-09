@@ -41,7 +41,9 @@ uv run alembic upgrade head
 
 Use an administrative migration role to create the `advisor` schema and tables. Grant the runtime role only the required schema usage and table/sequence permissions. Do not grant the runtime role schema ownership or migration privileges.
 
-The API verifies the Alembic revision at startup and refuses to serve traffic when the schema is missing or stale.
+The API validates its required schema capabilities at startup and refuses to serve traffic when
+the database is missing a required table or column. Forward-compatible revisions remain eligible
+so a previous application image can still be used for rollback.
 
 ## Local PostgreSQL
 

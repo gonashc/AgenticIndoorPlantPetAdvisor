@@ -16,6 +16,7 @@ from advisor_api.contracts.streaming import (
     RecommendationStreamEvent,
 )
 from advisor_api.http.errors import ApiError
+from advisor_api.ports.observability import RecommendationTracer
 
 from agents.supervisor import Graph
 from services.orchestration.state import RecommendationState
@@ -32,13 +33,19 @@ class RecommendationService:
         "optimizer": ("OPTIMIZING", 90, "Repaired failed explanation sections."),
     }
 
-    def __init__(self, graph: Graph) -> None:
+    def __init__(self, graph: Graph, tracer: RecommendationTracer) -> None:
         self._graph = graph
+        self._tracer = tracer
 
     async def recommend(
         self, request: RecommendationRequest, request_id: UUID
     ) -> RecommendationResponse:
-        result = await self._graph.ainvoke(self._initial_state(request, request_id))
+        with self._tracer.trace(
+            request_id=request_id,
+            category=request.category,
+            transport="http",
+        ):
+            result = await self._graph.ainvoke(self._initial_state(request, request_id))
         state = cast(RecommendationState, result)
         return state["response"]
 
@@ -49,87 +56,92 @@ class RecommendationService:
         *,
         after_sequence: int = 0,
     ) -> AsyncIterator[RecommendationStreamEvent]:
-        sequence = 1
-        accepted = self._progress_event(
-            request,
-            request_id,
-            sequence,
-            "ACCEPTED",
-            0,
-            "Recommendation request accepted.",
-        )
-        if sequence > after_sequence:
-            yield accepted
+        with self._tracer.trace(
+            request_id=request_id,
+            category=request.category,
+            transport="stream",
+        ):
+            sequence = 1
+            accepted = self._progress_event(
+                request,
+                request_id,
+                sequence,
+                "ACCEPTED",
+                0,
+                "Recommendation request accepted.",
+            )
+            if sequence > after_sequence:
+                yield accepted
 
-        try:
-            final_response: RecommendationResponse | None = None
-            async for chunk in self._graph.astream(
-                self._initial_state(request, request_id),
-                stream_mode="updates",
-                version="v2",
-            ):
-                if chunk["type"] != "updates":
-                    continue
-                for node_name, update in chunk["data"].items():
-                    if node_name == "compose" and "response" in update:
-                        final_response = cast(RecommendationResponse, update["response"])
-                    progress = self._PROGRESS.get(node_name)
-                    if progress is None:
+            try:
+                final_response: RecommendationResponse | None = None
+                async for chunk in self._graph.astream(
+                    self._initial_state(request, request_id),
+                    stream_mode="updates",
+                    version="v2",
+                ):
+                    if chunk["type"] != "updates":
                         continue
-                    sequence += 1
-                    stage, percent, message = progress
-                    event = self._progress_event(
-                        request, request_id, sequence, stage, percent, message
-                    )
-                    if sequence > after_sequence:
-                        yield event
+                    for node_name, update in chunk["data"].items():
+                        if node_name == "compose" and "response" in update:
+                            final_response = cast(RecommendationResponse, update["response"])
+                        progress = self._PROGRESS.get(node_name)
+                        if progress is None:
+                            continue
+                        sequence += 1
+                        stage, percent, message = progress
+                        event = self._progress_event(
+                            request, request_id, sequence, stage, percent, message
+                        )
+                        if sequence > after_sequence:
+                            yield event
 
-            if final_response is None:
-                raise RuntimeError("Recommendation graph completed without a response")
-            sequence += 1
-            completed = RecommendationCompletedEvent(
-                event_id=f"{request_id}:{sequence}",
-                sequence=sequence,
-                request_id=request_id,
-                session_id=request.session_id,
-                emitted_at=datetime.now(UTC),
-                data=final_response,
-            )
-            if sequence > after_sequence:
-                yield completed
-        except ApiError as exc:
-            sequence += 1
-            failed = RecommendationFailedEvent(
-                event_id=f"{request_id}:{sequence}",
-                sequence=sequence,
-                request_id=request_id,
-                session_id=request.session_id,
-                emitted_at=datetime.now(UTC),
-                data=ErrorBody(
-                    code=exc.code,
-                    message=exc.message,
+                if final_response is None:
+                    raise RuntimeError("Recommendation graph completed without a response")
+                sequence += 1
+                completed = RecommendationCompletedEvent(
+                    event_id=f"{request_id}:{sequence}",
+                    sequence=sequence,
                     request_id=request_id,
-                    details=exc.details,
-                ),
-            )
-            if sequence > after_sequence:
-                yield failed
-        except Exception:
-            sequence += 1
-            failed = RecommendationFailedEvent(
-                event_id=f"{request_id}:{sequence}",
-                sequence=sequence,
-                request_id=request_id,
-                session_id=request.session_id,
-                emitted_at=datetime.now(UTC),
-                data=ErrorBody(
-                    code="INTERNAL_ERROR",
-                    message="The recommendation stream could not be completed.",
+                    session_id=request.session_id,
+                    emitted_at=datetime.now(UTC),
+                    data=final_response,
+                )
+                if sequence > after_sequence:
+                    yield completed
+            except ApiError as exc:
+                sequence += 1
+                failed = RecommendationFailedEvent(
+                    event_id=f"{request_id}:{sequence}",
+                    sequence=sequence,
                     request_id=request_id,
-                ),
-            )
-            if sequence > after_sequence:
-                yield failed
+                    session_id=request.session_id,
+                    emitted_at=datetime.now(UTC),
+                    data=ErrorBody(
+                        code=exc.code,
+                        message=exc.message,
+                        request_id=request_id,
+                        details=exc.details,
+                    ),
+                )
+                if sequence > after_sequence:
+                    yield failed
+            except Exception:
+                sequence += 1
+                failed = RecommendationFailedEvent(
+                    event_id=f"{request_id}:{sequence}",
+                    sequence=sequence,
+                    request_id=request_id,
+                    session_id=request.session_id,
+                    emitted_at=datetime.now(UTC),
+                    data=ErrorBody(
+                        code="INTERNAL_ERROR",
+                        message="The recommendation stream could not be completed.",
+                        request_id=request_id,
+                    ),
+                )
+                if sequence > after_sequence:
+                    yield failed
 
     @staticmethod
     def _initial_state(request: RecommendationRequest, request_id: UUID) -> RecommendationState:

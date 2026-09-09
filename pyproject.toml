@@ -13,7 +13,9 @@ dependencies = [
   "cloud-sql-python-connector[asyncpg]>=1.18,<2.0",
   "fastapi",
   "langgraph>=1.1,<2.0",
+  "langsmith>=0.4,<1.0",
   "pydantic-settings",
+  "psycopg[binary]>=3.2,<4.0",
   "sqlalchemy[asyncio]>=2.0,<3.0",
   "uvicorn[standard]",
 ]
@@ -22,7 +24,6 @@ dependencies = [
 dev = [
   "httpx",
   "mypy",
-  "psycopg[binary]>=3.2,<4.0",
   "pytest",
   "pytest-asyncio",
   "ruff",

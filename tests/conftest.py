@@ -10,7 +10,14 @@ from fastapi.testclient import TestClient
 
 @pytest.fixture
 def client() -> Iterator[TestClient]:
-    app = create_app(Settings(app_env="test", openapi_enabled=True))
+    app = create_app(
+        Settings(
+            _env_file=None,
+            app_env="test",
+            openapi_enabled=True,
+            langsmith_tracing=False,
+        )
+    )
     with TestClient(app, raise_server_exceptions=False) as test_client:
         yield test_client
 

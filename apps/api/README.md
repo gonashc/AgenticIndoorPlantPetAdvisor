@@ -11,4 +11,6 @@ The implementation uses these explicit seams:
 - `http/streaming.py` — transport-neutral progress events and SSE framing.
 - `ports/` — consumer-side abstractions for components owned by Engineers 3 and 4.
 
+The `observability/langsmith.py` module provides opt-in, redacted recommendation graph tracing.
+
 HTTP handlers should remain thin and delegate to application/orchestration services.

@@ -15,7 +15,27 @@ from sqlalchemy.ext.asyncio import (
 )
 
 type AsyncSessionFactory = async_sessionmaker[AsyncSession]
-EXPECTED_SCHEMA_REVISION = "0001_catalog_and_care_plans"
+REQUIRED_SCHEMA_CAPABILITIES = frozenset(
+    {
+        "catalog_candidates.candidate_id",
+        "catalog_candidates.category",
+        "catalog_candidates.features",
+        "catalog_candidates.active",
+        "catalog_evidence.candidate_id",
+        "catalog_evidence.source_url",
+        "catalog_evidence.reviewed_at",
+        "care_plan_previews.preview_id",
+        "care_plan_previews.expires_at",
+        "care_plan_previews.consumed_at",
+        "care_plans.plan_id",
+        "care_plans.owner_id",
+        "care_plans.status",
+        "care_plans.version",
+        "care_tasks.task_id",
+        "care_tasks.plan_id",
+        "care_tasks.completed_at",
+    }
+)
 
 
 @dataclass(slots=True)
@@ -30,10 +50,29 @@ class DatabaseRuntime:
             revision = await connection.scalar(
                 text("SELECT version_num FROM advisor.alembic_version")
             )
-        if revision != EXPECTED_SCHEMA_REVISION:
-            raise RuntimeError(
-                f"Database schema revision {revision!r} does not match {EXPECTED_SCHEMA_REVISION!r}"
+            capabilities = set(
+                await connection.scalars(
+                    text(
+                        """
+                        SELECT table_name || '.' || column_name
+                        FROM information_schema.columns
+                        WHERE table_schema = 'advisor'
+                        """
+                    )
+                )
             )
+        if not revision:
+            raise RuntimeError("Database does not have an Alembic schema revision")
+        missing = REQUIRED_SCHEMA_CAPABILITIES - capabilities
+        if missing:
+            raise RuntimeError(
+                "Database schema is incompatible; missing capabilities: "
+                + ", ".join(sorted(missing))
+            )
+
+    async def ping(self) -> None:
+        async with self.engine.connect() as connection:
+            await connection.execute(text("SELECT 1"))
 
     async def close(self) -> None:
         await self.engine.dispose()

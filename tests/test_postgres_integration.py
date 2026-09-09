@@ -15,6 +15,7 @@ def test_care_plan_survives_across_requests() -> None:
     if not database_url:
         pytest.skip("TEST_DATABASE_URL is not configured")
     settings = Settings(
+        _env_file=None,
         app_env="test",
         database_mode="url",
         database_url=SecretStr(database_url),

@@ -991,6 +991,8 @@ dependencies = [
     { name = "cloud-sql-python-connector", extra = ["asyncpg"] },
     { name = "fastapi" },
     { name = "langgraph" },
+    { name = "langsmith" },
+    { name = "psycopg", extra = ["binary"] },
     { name = "pydantic-settings" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "uvicorn", extra = ["standard"] },
@@ -1000,7 +1002,6 @@ dependencies = [
 dev = [
     { name = "httpx" },
     { name = "mypy" },
-    { name = "psycopg", extra = ["binary"] },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
@@ -1013,6 +1014,8 @@ requires-dist = [
     { name = "cloud-sql-python-connector", extras = ["asyncpg"], specifier = ">=1.18,<2.0" },
     { name = "fastapi" },
     { name = "langgraph", specifier = ">=1.1,<2.0" },
+    { name = "langsmith", specifier = ">=0.4,<1.0" },
+    { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4.0" },
     { name = "pydantic-settings" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0,<3.0" },
     { name = "uvicorn", extras = ["standard"] },
@@ -1022,7 +1025,6 @@ requires-dist = [
 dev = [
     { name = "httpx" },
     { name = "mypy" },
-    { name = "psycopg", extras = ["binary"], specifier = ">=3.2,<4.0" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },

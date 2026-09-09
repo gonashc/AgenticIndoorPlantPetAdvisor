@@ -1,5 +1,6 @@
 """FastAPI application composition root."""
 
+from asyncio import to_thread
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -9,6 +10,7 @@ from advisor_api.config import Settings
 from advisor_api.container import ApplicationContainer, build_configured_container
 from advisor_api.http.context import RequestContextMiddleware
 from advisor_api.http.errors import register_error_handlers
+from advisor_api.http.health import router as health_router
 from advisor_api.http.openapi import configure_openapi
 from advisor_api.http.v1 import router as v1_router
 
@@ -23,6 +25,7 @@ def create_app(
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncIterator[None]:
         database_runtime = None
+        owned_container = None
         if container is not None:
             application.state.container = container
         else:
@@ -30,11 +33,17 @@ def create_app(
                 resolved_settings
             )
             application.state.container = configured_container
+            owned_container = configured_container
+        application.state.database_runtime = database_runtime
         try:
             yield
         finally:
-            if database_runtime is not None:
-                await database_runtime.close()
+            try:
+                if database_runtime is not None:
+                    await database_runtime.close()
+            finally:
+                if owned_container is not None:
+                    await to_thread(owned_container.close)
 
     app = FastAPI(
         title=resolved_settings.app_name,
@@ -46,6 +55,7 @@ def create_app(
     )
     app.add_middleware(RequestContextMiddleware)
     register_error_handlers(app)
+    app.include_router(health_router)
     app.include_router(v1_router)
     configure_openapi(app)
     return app
