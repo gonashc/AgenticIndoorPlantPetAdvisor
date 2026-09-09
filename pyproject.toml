@@ -41,6 +41,7 @@ packages = [
 testpaths = ["tests"]
 addopts = "-q"
 markers = [
+  "evaluation: deterministic recommendation quality and safety regression suite",
   "postgres: requires TEST_DATABASE_URL pointing to an isolated PostgreSQL database",
 ]
 
@@ -54,4 +55,4 @@ select = ["E", "F", "I", "UP", "B", "SIM"]
 [tool.mypy]
 python_version = "3.12"
 strict = true
-files = ["apps/api/src", "agents", "database", "services"]
+files = ["apps/api/src", "agents", "database", "evaluations", "services"]

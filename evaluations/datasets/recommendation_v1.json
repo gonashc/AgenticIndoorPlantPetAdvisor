@@ -1,0 +1,247 @@
+{
+  "name": "indoor-plant-pet-advisor-recommendations-v1",
+  "description": "Synthetic safety, routing, ranking, and response-quality baseline for v1 recommendations.",
+  "version": "recommendation-eval-v1",
+  "cases": [
+    {
+      "case_id": "plant-cat-child-safe",
+      "inputs": {
+        "request": {
+          "category": "PLANT",
+          "destination": {"state_code": "NY", "zip_code": "10001"},
+          "questionnaire": {
+            "available_space": "MEDIUM",
+            "children_present": true,
+            "experience": "BEGINNER",
+            "humidity": "AVERAGE",
+            "indoor_temperature_f": 72,
+            "light_level": "BRIGHT_INDIRECT",
+            "monthly_budget": 30,
+            "pets_present": ["CAT"],
+            "watering_availability": "LOW"
+          },
+          "session_id": "c0a8012e-6d1a-4c8b-9fcb-6d27ea0cb911",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "success",
+        "expected_category": "PLANT",
+        "forbidden_recommendation_ids": ["plant-pothos"],
+        "expected_ranking": [
+          "plant-spider",
+          "plant-parlor-palm",
+          "plant-boston-fern"
+        ],
+        "required_safety": {
+          "cat_toxicity": "NON_TOXIC",
+          "child_toxicity": "NON_TOXIC"
+        }
+      },
+      "metadata": {"category": "PLANT", "risk": "toxicity", "source": "synthetic"}
+    },
+    {
+      "case_id": "plant-no-dependents",
+      "inputs": {
+        "request": {
+          "category": "PLANT",
+          "destination": {"state_code": "OR", "zip_code": "97205"},
+          "questionnaire": {
+            "available_space": "SMALL",
+            "children_present": false,
+            "experience": "BEGINNER",
+            "humidity": "LOW",
+            "indoor_temperature_f": 68,
+            "light_level": "LOW",
+            "monthly_budget": 20,
+            "pets_present": [],
+            "watering_availability": "LOW"
+          },
+          "session_id": "0b7fa59f-b34e-445c-82dd-f88498abef04",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "success",
+        "expected_category": "PLANT",
+        "expected_ranking": [
+          "plant-pothos",
+          "plant-spider",
+          "plant-parlor-palm"
+        ],
+        "required_safety": {"hard_constraints_passed": true}
+      },
+      "metadata": {"category": "PLANT", "risk": "baseline", "source": "synthetic"}
+    },
+    {
+      "case_id": "dog-rental-disallowed",
+      "inputs": {
+        "request": {
+          "category": "DOG",
+          "destination": {"state_code": "GA", "zip_code": "30301"},
+          "questionnaire": {
+            "activity_level": "LOW",
+            "children_present": false,
+            "existing_pets": [],
+            "experience": "BEGINNER",
+            "grooming_tolerance": "LOW",
+            "home_size": "SMALL",
+            "hours_alone": 4,
+            "housing_type": "APARTMENT",
+            "monthly_budget": 200,
+            "outdoor_space": "NONE",
+            "rental_allows_pets": false
+          },
+          "session_id": "7649ff84-05a3-4509-9ae5-62dfaf05d952",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "error",
+        "expected_error_code": "NO_ELIGIBLE_CANDIDATES"
+      },
+      "metadata": {"category": "DOG", "risk": "housing", "source": "synthetic"}
+    },
+    {
+      "case_id": "dog-small-apartment",
+      "inputs": {
+        "request": {
+          "category": "DOG",
+          "destination": {"state_code": "IL", "zip_code": "60601"},
+          "questionnaire": {
+            "activity_level": "LOW",
+            "children_present": false,
+            "existing_pets": [],
+            "experience": "BEGINNER",
+            "grooming_tolerance": "LOW",
+            "home_size": "SMALL",
+            "hours_alone": 4,
+            "housing_type": "APARTMENT",
+            "monthly_budget": 200,
+            "outdoor_space": "NONE",
+            "rental_allows_pets": true
+          },
+          "session_id": "b4076e22-65d9-469e-a46b-f35c01f48219",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "success",
+        "expected_category": "DOG",
+        "required_recommendation_ids": ["dog-calm-small-adult"],
+        "expected_ranking": ["dog-calm-small-adult"],
+        "min_results": 1,
+        "max_results": 1
+      },
+      "metadata": {"category": "DOG", "risk": "housing", "source": "synthetic"}
+    },
+    {
+      "case_id": "dog-active-house",
+      "inputs": {
+        "request": {
+          "category": "DOG",
+          "destination": {"state_code": "CO", "zip_code": "80202"},
+          "questionnaire": {
+            "activity_level": "HIGH",
+            "children_present": false,
+            "existing_pets": [],
+            "experience": "EXPERT",
+            "grooming_tolerance": "HIGH",
+            "home_size": "LARGE",
+            "hours_alone": 3,
+            "housing_type": "HOUSE",
+            "monthly_budget": 400,
+            "outdoor_space": "YARD",
+            "rental_allows_pets": true
+          },
+          "session_id": "57fdc11d-f694-49ac-924d-8240034e26ab",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "success",
+        "expected_category": "DOG",
+        "expected_ranking": [
+          "dog-active-large-adult",
+          "dog-family-medium-adult",
+          "dog-calm-small-adult"
+        ],
+        "min_results": 3,
+        "max_results": 3
+      },
+      "metadata": {"category": "DOG", "risk": "ranking", "source": "synthetic"}
+    },
+    {
+      "case_id": "cat-balanced-apartment",
+      "inputs": {
+        "request": {
+          "category": "CAT",
+          "destination": {"state_code": "WA", "zip_code": "98101"},
+          "questionnaire": {
+            "activity_level": "MEDIUM",
+            "affection_preference": "BALANCED",
+            "children_present": false,
+            "existing_pets": [],
+            "experience": "BEGINNER",
+            "grooming_tolerance": "LOW",
+            "home_size": "SMALL",
+            "hours_alone": 7,
+            "housing_type": "APARTMENT",
+            "monthly_budget": 220,
+            "outdoor_space": "NONE",
+            "rental_allows_pets": true
+          },
+          "session_id": "a3233020-9f22-4fe7-b22f-7fe9f438fd80",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "success",
+        "expected_category": "CAT",
+        "expected_ranking": [
+          "cat-calm-adult",
+          "cat-playful-young",
+          "cat-senior-independent"
+        ],
+        "required_safety": {"cat_toxicity": "NOT_APPLICABLE"},
+        "min_results": 3,
+        "max_results": 3
+      },
+      "metadata": {"category": "CAT", "risk": "baseline", "source": "synthetic"}
+    },
+    {
+      "case_id": "cat-long-hours-alone",
+      "inputs": {
+        "request": {
+          "category": "CAT",
+          "destination": {"state_code": "MA", "zip_code": "02108"},
+          "questionnaire": {
+            "activity_level": "LOW",
+            "affection_preference": "INDEPENDENT",
+            "children_present": false,
+            "existing_pets": [],
+            "experience": "INTERMEDIATE",
+            "grooming_tolerance": "MEDIUM",
+            "home_size": "MEDIUM",
+            "hours_alone": 8,
+            "housing_type": "CONDO",
+            "monthly_budget": 250,
+            "outdoor_space": "NONE",
+            "rental_allows_pets": true
+          },
+          "session_id": "e4c7dbd1-9ee0-4be6-8672-519e49dfe105",
+          "use_saved_preferences": false
+        }
+      },
+      "reference_outputs": {
+        "expected_status": "success",
+        "expected_category": "CAT",
+        "forbidden_recommendation_ids": ["cat-playful-young"],
+        "expected_ranking": ["cat-senior-independent", "cat-calm-adult"],
+        "min_results": 2,
+        "max_results": 2
+      },
+      "metadata": {"category": "CAT", "risk": "time-alone", "source": "synthetic"}
+    }
+  ]
+}

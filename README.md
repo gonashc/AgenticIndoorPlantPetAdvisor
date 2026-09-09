@@ -11,6 +11,7 @@ This repository implements the recommendation-intelligence and application-API b
 - `GET/PATCH /v1/care-plans/{plan_id}`
 - `POST /v1/care-plans/{plan_id}/tasks/{task_id}/complete`
 - `/openapi.json`, `/docs`, and `/redoc`
+- `/health/live` and `/health/ready` operational probes
 
 All errors use the v1 error envelope and all responses carry `X-Request-ID` and `X-API-Version`. Streaming events have stable IDs, sequence numbers, discriminated event types, and `Last-Event-ID` replay filtering.
 
@@ -33,6 +34,17 @@ Run the local API with:
 uv run uvicorn advisor_api.application:app --reload
 ```
 
+Build and run the same non-root container used for Cloud Run with:
+
+```powershell
+docker build --tag advisor-api:local .
+docker run --rm --publish 8080:8080 --env APP_ENV=test --env DATABASE_MODE=memory advisor-api:local
+```
+
+The liveness probe checks the HTTP process. The readiness probe performs a current database ping
+after startup has validated the required schema capabilities. Operational probes are deliberately
+excluded from the versioned product OpenAPI contract.
+
 Export the source-controlled OpenAPI contract with:
 
 ```powershell
@@ -46,3 +58,29 @@ The fixture adapters are intentionally labeled degraded and never claim current 
 Set `DATABASE_MODE=url` for local PostgreSQL or `DATABASE_MODE=cloud_sql` for Google Cloud SQL. The API initializes its connection pool during application lifespan, verifies the expected Alembic revision, and closes the pool and Cloud SQL connector during shutdown. Migrations are always a separate release step.
 
 See [Google Cloud SQL setup](docs/gcp-cloud-sql-postgres.md) and [migration instructions](database/migrations/README.md).
+
+## LangSmith tracing
+
+Recommendation graph runs can be traced to LangSmith without coupling public API contracts to the
+provider. Copy `.env.example` to an ignored `.env`, set `LANGSMITH_TRACING=true`, and supply
+`LANGSMITH_API_KEY` and `LANGSMITH_PROJECT`. Inputs and outputs are hidden by default; traces retain
+only operational metadata such as request ID, category, transport, environment, and component
+versions. CI leaves tracing disabled and never requires a LangSmith credential.
+
+## Recommendation evaluations
+
+The source-controlled `recommendation-eval-v1` dataset contains synthetic Plant, Dog, and Cat
+scenarios covering toxicity, housing, time-alone exclusions, routing, ranking, evidence, response
+quality, and provenance. Run the deterministic CI gate locally with:
+
+```powershell
+uv run pytest -m evaluation
+```
+
+Run the same baseline and publish the synthetic dataset and experiment to LangSmith with:
+
+```powershell
+uv run python scripts/run_recommendation_evals.py --upload
+```
+
+The upload command runs the local gate first and stops before publishing if any evaluator fails.

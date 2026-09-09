@@ -17,7 +17,7 @@ jobs:
   quality-gate:
     name: quality-gate
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
 
     services:
       postgres:
@@ -71,8 +71,11 @@ jobs:
       - name: Check migration-model consistency
         run: uv run alembic check
 
+      - name: Run recommendation evaluation gate
+        run: uv run pytest -m evaluation
+
       - name: Run unit, contract, and PostgreSQL integration tests
-        run: uv run pytest
+        run: uv run pytest -m "not evaluation"
 
       - name: Check generated OpenAPI contract
         shell: bash
@@ -82,3 +85,37 @@ jobs:
 
       - name: Build Python package
         run: uv build
+
+      - name: Build production container
+        run: docker build --tag advisor-api:ci .
+
+      - name: Verify migrations from production container
+        run: >-
+          docker run --rm --network host
+          --env MIGRATION_DATABASE_URL
+          advisor-api:ci
+          alembic current
+
+      - name: Smoke test production container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --publish 8080:8080 \
+            --env APP_ENV=test \
+            --env DATABASE_MODE=memory \
+            advisor-api:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8080/health/ready; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          curl --fail --silent http://127.0.0.1:8080/health/live
+          docker rm --force "$container_id"
+          trap - EXIT
