@@ -1,6 +1,6 @@
-# Indoor Plant and Pet Advisor — Engineer 2 API
+# Indoor Plant and Pet Advisor
 
-This repository implements the recommendation-intelligence and application-API boundary described in the product and architecture document. It runs independently against deterministic in-memory catalog and persistence fakes until Engineers 3 and 4 supply production adapters.
+This repository implements the React experience and recommendation API described in the product and architecture document. The API can run against deterministic fixtures for local development or PostgreSQL for durable care-plan storage.
 
 ## Implemented surface
 
@@ -32,6 +32,28 @@ Run the local API with:
 
 ```powershell
 uv run uvicorn advisor_api.application:app --reload
+```
+
+Install and run the React application in a second terminal with:
+
+```powershell
+npm install
+npm run api-client:generate
+npm run web:dev
+```
+
+Vite serves the application at `http://localhost:5173` and proxies `/api` requests to the local
+FastAPI process at `http://127.0.0.1:8000`. The browser uses a TypeScript client generated from the
+committed OpenAPI document, including the recommendation progress stream and care-plan confirmation
+flow.
+
+Run the frontend quality gate with:
+
+```powershell
+npm run web:lint
+npm run web:typecheck
+npm run web:test
+npm run web:build
 ```
 
 Build and run the same non-root container used for Cloud Run with:

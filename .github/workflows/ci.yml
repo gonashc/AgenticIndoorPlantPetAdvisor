@@ -56,6 +56,15 @@ jobs:
       - name: Install locked dependencies
         run: uv sync --locked --all-groups
 
+      - name: Install Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install locked web dependencies
+        run: npm ci
+
       - name: Check formatting
         run: uv run ruff format --check .
 
@@ -82,6 +91,27 @@ jobs:
         run: |
           uv run python scripts/export_openapi.py
           git diff --exit-code -- packages/contracts/openapi/openapi.json
+
+      - name: Check generated TypeScript API client
+        shell: bash
+        run: |
+          npm run api-client:generate
+          git diff --exit-code -- packages/api-client/src/schema.d.ts
+
+      - name: Lint web application
+        run: npm run web:lint
+
+      - name: Type check web application
+        run: npm run web:typecheck
+
+      - name: Test web application
+        run: npm run web:test
+
+      - name: Audit production web dependencies
+        run: npm audit --omit=dev
+
+      - name: Build web application
+        run: npm run web:build
 
       - name: Build Python package
         run: uv build

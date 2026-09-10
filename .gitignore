@@ -10,4 +10,7 @@ __pycache__/
 htmlcov/
 dist/
 build/
+node_modules/
+coverage/
+*.tsbuildinfo
 *.egg-info/

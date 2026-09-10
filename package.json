@@ -1,0 +1,20 @@
+{
+  "name": "agentic-indoor-plant-pet-advisor",
+  "private": true,
+  "packageManager": "npm@11.12.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "workspaces": [
+    "apps/web",
+    "packages/api-client"
+  ],
+  "scripts": {
+    "api-client:generate": "npm run generate --workspace @advisor/api-client",
+    "web:build": "npm run build --workspace @advisor/web",
+    "web:dev": "npm run dev --workspace @advisor/web",
+    "web:lint": "npm run lint --workspace @advisor/web",
+    "web:test": "npm run test --workspace @advisor/web",
+    "web:typecheck": "npm run typecheck --workspace @advisor/web"
+  }
+}
