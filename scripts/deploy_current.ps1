@@ -10,6 +10,8 @@ param(
     [string]$McpMode = "disabled",
     [string]$McpPlacesUrl = "",
     [string]$McpPlacesAudience = "",
+    [string]$McpAdoptionUrl = "",
+    [string]$McpAdoptionAudience = "",
     [string]$GcloudPath = "gcloud"
 )
 
@@ -24,11 +26,19 @@ if ($IapMember -notmatch '^(user|group):[^@\s]+@[^@\s]+$') {
     throw "IapMember must be a user: or group: principal."
 }
 if ($McpMode -eq "remote") {
-    if ($McpPlacesUrl -notmatch '^https://.+/mcp$') {
-        throw "McpPlacesUrl must be an HTTPS MCP endpoint when remote mode is enabled."
+    if (-not $McpPlacesUrl -and -not $McpAdoptionUrl) {
+        throw "At least one MCP endpoint is required when remote mode is enabled."
     }
-    if ($McpPlacesAudience -notmatch '^https://[^/]+$') {
-        throw "McpPlacesAudience must be an HTTPS origin without a path."
+    foreach ($endpoint in @($McpPlacesUrl, $McpAdoptionUrl) | Where-Object { $_ }) {
+        if ($endpoint -notmatch '^https://.+/mcp$') {
+            throw "Each MCP URL must be an HTTPS endpoint ending in /mcp."
+        }
+    }
+    if ($McpPlacesUrl -and $McpPlacesAudience -notmatch '^https://[^/]+$') {
+        throw "The Places MCP endpoint requires an HTTPS audience without a path."
+    }
+    if ($McpAdoptionUrl -and $McpAdoptionAudience -notmatch '^https://[^/]+$') {
+        throw "The Adoption MCP endpoint requires an HTTPS audience without a path."
     }
 }
 
@@ -71,19 +81,33 @@ $runtimeSettings = @(
 )
 $settingsToRemove = @(
     "ENABLED_CATEGORIES",
-    "MCP_ADOPTION_URL",
-    "MCP_ADOPTION_AUDIENCE",
     # Remove malformed entries left by the original delimiter-based deployment command.
     ":APP_ENV",
     "DOG:WEB_DIST_DIR"
 )
 if ($McpMode -eq "remote") {
-    $runtimeSettings += "MCP_PLACES_URL=$McpPlacesUrl"
-    $runtimeSettings += "MCP_PLACES_AUDIENCE=$McpPlacesAudience"
+    if ($McpPlacesUrl) {
+        $runtimeSettings += "MCP_PLACES_URL=$McpPlacesUrl"
+        $runtimeSettings += "MCP_PLACES_AUDIENCE=$McpPlacesAudience"
+    }
+    else {
+        $settingsToRemove += "MCP_PLACES_URL"
+        $settingsToRemove += "MCP_PLACES_AUDIENCE"
+    }
+    if ($McpAdoptionUrl) {
+        $runtimeSettings += "MCP_ADOPTION_URL=$McpAdoptionUrl"
+        $runtimeSettings += "MCP_ADOPTION_AUDIENCE=$McpAdoptionAudience"
+    }
+    else {
+        $settingsToRemove += "MCP_ADOPTION_URL"
+        $settingsToRemove += "MCP_ADOPTION_AUDIENCE"
+    }
 }
 else {
     $settingsToRemove += "MCP_PLACES_URL"
     $settingsToRemove += "MCP_PLACES_AUDIENCE"
+    $settingsToRemove += "MCP_ADOPTION_URL"
+    $settingsToRemove += "MCP_ADOPTION_AUDIENCE"
 }
 $runtimeSettings = $runtimeSettings -join ','
 $settingsToRemove = $settingsToRemove -join ','

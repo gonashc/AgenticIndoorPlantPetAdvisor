@@ -48,3 +48,26 @@ key is restricted to `places.googleapis.com` and stored in Secret Manager. Deplo
 `scripts/bootstrap_places_mcp_gcp.ps1` followed by `scripts/deploy_places_mcp.ps1`; deployment also
 rebuilds the API revision with the private MCP URL and audience configured. Configure a Places API
 quota alert in Google Maps Platform before widening access beyond the demo users.
+
+The adoption MCP exposes only `find_adoptions` for `DOG` and `CAT`. It searches the public
+RescueGroups available-animal view within a configured ZIP-code radius after profile ranking and
+returns at most three recently observed links. It does not guarantee availability, temperament,
+health, or profile suitability; it does not persist or index provider data. Only HTTPS links under
+the configured adoption host allowlist are returned.
+
+Request a public RescueGroups API key, add `RESCUEGROUPS_API_KEY` to the ignored `.env`, and run
+`scripts/bootstrap_adoption_mcp_gcp.ps1`. The bootstrap copies the key into Secret Manager and
+grants only the dedicated adoption runtime identity access. Deploy with
+`scripts/deploy_adoption_mcp.ps1`; the script keeps the existing Places MCP configured and updates
+the API to call both private services with short-lived Cloud Run identity tokens.
+
+The climate MCP exposes `get_weather` over latitude/longitude and returns the current hourly NWS
+forecast plus at most three active alerts. It uses only the official `api.weather.gov` host in
+production, follows only provider-discovered URLs on that host, and supplies the identifying
+User-Agent required by NWS. Its output is explicitly advisory and cannot alter hard exclusions or
+authoritative scores. Run `scripts/bootstrap_climate_mcp_gcp.ps1` and
+`scripts/deploy_climate_mcp.ps1` to create its dedicated identity and private Cloud Run service.
+
+The API does not invoke Climate MCP yet. The current questionnaire provides a ZIP code, while NWS
+requires coordinates. Connect this service only after a reviewed ZIP-to-coordinate boundary is
+available; do not let an LLM invent or resolve coordinates.

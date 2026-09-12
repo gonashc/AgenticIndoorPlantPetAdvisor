@@ -54,6 +54,18 @@ def test_remote_mcp_can_enable_only_the_places_service() -> None:
     assert settings.mcp_adoption_url is None
 
 
+def test_remote_mcp_can_enable_only_the_adoption_service() -> None:
+    settings = Settings(
+        _env_file=None,
+        mcp_mode="remote",
+        mcp_auth_mode="google_cloud_run",
+        mcp_adoption_url="https://adoption.example/mcp",
+        mcp_adoption_audience="https://adoption.example",
+    )
+
+    assert settings.mcp_places_url is None
+
+
 def test_private_mcp_endpoint_requires_an_audience() -> None:
     with pytest.raises(ValidationError, match="requires an audience"):
         Settings(
