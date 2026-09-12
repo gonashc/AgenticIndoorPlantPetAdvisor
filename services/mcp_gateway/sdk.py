@@ -8,6 +8,7 @@ from mcp import Client
 from mcp.client.streamable_http import streamable_http_client
 
 from services.mcp_gateway.ports import IdTokenProvider
+from services.mcp_identity import FORWARDED_IAP_ASSERTION_HEADER
 
 
 class McpSdkToolClient:
@@ -46,7 +47,10 @@ class McpSdkToolClient:
             timeout = httpx2.Timeout(timeout_seconds)
             headers = {"Authorization": f"Bearer {token}"}
             if forwarded_user_assertion is not None:
-                headers["X-Goog-IAP-JWT-Assertion"] = forwarded_user_assertion
+                # IAP strips client-supplied x-goog-* headers. Use a private,
+                # non-reserved transport header and verify the assertion again
+                # at the MCP service boundary.
+                headers[FORWARDED_IAP_ASSERTION_HEADER] = forwarded_user_assertion
             async with httpx2.AsyncClient(headers=headers, timeout=timeout) as http_client:
                 transport = streamable_http_client(server_url, http_client=http_client)
                 async with Client(transport, read_timeout_seconds=timeout_seconds) as client:

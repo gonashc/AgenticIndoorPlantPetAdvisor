@@ -10,6 +10,7 @@ from advisor_api.contracts.care_plans import CarePlanPreviewRequest
 from advisor_api.http.errors import ApiError
 
 from services.mcp_gateway import CarePlanMcpGateway, McpSdkToolClient
+from services.mcp_identity import FORWARDED_IAP_ASSERTION_HEADER
 
 
 class AssertionCapturingMcpClient:
@@ -189,6 +190,11 @@ async def test_sdk_refuses_to_forward_assertion_to_public_service() -> None:
             timeout_seconds=4,
             forwarded_user_assertion="signed-iap-assertion",
         )
+
+
+def test_forwarded_assertion_header_is_not_reserved_by_iap() -> None:
+    assert FORWARDED_IAP_ASSERTION_HEADER == "X-Advisor-IAP-JWT-Assertion"
+    assert not FORWARDED_IAP_ASSERTION_HEADER.lower().startswith("x-goog-")
 
 
 @pytest.mark.parametrize("assertion", ["", "token\r\nInjected: value"])

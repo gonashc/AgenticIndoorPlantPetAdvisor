@@ -109,8 +109,11 @@ recommendation graph:
   permits confirmed inventory, price, and pickup data. This remains optional for the demo.
 - Care Plan exposes preview, confirmed creation, pause/reactivate, and task-completion tools by
   delegating to the existing `CarePlanService`. It never accepts an owner ID. The private caller
-  must forward the original `X-Goog-IAP-JWT-Assertion`, which the service verifies before deriving
-  the owner. Creation still requires the literal `confirmed: true` input.
+  must forward the original signed IAP assertion in the private
+  `X-Advisor-IAP-JWT-Assertion` transport header. Google IAP strips client-supplied `x-goog-*`
+  headers, so the private hop cannot reuse the original header name. The MCP service re-verifies
+  the assertion signature, issuer, and API audience before deriving the owner. Creation still
+  requires the literal `confirmed: true` input.
 
 The API composition root configures an authenticated Care Plan MCP client with
 `MCP_CARE_PLAN_URL` and `MCP_CARE_PLAN_AUDIENCE`. The client obtains a short-lived Cloud Run ID

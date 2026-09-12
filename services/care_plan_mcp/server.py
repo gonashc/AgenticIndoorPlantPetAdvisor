@@ -32,6 +32,7 @@ from services.care_plan_mcp.contracts import (
     CarePlanToolResult,
 )
 from services.care_plans.service import CarePlanService
+from services.mcp_identity import FORWARDED_IAP_ASSERTION_HEADER
 
 CARE_PLAN_SCHEMA_CAPABILITIES = frozenset(
     {
@@ -298,7 +299,9 @@ def create_app(settings: CarePlanMcpSettings | None = None) -> Starlette:
 
 async def _owner_id(context: Context[CarePlanMcpState], verifier: IdentityTokenVerifier) -> UUID:
     headers = context.headers or {}
-    token = headers.get("x-goog-iap-jwt-assertion") or headers.get("X-Goog-IAP-JWT-Assertion")
+    token = headers.get(FORWARDED_IAP_ASSERTION_HEADER.lower()) or headers.get(
+        FORWARDED_IAP_ASSERTION_HEADER
+    )
     principal = await verifier.verify(token)
     return principal.owner_id
 
