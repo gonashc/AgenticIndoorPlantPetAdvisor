@@ -41,6 +41,23 @@
       "metadata": {"data_classification": "demo", "source_type": "web_page"}
     },
     {
+      "source_id": "cdc-cat-selection-care-2026-06",
+      "category": "CAT",
+      "title": "Cats: selection, household fit, and care",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/about/cats.html",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-12T15:15:00-04:00",
+      "reviewed_at": "2026-09-12T15:20:00-04:00",
+      "approved_by": "demo-curator:source-reviewed-summary",
+      "content_version": "cdc-cats-2026-06-15",
+      "text_path": "sources/cdc-cat-selection-and-care.md",
+      "candidate_ids": ["cat-calm-adult", "cat-playful-young", "cat-senior-independent"],
+      "review_status": "APPROVED",
+      "metadata": {"data_classification": "demo", "source_type": "web_page"}
+    },
+    {
       "source_id": "cdc-healthy-around-animals-2019",
       "category": "DOG",
       "title": "Stay healthy around animals",

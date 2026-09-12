@@ -12,6 +12,7 @@ Retrieved on 2026-09-10 from the URLs preserved by the downloaded files.
 | `disaster-prep-Pet-Emergency-Checklist-1.pdf` | `AABD28BDBFF376B9E4C7AACFB3F66448C4405BAE6C36D12C4EDE2378DA145832` | Summarized |
 | `raw-pet-food-p.pdf` | `34A081C229955BDA985B6CE98BC0A152DCEE7E2CF809B64D4011947AB7121EBE` | Summarized |
 | `pet-food-safety-1-pager-H.pdf` | `6DD854666FC450AA9D3B865D59D1EC97BEAA4C96689145B3ACF0E713D6BCE8C4` | Summarized |
+| [CDC Cats](https://www.cdc.gov/healthy-pets/about/cats.html) | Page version dated 2026-06-15 | Source-reviewed summary for all three Cat profiles |
 
 USDA states that PLANTS text and plant data are not copyrighted and are free to use with citation.
 CDC identifies most agency material as public domain, subject to page-specific exceptions and
