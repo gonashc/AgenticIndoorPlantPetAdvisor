@@ -196,5 +196,5 @@ foreach ($service in $services) {
 & $GcloudPath run services list `
     --project=$ProjectId `
     --region=$Region `
-    --filter="metadata.name~'^advisor-(catalog|regulations|commerce|care-plan)-mcp$'" `
+    --filter="metadata.name:advisor AND metadata.name:mcp" `
     --format="table(metadata.name,status.url,status.latestReadyRevisionName)"
