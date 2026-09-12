@@ -19,12 +19,33 @@ class ApiError(Exception):
         code: str,
         message: str,
         details: list[ErrorDetail] | None = None,
+        headers: dict[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = details or []
+        self.headers = headers or {}
+
+
+class AuthenticationError(ApiError):
+    def __init__(self) -> None:
+        super().__init__(
+            HTTPStatus.UNAUTHORIZED,
+            "AUTHENTICATION_REQUIRED",
+            "A valid authenticated session is required.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
+
+class CategoryUnavailableError(ApiError):
+    def __init__(self, category: Category) -> None:
+        super().__init__(
+            HTTPStatus.UNPROCESSABLE_ENTITY,
+            "CATEGORY_NOT_AVAILABLE",
+            f"{category.value.title()} recommendations are not enabled in this release.",
+        )
 
 
 class NotFoundError(ApiError):
@@ -72,11 +93,13 @@ def _request_id(request: Request) -> UUID:
     return value if isinstance(value, UUID) else uuid4()
 
 
-def _response(error: ErrorEnvelope, status_code: int) -> JSONResponse:
+def _response(
+    error: ErrorEnvelope, status_code: int, headers: dict[str, str] | None = None
+) -> JSONResponse:
     return JSONResponse(
         status_code=status_code,
         content=error.model_dump(mode="json"),
-        headers={"X-Error-Contract-Version": "v1"},
+        headers={"X-Error-Contract-Version": "v1", **(headers or {})},
     )
 
 
@@ -91,7 +114,7 @@ def register_error_handlers(app: FastAPI) -> None:
                 details=exc.details,
             )
         )
-        return _response(envelope, exc.status_code)
+        return _response(envelope, exc.status_code, exc.headers)
 
     @app.exception_handler(RequestValidationError)
     async def validation_error_handler(
@@ -140,6 +163,7 @@ def register_error_handlers(app: FastAPI) -> None:
 
 
 COMMON_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
+    401: {"model": ErrorEnvelope, "description": "Authentication required"},
     404: {"model": ErrorEnvelope, "description": "Resource not found"},
     409: {"model": ErrorEnvelope, "description": "State conflict"},
     422: {"model": ErrorEnvelope, "description": "Validation or eligibility failure"},

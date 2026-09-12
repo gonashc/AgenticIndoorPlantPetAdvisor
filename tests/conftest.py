@@ -16,6 +16,7 @@ def client() -> Iterator[TestClient]:
             app_env="test",
             openapi_enabled=True,
             langsmith_tracing=False,
+            enabled_categories="PLANT,DOG,CAT",
         )
     )
     with TestClient(app, raise_server_exceptions=False) as test_client:

@@ -14,7 +14,7 @@ The connector secures and authorizes the connection; it does not create a networ
 ## Application configuration
 
 ```text
-APP_ENV=staging
+APP_ENV=production
 DATABASE_MODE=cloud_sql
 INSTANCE_CONNECTION_NAME=project-id:us-east1:advisor-postgres
 DB_USER=advisor-api@project-id.iam
@@ -60,6 +60,9 @@ uv run uvicorn advisor_api.application:app --reload
 
 The PostgreSQL catalog is empty after migration. Keep `DATABASE_MODE=memory` for UI development until Engineer 3's ingestion or an explicitly development-only seed process is added.
 
-## Remaining security migration
+## Ownership enforcement
 
-The first migration creates nullable `owner_id` columns as the expand phase of the authentication rollout. Do not expose this deployment publicly yet. The next phase must authenticate requests, populate and enforce ownership in repository queries, backfill existing records, and then make `owner_id` non-null in a later contract migration.
+Migration `0004_care_plan_ownership` assigns any earlier anonymous demo rows to an unreachable legacy
+principal and makes `owner_id` non-null. New previews and plans derive their owner from a verified IAP
+assertion, and every read, confirmation, and mutation includes the owner predicate. Client payloads
+cannot provide or change ownership.

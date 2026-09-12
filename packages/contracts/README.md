@@ -14,3 +14,5 @@ The v1 contract covers:
 - golden examples for success, exclusions, missing input, and degraded dependencies.
 
 Every observable change requires compatibility notes, an updated OpenAPI artifact and fixtures, and affected-consumer review.
+
+See [compatibility notes](COMPATIBILITY.md) for the behavioral requirements added within v1.

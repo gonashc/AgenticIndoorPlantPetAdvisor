@@ -12,6 +12,7 @@ dependencies = [
   "asyncpg>=0.30,<1.0",
   "cloud-sql-python-connector[asyncpg]>=1.18,<2.0",
   "fastapi",
+  "google-auth>=2.40,<3.0",
   "langchain-core>=1.6,<2.0",
   "langchain-openai>=1.1,<2.0",
   "langgraph>=1.1,<2.0",

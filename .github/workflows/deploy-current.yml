@@ -1,0 +1,42 @@
+name: Deploy current environment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: deploy-current
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: migrate-and-deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: indoorplantpetadvisor
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOY_SERVICE_ACCOUNT }}
+
+      - name: Install Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+        with:
+          project_id: indoorplantpetadvisor
+          version: ">= 584.0.0"
+
+      - name: Build, migrate, and deploy immutable revision
+        shell: pwsh
+        run: >-
+          ./scripts/deploy_current.ps1
+          -ImageTag $env:GITHUB_SHA
+          -IapMember '${{ vars.IAP_MEMBER }}'

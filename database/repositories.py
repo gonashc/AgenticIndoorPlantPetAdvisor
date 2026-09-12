@@ -20,7 +20,9 @@ from advisor_api.contracts.care_plans import (
 )
 from advisor_api.ports.data import (
     CandidateRecord,
+    PlantToxicityRepository,
     PreviewClaimStatus,
+    ToxicityClassification,
 )
 from sqlalchemy import delete, select, update
 from sqlalchemy.orm import selectinload
@@ -32,6 +34,7 @@ from database.models import (
     CatalogCandidateRow,
     KnowledgeChunkRow,
     KnowledgeSourceRow,
+    PlantToxicityRow,
 )
 from database.runtime import AsyncSessionFactory
 from services.ingestion.models import ApprovedContentDocument, ContentChunk, QuarantinedContent
@@ -92,6 +95,43 @@ class PostgresCatalogRepository:
             cat_compatible=row.cat_compatible,
             max_hours_alone=float(row.max_hours_alone),
         )
+
+
+class PostgresPlantToxicityRepository(PlantToxicityRepository):
+    """Resolve active structured toxicity facts with toxic classifications winning conflicts."""
+
+    def __init__(
+        self,
+        session_factory: AsyncSessionFactory,
+        allowed_trust_tiers: frozenset[str],
+    ) -> None:
+        self._sessions = session_factory
+        self._allowed_trust_tiers = allowed_trust_tiers
+
+    async def classify(
+        self,
+        scientific_names: Sequence[str],
+        animal_species: Sequence[str],
+    ) -> dict[tuple[str, str], ToxicityClassification]:
+        normalized_names = {_normalize_scientific_name(value) for value in scientific_names}
+        species = {value.upper() for value in animal_species}
+        if not normalized_names or not species or not self._allowed_trust_tiers:
+            return {}
+        statement = select(PlantToxicityRow).where(
+            PlantToxicityRow.normalized_scientific_name.in_(normalized_names),
+            PlantToxicityRow.animal_species.in_(species),
+            PlantToxicityRow.trust_tier.in_(self._allowed_trust_tiers),
+            PlantToxicityRow.active.is_(True),
+        )
+        async with self._sessions() as session:
+            rows = (await session.scalars(statement)).all()
+        resolved: dict[tuple[str, str], ToxicityClassification] = {}
+        for row in rows:
+            key = (row.animal_species, row.normalized_scientific_name)
+            classification = ToxicityClassification(row.toxicity_status)
+            if classification == ToxicityClassification.TOXIC or key not in resolved:
+                resolved[key] = classification
+        return resolved
 
 
 class PostgresIngestionManifestRepository:
@@ -190,10 +230,12 @@ class PostgresCarePlanRepository:
     def __init__(self, session_factory: AsyncSessionFactory) -> None:
         self._sessions = session_factory
 
-    async def save_preview(self, preview: CarePlanPreviewResponse) -> CarePlanPreviewResponse:
+    async def save_preview(
+        self, preview: CarePlanPreviewResponse, owner_id: UUID
+    ) -> CarePlanPreviewResponse:
         row = CarePlanPreviewRow(
             preview_id=preview.preview_id,
-            owner_id=None,
+            owner_id=owner_id,
             session_id=preview.session_id,
             recommendation_id=preview.recommendation_id,
             category=preview.category.value,
@@ -208,8 +250,11 @@ class PostgresCarePlanRepository:
             session.add(row)
         return preview.model_copy(deep=True)
 
-    async def get_preview(self, preview_id: UUID) -> CarePlanPreviewResponse | None:
-        statement = select(CarePlanPreviewRow).where(CarePlanPreviewRow.preview_id == preview_id)
+    async def get_preview(self, preview_id: UUID, owner_id: UUID) -> CarePlanPreviewResponse | None:
+        statement = select(CarePlanPreviewRow).where(
+            CarePlanPreviewRow.preview_id == preview_id,
+            CarePlanPreviewRow.owner_id == owner_id,
+        )
         async with self._sessions() as session:
             row = await session.scalar(statement)
             return self._preview(row) if row is not None else None
@@ -217,12 +262,16 @@ class PostgresCarePlanRepository:
     async def confirm_preview(
         self,
         preview_id: UUID,
+        owner_id: UUID,
         claimed_at: datetime,
         plan: CarePlan,
     ) -> PreviewClaimStatus:
         statement = (
             select(CarePlanPreviewRow)
-            .where(CarePlanPreviewRow.preview_id == preview_id)
+            .where(
+                CarePlanPreviewRow.preview_id == preview_id,
+                CarePlanPreviewRow.owner_id == owner_id,
+            )
             .with_for_update()
         )
         async with self._sessions.begin() as session:
@@ -234,14 +283,14 @@ class PostgresCarePlanRepository:
             if row.expires_at <= claimed_at:
                 return PreviewClaimStatus.EXPIRED
             row.consumed_at = claimed_at
-            session.add(self._plan_row(plan))
+            session.add(self._plan_row(plan, owner_id))
             return PreviewClaimStatus.CLAIMED
 
     @classmethod
-    def _plan_row(cls, plan: CarePlan) -> CarePlanRow:
+    def _plan_row(cls, plan: CarePlan, owner_id: UUID) -> CarePlanRow:
         return CarePlanRow(
             plan_id=plan.plan_id,
-            owner_id=None,
+            owner_id=owner_id,
             session_id=plan.session_id,
             recommendation_id=plan.recommendation_id,
             category=plan.category.value,
@@ -258,20 +307,22 @@ class PostgresCarePlanRepository:
             ],
         )
 
-    async def get(self, plan_id: UUID) -> CarePlan | None:
+    async def get(self, plan_id: UUID, owner_id: UUID) -> CarePlan | None:
         statement = (
             select(CarePlanRow)
-            .where(CarePlanRow.plan_id == plan_id)
+            .where(CarePlanRow.plan_id == plan_id, CarePlanRow.owner_id == owner_id)
             .options(selectinload(CarePlanRow.tasks))
         )
         async with self._sessions() as session:
             row = await session.scalar(statement)
             return self._plan(row) if row is not None else None
 
-    async def update(self, plan: CarePlan, *, expected_version: int) -> CarePlan | None:
+    async def update(
+        self, plan: CarePlan, owner_id: UUID, *, expected_version: int
+    ) -> CarePlan | None:
         statement = (
             select(CarePlanRow)
-            .where(CarePlanRow.plan_id == plan.plan_id)
+            .where(CarePlanRow.plan_id == plan.plan_id, CarePlanRow.owner_id == owner_id)
             .options(selectinload(CarePlanRow.tasks))
             .with_for_update()
         )
@@ -352,3 +403,7 @@ class PostgresCarePlanRepository:
             created_at=row.created_at,
             updated_at=row.updated_at,
         )
+
+
+def _normalize_scientific_name(value: str) -> str:
+    return " ".join(value.casefold().split()).rstrip(".")

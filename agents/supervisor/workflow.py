@@ -76,8 +76,8 @@ def build_supervisor_graph(
             "system_warnings": tuple(system_warnings),
         }
 
-    def apply_safety(state: RecommendationState) -> dict[str, object]:
-        eligible = safety.filter_candidates(state["request"], state["candidates"])
+    async def apply_safety(state: RecommendationState) -> dict[str, object]:
+        eligible = await safety.filter_candidates(state["request"], state["candidates"])
         return {"eligible_candidates": eligible}
 
     def route_category(

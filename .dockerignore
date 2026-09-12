@@ -2,6 +2,7 @@
 .github
 .env
 .env.*
+gha-creds-*.json
 .venv
 .uv-cache
 .mypy_cache
@@ -13,5 +14,4 @@ __pycache__
 build
 dist
 docs
-packages
 tests

@@ -35,7 +35,7 @@ uv run mypy apps/api/src
 Run the local API with:
 
 ```powershell
-uv run uvicorn advisor_api.application:app --reload
+uv run uvicorn advisor_api.asgi:app --reload
 ```
 
 Install and run the React application in a second terminal with:
@@ -50,6 +50,11 @@ Vite serves the application at `http://localhost:5173` and proxies `/api` reques
 FastAPI process at `http://127.0.0.1:8000`. The browser uses a TypeScript client generated from the
 committed OpenAPI document, including the recommendation progress stream and care-plan confirmation
 flow.
+
+The deployed service uses direct Google Cloud IAP. IAP protects both the bundled React shell and
+the versioned API, while the application independently verifies the signed IAP assertion and derives
+an internal owner ID for every care-plan operation. Cat recommendations remain disabled in the
+shipping configuration until reviewed Cat sources are available.
 
 Run the frontend quality gate with:
 
@@ -84,6 +89,8 @@ The fixture adapters are intentionally labeled degraded and never claim current 
 Set `DATABASE_MODE=url` for local PostgreSQL or `DATABASE_MODE=cloud_sql` for Google Cloud SQL. The API initializes its connection pool during application lifespan, verifies the expected Alembic revision, and closes the pool and Cloud SQL connector during shutdown. Migrations are always a separate release step.
 
 See [Google Cloud SQL setup](docs/gcp-cloud-sql-postgres.md) and [migration instructions](database/migrations/README.md).
+The single-environment application/IAP release is documented in
+[Cloud Run IAP deployment](docs/gcp-cloud-run-iap.md).
 
 ## LangSmith tracing
 

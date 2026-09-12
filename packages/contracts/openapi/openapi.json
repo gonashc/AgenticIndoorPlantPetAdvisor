@@ -1443,6 +1443,14 @@
         "title": "VersionInfo",
         "type": "object"
       }
+    },
+    "securitySchemes": {
+      "GoogleIapAssertion": {
+        "description": "Signed assertion injected by Google Cloud Identity-Aware Proxy.",
+        "in": "header",
+        "name": "X-Goog-IAP-JWT-Assertion",
+        "type": "apiKey"
+      }
     }
   },
   "info": {
@@ -1478,6 +1486,16 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1519,6 +1537,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Persist an explicitly confirmed preview",
         "tags": [
           "care-plans"
@@ -1549,6 +1572,16 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1590,6 +1623,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Preview a care plan without saving it",
         "tags": [
           "care-plans"
@@ -1622,6 +1660,16 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1663,6 +1711,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Retrieve a saved care plan",
         "tags": [
           "care-plans"
@@ -1703,6 +1756,16 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1744,6 +1807,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Pause or activate a care plan",
         "tags": [
           "care-plans"
@@ -1786,6 +1854,16 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1827,6 +1905,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Mark a care task complete",
         "tags": [
           "care-plans"
@@ -1876,6 +1959,16 @@
             },
             "description": "Successful Response"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -1917,6 +2010,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Create up to three recommendations",
         "tags": [
           "recommendations"
@@ -1990,6 +2088,16 @@
             },
             "description": "Versioned recommendation progress events"
           },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Authentication required"
+          },
           "404": {
             "content": {
               "application/json": {
@@ -2031,6 +2139,11 @@
             "description": "Unexpected server failure"
           }
         },
+        "security": [
+          {
+            "GoogleIapAssertion": []
+          }
+        ],
         "summary": "Stream recommendation workflow progress",
         "tags": [
           "recommendations"

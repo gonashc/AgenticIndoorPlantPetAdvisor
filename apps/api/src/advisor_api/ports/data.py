@@ -38,6 +38,19 @@ class CatalogRepository(Protocol):
     async def list_candidates(self, category: Category) -> Sequence[CandidateRecord]: ...
 
 
+class ToxicityClassification(StrEnum):
+    TOXIC = "TOXIC"
+    NON_TOXIC_LISTED = "NON_TOXIC_LISTED"
+
+
+class PlantToxicityRepository(Protocol):
+    async def classify(
+        self,
+        scientific_names: Sequence[str],
+        animal_species: Sequence[str],
+    ) -> Mapping[tuple[str, str], ToxicityClassification]: ...
+
+
 class PreviewClaimStatus(StrEnum):
     CLAIMED = "CLAIMED"
     NOT_FOUND = "NOT_FOUND"
@@ -46,17 +59,24 @@ class PreviewClaimStatus(StrEnum):
 
 
 class CarePlanRepository(Protocol):
-    async def save_preview(self, preview: CarePlanPreviewResponse) -> CarePlanPreviewResponse: ...
+    async def save_preview(
+        self, preview: CarePlanPreviewResponse, owner_id: UUID
+    ) -> CarePlanPreviewResponse: ...
 
-    async def get_preview(self, preview_id: UUID) -> CarePlanPreviewResponse | None: ...
+    async def get_preview(
+        self, preview_id: UUID, owner_id: UUID
+    ) -> CarePlanPreviewResponse | None: ...
 
     async def confirm_preview(
         self,
         preview_id: UUID,
+        owner_id: UUID,
         claimed_at: datetime,
         plan: CarePlan,
     ) -> PreviewClaimStatus: ...
 
-    async def get(self, plan_id: UUID) -> CarePlan | None: ...
+    async def get(self, plan_id: UUID, owner_id: UUID) -> CarePlan | None: ...
 
-    async def update(self, plan: CarePlan, *, expected_version: int) -> CarePlan | None: ...
+    async def update(
+        self, plan: CarePlan, owner_id: UUID, *, expected_version: int
+    ) -> CarePlan | None: ...

@@ -14,17 +14,20 @@ from advisor_api.contracts.care_plans import (
     CarePlanUpdateRequest,
     CareTask,
 )
-from advisor_api.http.errors import ConflictError, NotFoundError
+from advisor_api.http.errors import CategoryUnavailableError, ConflictError, NotFoundError
 from advisor_api.ports.data import CarePlanRepository, PreviewClaimStatus
 
 
 class CarePlanService:
-    def __init__(self, repository: CarePlanRepository) -> None:
+    def __init__(self, repository: CarePlanRepository, enabled_categories: frozenset[str]) -> None:
         self._repository = repository
+        self._enabled_categories = enabled_categories
 
     async def preview(
-        self, request: CarePlanPreviewRequest, request_id: UUID
+        self, request: CarePlanPreviewRequest, request_id: UUID, owner_id: UUID
     ) -> CarePlanPreviewResponse:
+        if request.category.value not in self._enabled_categories:
+            raise CategoryUnavailableError(request.category)
         now = datetime.now(UTC)
         preview = CarePlanPreviewResponse(
             metadata=self._metadata(request_id, now),
@@ -37,11 +40,13 @@ class CarePlanService:
             timezone=request.timezone,
             tasks=self._tasks(request),
         )
-        return await self._repository.save_preview(preview)
+        return await self._repository.save_preview(preview, owner_id)
 
-    async def create(self, request: CarePlanCreateRequest, request_id: UUID) -> CarePlan:
+    async def create(
+        self, request: CarePlanCreateRequest, request_id: UUID, owner_id: UUID
+    ) -> CarePlan:
         now = datetime.now(UTC)
-        preview = await self._repository.get_preview(request.preview_id)
+        preview = await self._repository.get_preview(request.preview_id, owner_id)
         if preview is None:
             raise NotFoundError("care_plan_preview", str(request.preview_id))
         plan = CarePlan(
@@ -58,7 +63,7 @@ class CarePlanService:
             created_at=now,
             updated_at=now,
         )
-        status = await self._repository.confirm_preview(request.preview_id, now, plan)
+        status = await self._repository.confirm_preview(request.preview_id, owner_id, now, plan)
         if status == PreviewClaimStatus.NOT_FOUND:
             raise NotFoundError("care_plan_preview", str(request.preview_id))
         if status == PreviewClaimStatus.EXPIRED:
@@ -70,8 +75,8 @@ class CarePlanService:
             )
         return plan.model_copy(deep=True)
 
-    async def get(self, plan_id: UUID, request_id: UUID | None = None) -> CarePlan:
-        plan = await self._repository.get(plan_id)
+    async def get(self, plan_id: UUID, owner_id: UUID, request_id: UUID | None = None) -> CarePlan:
+        plan = await self._repository.get(plan_id, owner_id)
         if plan is None:
             raise NotFoundError("care_plan", str(plan_id))
         if request_id is not None:
@@ -85,8 +90,9 @@ class CarePlanService:
         plan_id: UUID,
         request: CarePlanUpdateRequest,
         request_id: UUID,
+        owner_id: UUID,
     ) -> CarePlan:
-        plan = await self.get(plan_id)
+        plan = await self.get(plan_id, owner_id)
         now = datetime.now(UTC)
         updated = plan.model_copy(
             update={
@@ -96,7 +102,7 @@ class CarePlanService:
                 "updated_at": now,
             }
         )
-        persisted = await self._repository.update(updated, expected_version=plan.version)
+        persisted = await self._repository.update(updated, owner_id, expected_version=plan.version)
         if persisted is None:
             raise ConflictError(
                 "CARE_PLAN_VERSION_CONFLICT",
@@ -104,8 +110,10 @@ class CarePlanService:
             )
         return persisted
 
-    async def complete_task(self, plan_id: UUID, task_id: UUID, request_id: UUID) -> CarePlan:
-        plan = await self.get(plan_id)
+    async def complete_task(
+        self, plan_id: UUID, task_id: UUID, request_id: UUID, owner_id: UUID
+    ) -> CarePlan:
+        plan = await self.get(plan_id, owner_id)
         if plan.status == CarePlanStatus.PAUSED:
             raise ConflictError("CARE_PLAN_PAUSED", "Tasks cannot be completed on a paused plan.")
         now = datetime.now(UTC)
@@ -127,7 +135,7 @@ class CarePlanService:
                 "updated_at": now,
             }
         )
-        persisted = await self._repository.update(updated, expected_version=plan.version)
+        persisted = await self._repository.update(updated, owner_id, expected_version=plan.version)
         if persisted is None:
             raise ConflictError(
                 "CARE_PLAN_VERSION_CONFLICT",

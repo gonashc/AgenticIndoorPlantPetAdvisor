@@ -1,5 +1,6 @@
 """Non-secret application settings."""
 
+from pathlib import Path
 from typing import Literal
 
 from pydantic import SecretStr, field_validator, model_validator
@@ -16,6 +17,10 @@ class Settings(BaseSettings):
     api_version: Literal["v1"] = "v1"
     log_level: str = "INFO"
     openapi_enabled: bool = True
+    auth_mode: Literal["disabled", "google_iap"] = "disabled"
+    iap_audience: str | None = None
+    enabled_categories: str = "PLANT,DOG"
+    web_dist_dir: Path = Path("/app/web")
     database_mode: Literal["memory", "url", "cloud_sql"] = "memory"
     database_url: SecretStr | None = None
     instance_connection_name: str | None = None
@@ -101,6 +106,17 @@ class Settings(BaseSettings):
                 raise ValueError("DB_PASSWORD must be unset when IAM database authentication is on")
         if self.app_env == "production" and self.database_mode == "memory":
             raise ValueError("Production cannot use the in-memory persistence adapters")
+        if self.app_env == "production" and self.auth_mode != "google_iap":
+            raise ValueError("Production requires AUTH_MODE=google_iap")
+        if self.auth_mode == "google_iap" and (
+            not self.iap_audience or not self.iap_audience.startswith("/projects/")
+        ):
+            raise ValueError("IAP_AUDIENCE must be a Google Cloud IAP resource audience")
+        categories = {
+            value.strip() for value in self.enabled_categories.split(",") if value.strip()
+        }
+        if not categories or categories.difference({"PLANT", "DOG", "CAT"}):
+            raise ValueError("ENABLED_CATEGORIES must contain PLANT, DOG, or CAT")
         if self.db_pool_size < 1 or self.db_max_overflow < 0:
             raise ValueError("Database pool size must be positive and overflow cannot be negative")
         if self.db_pool_timeout_seconds < 1 or self.db_pool_recycle_seconds < 1:
@@ -143,3 +159,8 @@ class Settings(BaseSettings):
             if not all(url and url.startswith("https://") for url in urls):
                 raise ValueError("Remote MCP endpoints must both use HTTPS")
         return self
+
+    def enabled_category_values(self) -> frozenset[str]:
+        return frozenset(
+            value.strip() for value in self.enabled_categories.split(",") if value.strip()
+        )

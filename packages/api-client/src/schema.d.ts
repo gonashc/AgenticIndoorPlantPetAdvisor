@@ -827,6 +827,15 @@ export interface operations {
                     "application/json": components["schemas"]["CarePlan"];
                 };
             };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Resource not found */
             404: {
                 headers: {
@@ -887,6 +896,15 @@ export interface operations {
                     "application/json": components["schemas"]["CarePlanPreviewResponse"];
                 };
             };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Resource not found */
             404: {
                 headers: {
@@ -943,6 +961,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CarePlan"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Resource not found */
@@ -1007,6 +1034,15 @@ export interface operations {
                     "application/json": components["schemas"]["CarePlan"];
                 };
             };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Resource not found */
             404: {
                 headers: {
@@ -1064,6 +1100,15 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CarePlan"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Resource not found */
@@ -1126,6 +1171,15 @@ export interface operations {
                     "application/json": components["schemas"]["RecommendationResponse"];
                 };
             };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Resource not found */
             404: {
                 headers: {
@@ -1186,6 +1240,15 @@ export interface operations {
                 };
                 content: {
                     "text/event-stream": components["schemas"]["RecommendationStreamEvent"];
+                };
+            };
+            /** @description Authentication required */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
             /** @description Resource not found */

@@ -81,7 +81,7 @@ jobs:
         run: uv run alembic check
 
       - name: Run recommendation evaluation gate
-        run: uv run pytest -m evaluation
+        run: uv run python scripts/run_recommendation_evals.py
 
       - name: Run unit, contract, and PostgreSQL integration tests
         run: uv run pytest -m "not evaluation"

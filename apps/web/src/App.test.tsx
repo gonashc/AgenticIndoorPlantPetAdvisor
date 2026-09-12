@@ -13,10 +13,11 @@ describe("App", () => {
     expect(screen.getByLabelText("Light")).toBeTruthy();
     expect(screen.queryByLabelText("Affection style")).toBeNull();
 
-    fireEvent.click(screen.getByRole("radio", { name: /Cat/ }));
+    fireEvent.click(screen.getByRole("radio", { name: /Dog/ }));
 
     expect(screen.queryByLabelText("Light")).toBeNull();
-    expect(screen.getByLabelText("Affection style")).toBeTruthy();
+    expect(screen.queryByLabelText("Affection style")).toBeNull();
     expect(screen.getByLabelText("Outdoor space")).toBeTruthy();
+    expect(screen.getByText("Protected by Google sign-in")).toBeTruthy();
   });
 });

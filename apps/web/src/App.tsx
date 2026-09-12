@@ -19,7 +19,6 @@ import {
 const categories: { value: Category; label: string; description: string }[] = [
   { value: "PLANT", label: "Plant", description: "A safer green match for your space" },
   { value: "DOG", label: "Dog", description: "A breed profile that fits your routine" },
-  { value: "CAT", label: "Cat", description: "A companion matched to your household" },
 ];
 
 const api = createAdvisorClient();
@@ -112,6 +111,7 @@ export function App() {
           <span className="brand-mark" aria-hidden="true">A</span>
           <span>Canopy &amp; Companion</span>
           <span className="brand-tag">Evidence-led matching</span>
+          <span className="auth-tag">Protected by Google sign-in</span>
         </div>
         <p className="eyebrow">Homegrown guidance</p>
         <h1>Find the right life for your home.</h1>

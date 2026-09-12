@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 
 from advisor_api import create_app
+from advisor_api.config import Settings
 from fastapi.testclient import TestClient
 
 
@@ -29,4 +30,15 @@ def test_checked_in_openapi_artifact_matches_application() -> None:
         Path("packages/contracts/openapi/openapi.json").read_text(encoding="utf-8")
     )
 
-    assert checked_in == create_app().openapi()
+    assert (
+        checked_in
+        == create_app(
+            Settings(
+                _env_file=None,
+                app_env="test",
+                database_mode="memory",
+                auth_mode="disabled",
+                enabled_categories="PLANT,DOG,CAT",
+            )
+        ).openapi()
+    )

@@ -1,5 +1,7 @@
 """Operational health probe behavior."""
 
+from pathlib import Path
+
 from advisor_api import create_app
 from advisor_api.config import Settings
 from advisor_api.container import build_container
@@ -41,3 +43,44 @@ def test_health_routes_are_not_part_of_the_product_openapi(
 
     assert "/health/live" not in paths
     assert "/health/ready" not in paths
+
+
+def test_bundled_web_shell_and_same_origin_api_alias(tmp_path: Path) -> None:
+    (tmp_path / "index.html").write_text("<h1>Advisor shell</h1>", encoding="utf-8")
+    app = create_app(
+        Settings(
+            _env_file=None,
+            app_env="test",
+            database_mode="memory",
+            web_dist_dir=tmp_path,
+            enabled_categories="PLANT,DOG",
+        )
+    )
+    with TestClient(app, raise_server_exceptions=False) as web_client:
+        shell = web_client.get("/")
+        api = web_client.post(
+            "/api/v1/recommendations",
+            json={
+                "category": "DOG",
+                "destination": {"zip_code": "30301", "state_code": "GA"},
+                "session_id": "7649ff84-05a3-4509-9ae5-62dfaf05d952",
+                "questionnaire": {
+                    "housing_type": "APARTMENT",
+                    "home_size": "SMALL",
+                    "rental_allows_pets": False,
+                    "outdoor_space": "NONE",
+                    "hours_alone": 4,
+                    "activity_level": "LOW",
+                    "grooming_tolerance": "LOW",
+                    "monthly_budget": 200,
+                    "children_present": False,
+                    "existing_pets": [],
+                    "experience": "BEGINNER",
+                },
+            },
+        )
+
+    assert shell.status_code == 200
+    assert "Advisor shell" in shell.text
+    assert api.status_code == 422
+    assert api.json()["error"]["code"] == "NO_ELIGIBLE_CANDIDATES"

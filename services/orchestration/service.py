@@ -15,7 +15,7 @@ from advisor_api.contracts.streaming import (
     RecommendationProgressEvent,
     RecommendationStreamEvent,
 )
-from advisor_api.http.errors import ApiError
+from advisor_api.http.errors import ApiError, CategoryUnavailableError
 from advisor_api.ports.observability import RecommendationTracer
 
 from agents.supervisor import Graph
@@ -43,13 +43,20 @@ class RecommendationService:
         "optimizer": ("OPTIMIZING", 90, "Repaired failed explanation sections."),
     }
 
-    def __init__(self, graph: Graph, tracer: RecommendationTracer) -> None:
+    def __init__(
+        self,
+        graph: Graph,
+        tracer: RecommendationTracer,
+        enabled_categories: frozenset[str],
+    ) -> None:
         self._graph = graph
         self._tracer = tracer
+        self._enabled_categories = enabled_categories
 
     async def recommend(
         self, request: RecommendationRequest, request_id: UUID
     ) -> RecommendationResponse:
+        self._require_enabled(request)
         with self._tracer.trace(
             request_id=request_id,
             category=request.category,
@@ -84,6 +91,7 @@ class RecommendationService:
                 yield accepted
 
             try:
+                self._require_enabled(request)
                 final_response: RecommendationResponse | None = None
                 async for chunk in self._graph.astream(
                     self._initial_state(request, request_id),
@@ -156,6 +164,10 @@ class RecommendationService:
     @staticmethod
     def _initial_state(request: RecommendationRequest, request_id: UUID) -> RecommendationState:
         return {"request": request, "request_id": request_id}
+
+    def _require_enabled(self, request: RecommendationRequest) -> None:
+        if request.category.value not in self._enabled_categories:
+            raise CategoryUnavailableError(request.category)
 
     @staticmethod
     def _progress_event(

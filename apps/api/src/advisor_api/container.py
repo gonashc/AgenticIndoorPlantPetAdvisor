@@ -20,7 +20,11 @@ from advisor_api.ports.memory import PreferenceMemory
 from advisor_api.ports.observability import RecommendationTracer
 from agents.structured_generation import LangChainStructuredExplanationAdapter
 from agents.supervisor import build_supervisor_graph
-from database.repositories import PostgresCarePlanRepository, PostgresCatalogRepository
+from database.repositories import (
+    PostgresCarePlanRepository,
+    PostgresCatalogRepository,
+    PostgresPlantToxicityRepository,
+)
 from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plans import CarePlanService
 from services.mcp_gateway import McpCurrentSourceGateway, McpSdkToolClient, McpServerConfig
@@ -50,16 +54,18 @@ def build_container(
     recommendation_tracer: RecommendationTracer | None = None,
     knowledge_retriever: KnowledgeRetriever | None = None,
     explanation_generator: ExplanationGenerator | None = None,
+    safety: SafetyService | None = None,
+    enabled_categories: frozenset[str] = frozenset({"PLANT", "DOG", "CAT"}),
     knowledge_namespace: str = "fake-catalog-v1",
 ) -> ApplicationContainer:
     resolved_catalog = catalog or InMemoryCatalogRepository()
     resolved_plan_repository = care_plan_repository or InMemoryCarePlanRepository()
     scoring = ScoringService()
-    safety = SafetyService()
+    resolved_safety = safety or SafetyService()
     graph = build_supervisor_graph(
         resolved_catalog,
         scoring,
-        safety,
+        resolved_safety,
         current_source_gateway or UnavailableCurrentSourceGateway(),
         preference_memory or EmptyPreferenceMemory(),
         knowledge_retriever,
@@ -68,8 +74,8 @@ def build_container(
     )
     tracer = recommendation_tracer or build_recommendation_tracer()
     return ApplicationContainer(
-        recommendations=RecommendationService(graph, tracer),
-        care_plans=CarePlanService(resolved_plan_repository),
+        recommendations=RecommendationService(graph, tracer, enabled_categories),
+        care_plans=CarePlanService(resolved_plan_repository, enabled_categories),
         recommendation_tracer=tracer,
     )
 
@@ -88,6 +94,7 @@ async def build_configured_container(
                 knowledge_retriever=knowledge_retriever,
                 explanation_generator=explanation_generator,
                 current_source_gateway=current_source_gateway,
+                enabled_categories=settings.enabled_category_values(),
                 knowledge_namespace=(
                     settings.pinecone_namespace
                     if knowledge_retriever is not None
@@ -115,6 +122,17 @@ async def build_configured_container(
             knowledge_retriever=knowledge_retriever,
             explanation_generator=explanation_generator,
             current_source_gateway=current_source_gateway,
+            safety=SafetyService(
+                PostgresPlantToxicityRepository(
+                    runtime.session_factory,
+                    allowed_trust_tiers=(
+                        frozenset({"AUTHORITATIVE", "EXPERT_REVIEWED"})
+                        if settings.app_env == "production"
+                        else frozenset({"AUTHORITATIVE", "EXPERT_REVIEWED", "DEMO_UNVERIFIED"})
+                    ),
+                )
+            ),
+            enabled_categories=settings.enabled_category_values(),
             knowledge_namespace=(
                 settings.pinecone_namespace
                 if knowledge_retriever is not None

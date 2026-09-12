@@ -5,7 +5,9 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
+from advisor_api.adapters.auth import GoogleIapTokenVerifier, LocalIdentityTokenVerifier
 from advisor_api.config import Settings
 from advisor_api.container import ApplicationContainer, build_configured_container
 from advisor_api.http.context import RequestContextMiddleware
@@ -54,11 +56,24 @@ def create_app(
         lifespan=lifespan,
     )
     app.add_middleware(RequestContextMiddleware)
+    app.state.identity_token_verifier = (
+        GoogleIapTokenVerifier(resolved_settings.iap_audience)
+        if resolved_settings.auth_mode == "google_iap" and resolved_settings.iap_audience
+        else LocalIdentityTokenVerifier()
+    )
     register_error_handlers(app)
     app.include_router(health_router)
     app.include_router(v1_router)
+    app.include_router(
+        v1_router,
+        prefix="/api",
+        include_in_schema=False,
+    )
     configure_openapi(app)
+    if resolved_settings.web_dist_dir.is_dir():
+        app.mount(
+            "/",
+            StaticFiles(directory=resolved_settings.web_dist_dir, html=True),
+            name="web",
+        )
     return app
-
-
-app = create_app()

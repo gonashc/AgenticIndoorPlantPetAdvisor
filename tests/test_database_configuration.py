@@ -12,6 +12,21 @@ def test_production_rejects_in_memory_persistence() -> None:
         Settings(_env_file=None, app_env="production", database_mode="memory")
 
 
+def test_production_requires_iap_authentication() -> None:
+    with pytest.raises(ValidationError, match="AUTH_MODE=google_iap"):
+        Settings(
+            _env_file=None,
+            app_env="production",
+            database_mode="url",
+            database_url=SecretStr("postgresql+asyncpg://user:secret@localhost/advisor"),
+        )
+
+
+def test_iap_authentication_requires_resource_audience() -> None:
+    with pytest.raises(ValidationError, match="IAP_AUDIENCE"):
+        Settings(_env_file=None, app_env="test", auth_mode="google_iap")
+
+
 def test_openai_explanations_require_retrieval() -> None:
     with pytest.raises(ValidationError, match="approved Pinecone retrieval"):
         Settings(_env_file=None, explanation_mode="openai")

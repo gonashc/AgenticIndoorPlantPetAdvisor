@@ -1,5 +1,17 @@
 FROM ghcr.io/astral-sh/uv:0.12.1 AS uv
 
+FROM node:24-alpine AS web-builder
+
+WORKDIR /workspace
+COPY package.json package-lock.json ./
+COPY apps/web/package.json ./apps/web/package.json
+COPY packages/api-client/package.json ./packages/api-client/package.json
+RUN npm ci
+
+COPY apps/web ./apps/web
+COPY packages/api-client ./packages/api-client
+RUN npm run web:build
+
 FROM python:3.12-slim AS builder
 
 ENV UV_COMPILE_BYTECODE=1 \
@@ -33,8 +45,9 @@ RUN groupadd --gid 10001 advisor \
 
 WORKDIR /app
 COPY --from=builder --chown=advisor:advisor /app /app
+COPY --from=web-builder --chown=advisor:advisor /workspace/apps/web/dist /app/web
 
 USER advisor
 EXPOSE 8080
 
-CMD ["sh", "-c", "exec uvicorn advisor_api.application:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers --forwarded-allow-ips='*'"]
+CMD ["sh", "-c", "exec uvicorn advisor_api.asgi:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers --forwarded-allow-ips='*'"]

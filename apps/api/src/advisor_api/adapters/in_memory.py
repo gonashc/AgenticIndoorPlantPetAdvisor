@@ -215,46 +215,55 @@ class InMemoryCatalogRepository:
 
 class InMemoryCarePlanRepository:
     def __init__(self) -> None:
-        self._plans: dict[UUID, CarePlan] = {}
-        self._previews: dict[UUID, tuple[CarePlanPreviewResponse, datetime | None]] = {}
+        self._plans: dict[UUID, tuple[UUID, CarePlan]] = {}
+        self._previews: dict[UUID, tuple[UUID, CarePlanPreviewResponse, datetime | None]] = {}
 
-    async def save_preview(self, preview: CarePlanPreviewResponse) -> CarePlanPreviewResponse:
+    async def save_preview(
+        self, preview: CarePlanPreviewResponse, owner_id: UUID
+    ) -> CarePlanPreviewResponse:
         stored = preview.model_copy(deep=True)
-        self._previews[preview.preview_id] = (stored, None)
+        self._previews[preview.preview_id] = (owner_id, stored, None)
         return stored.model_copy(deep=True)
 
-    async def get_preview(self, preview_id: UUID) -> CarePlanPreviewResponse | None:
+    async def get_preview(self, preview_id: UUID, owner_id: UUID) -> CarePlanPreviewResponse | None:
         entry = self._previews.get(preview_id)
-        return entry[0].model_copy(deep=True) if entry is not None else None
+        return (
+            entry[1].model_copy(deep=True) if entry is not None and entry[0] == owner_id else None
+        )
 
     async def confirm_preview(
         self,
         preview_id: UUID,
+        owner_id: UUID,
         claimed_at: datetime,
         plan: CarePlan,
     ) -> PreviewClaimStatus:
         entry = self._previews.get(preview_id)
         if entry is None:
             return PreviewClaimStatus.NOT_FOUND
-        preview, consumed_at = entry
+        stored_owner_id, preview, consumed_at = entry
+        if stored_owner_id != owner_id:
+            return PreviewClaimStatus.NOT_FOUND
         if consumed_at is not None:
             return PreviewClaimStatus.ALREADY_CONSUMED
         if preview.expires_at <= claimed_at:
             return PreviewClaimStatus.EXPIRED
-        self._previews[preview_id] = (preview, claimed_at)
-        self._plans[plan.plan_id] = plan.model_copy(deep=True)
+        self._previews[preview_id] = (owner_id, preview, claimed_at)
+        self._plans[plan.plan_id] = (owner_id, plan.model_copy(deep=True))
         return PreviewClaimStatus.CLAIMED
 
-    async def get(self, plan_id: UUID) -> CarePlan | None:
-        plan = self._plans.get(plan_id)
-        return plan.model_copy(deep=True) if plan else None
+    async def get(self, plan_id: UUID, owner_id: UUID) -> CarePlan | None:
+        entry = self._plans.get(plan_id)
+        return entry[1].model_copy(deep=True) if entry and entry[0] == owner_id else None
 
-    async def update(self, plan: CarePlan, *, expected_version: int) -> CarePlan | None:
-        stored = self._plans.get(plan.plan_id)
-        if stored is None or stored.version != expected_version:
+    async def update(
+        self, plan: CarePlan, owner_id: UUID, *, expected_version: int
+    ) -> CarePlan | None:
+        entry = self._plans.get(plan.plan_id)
+        if entry is None or entry[0] != owner_id or entry[1].version != expected_version:
             return None
         updated = plan.model_copy(deep=True)
-        self._plans[plan.plan_id] = updated
+        self._plans[plan.plan_id] = (owner_id, updated)
         return updated.model_copy(deep=True)
 
 

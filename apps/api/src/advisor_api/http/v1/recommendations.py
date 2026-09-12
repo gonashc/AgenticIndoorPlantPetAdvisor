@@ -3,16 +3,19 @@
 from collections.abc import AsyncIterator
 from typing import Annotated
 
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Depends, Header, Request
 from fastapi.responses import StreamingResponse
 
 from advisor_api.container import get_container
 from advisor_api.contracts.recommendations import RecommendationRequest, RecommendationResponse
+from advisor_api.http.auth import authenticated_user
 from advisor_api.http.context import request_id
 from advisor_api.http.errors import COMMON_ERROR_RESPONSES
 from advisor_api.http.streaming import encode_sse, sequence_from_last_event_id
+from advisor_api.ports.auth import AuthenticatedUser
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
+Authenticated = Annotated[AuthenticatedUser, Depends(authenticated_user)]
 
 
 @router.post(
@@ -25,7 +28,9 @@ router = APIRouter(prefix="/recommendations", tags=["recommendations"])
 async def create_recommendation(
     payload: RecommendationRequest,
     request: Request,
+    user: Authenticated,
 ) -> RecommendationResponse:
+    del user
     return await get_container(request).recommendations.recommend(payload, request_id(request))
 
 
@@ -49,8 +54,10 @@ async def create_recommendation(
 async def stream_recommendation(
     payload: RecommendationRequest,
     request: Request,
+    user: Authenticated,
     last_event_id: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
 ) -> StreamingResponse:
+    del user
     events = get_container(request).recommendations.stream(
         payload,
         request_id(request),
