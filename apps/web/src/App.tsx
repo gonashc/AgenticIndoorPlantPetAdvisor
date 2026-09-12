@@ -15,12 +15,21 @@ import {
   type Category,
   type QuestionnaireDraft,
 } from "./questionnaire";
+import catRecommendationImage from "./assets/recommendations/cat.jpg";
+import dogRecommendationImage from "./assets/recommendations/dog.jpg";
+import plantRecommendationImage from "./assets/recommendations/plant.jpg";
 
 const categories: { value: Category; label: string; description: string }[] = [
   { value: "PLANT", label: "Plant", description: "A safer green match for your space" },
   { value: "DOG", label: "Dog", description: "A breed profile that fits your routine" },
   { value: "CAT", label: "Cat", description: "An indoor companion matched to your pace" },
 ];
+
+const recommendationImages: Record<Category, string> = {
+  PLANT: plantRecommendationImage,
+  DOG: dogRecommendationImage,
+  CAT: catRecommendationImage,
+};
 
 const api = createAdvisorClient();
 
@@ -304,69 +313,76 @@ export function App() {
                 </p>
               </section>
             )}
-            {result?.recommendations.map((item) => (
-              <article className={`recommendation ${item.best_match ? "best" : ""}`} key={item.recommendation_id}>
-                <div className="recommendation-title">
-                  <div>
-                    {item.best_match && <span className="best-label">Best match</span>}
-                    <h3>{item.name}</h3>
-                    {item.scientific_name && <p className="scientific">{item.scientific_name}</p>}
-                  </div>
-                  <span className="score">{Math.round(item.score)}%</span>
-                </div>
-                <p>{item.profile}</p>
-                <ul>{item.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
-                {item.concerns && item.concerns.length > 0 && (
-                  <p className="concern"><strong>Keep in mind:</strong> {item.concerns.join(" ")}</p>
-                )}
-                <div className="safety-row">
-                  <span>Dog: {friendly(item.safety.dog_toxicity)}</span>
-                  <span>Cat: {friendly(item.safety.cat_toxicity)}</span>
-                  <span>Child: {friendly(item.safety.child_toxicity)}</span>
-                </div>
-                <div className="facts-grid">
-                  <div><span>Starting cost</span><strong>{moneyRange(item.cost.initial_min, item.cost.initial_max)}</strong></div>
-                  <div><span>Monthly care</span><strong>{moneyRange(item.cost.monthly_min, item.cost.monthly_max)}</strong></div>
-                </div>
-                <details className="evidence-panel">
-                  <summary>{item.evidence.length} reviewed source{item.evidence.length === 1 ? "" : "s"}</summary>
-                  {item.evidence.map((source) => (
-                    <a href={source.source_url} key={source.evidence_id} rel="noreferrer" target="_blank">
-                      <span>{source.title}</span><small>{source.source_name} ↗</small>
-                    </a>
-                  ))}
-                </details>
-                {item.local_sources && item.local_sources.length > 0 && (
-                  <div className="nearby-panel">
-                    <span className="best-label">Near you</span>
-                    {item.local_sources.map((source) => (
-                      <a href={source.url} key={`${source.name}-${source.url}`} rel="noreferrer" target="_blank">
-                        {source.name}{source.distance_miles == null ? "" : ` · ${source.distance_miles.toFixed(1)} mi`}
-                      </a>
-                    ))}
-                  </div>
-                )}
-                <button className="secondary-button" onClick={() => void previewCarePlan(item)} type="button">
-                  Preview care plan
-                </button>
-              </article>
-            ))}
-          </div>
+            {result?.recommendations.map((item) => {
+              const carePlanId = `care-plan-${item.recommendation_id}`;
+              const showPreview = preview?.recommendation_id === item.recommendation_id;
 
-          {preview && (
-            <section className="care-plan">
-              <p className="eyebrow">Review before saving</p>
-              <h3>{preview.item_name} care plan</h3>
-              <ol>
-                {preview.tasks.map((task) => (
-                  <li key={task.task_id}><strong>{task.title}</strong><span>{task.instructions} · Due {task.next_due_on}</span></li>
-                ))}
-              </ol>
-              <button className="primary-button" disabled={Boolean(savedPlan)} onClick={() => void saveCarePlan()} type="button">
-                {savedPlan ? "Care plan saved" : "Confirm and save plan"}
-              </button>
-            </section>
-          )}
+              return (
+                <div className={`recommendation-row ${showPreview ? "has-care-plan" : ""}`} key={item.recommendation_id}>
+                  <article className={`recommendation ${item.best_match ? "best" : ""}`}>
+                    <RecommendationImage category={result.category} />
+                    <div className="recommendation-title">
+                      <div>
+                        {item.best_match && <span className="best-label">Best match</span>}
+                        <h3>{item.name}</h3>
+                        {item.scientific_name && <p className="scientific">{item.scientific_name}</p>}
+                      </div>
+                      <span className="score">{Math.round(item.score)}%</span>
+                    </div>
+                    <p>{item.profile}</p>
+                    <ul>{item.reasons.map((reason) => <li key={reason}>{reason}</li>)}</ul>
+                    {item.concerns && item.concerns.length > 0 && (
+                      <p className="concern"><strong>Keep in mind:</strong> {item.concerns.join(" ")}</p>
+                    )}
+                    <div className="safety-row">
+                      <span>Dog: {friendly(item.safety.dog_toxicity)}</span>
+                      <span>Cat: {friendly(item.safety.cat_toxicity)}</span>
+                      <span>Child: {friendly(item.safety.child_toxicity)}</span>
+                    </div>
+                    <div className="facts-grid">
+                      <div><span>Starting cost</span><strong>{moneyRange(item.cost.initial_min, item.cost.initial_max)}</strong></div>
+                      <div><span>Monthly care</span><strong>{moneyRange(item.cost.monthly_min, item.cost.monthly_max)}</strong></div>
+                    </div>
+                    <details className="evidence-panel">
+                      <summary>{item.evidence.length} reviewed source{item.evidence.length === 1 ? "" : "s"}</summary>
+                      {item.evidence.map((source) => (
+                        <a href={source.source_url} key={source.evidence_id} rel="noreferrer" target="_blank">
+                          <span>{source.title}</span><small>{source.source_name} ↗</small>
+                        </a>
+                      ))}
+                    </details>
+                    {item.local_sources && item.local_sources.length > 0 && (
+                      <div className="nearby-panel">
+                        <span className="best-label">Near you</span>
+                        {item.local_sources.map((source) => (
+                          <a href={source.url} key={`${source.name}-${source.url}`} rel="noreferrer" target="_blank">
+                            {source.name}{source.distance_miles == null ? "" : ` · ${source.distance_miles.toFixed(1)} mi`}
+                          </a>
+                        ))}
+                      </div>
+                    )}
+                    <button
+                      aria-controls={showPreview ? carePlanId : undefined}
+                      aria-expanded={showPreview}
+                      className="secondary-button"
+                      onClick={() => void previewCarePlan(item)}
+                      type="button"
+                    >
+                      {showPreview ? "Care plan previewed" : "Preview care plan"}
+                    </button>
+                  </article>
+                  {showPreview && (
+                    <CarePlanPreview
+                      id={carePlanId}
+                      onSave={() => void saveCarePlan()}
+                      preview={preview}
+                      savedPlan={savedPlan}
+                    />
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </aside>
       </section>
     </main>
@@ -409,6 +425,50 @@ function PetFields({ draft, update }: { draft: QuestionnaireDraft; update: Updat
         )}
       </div>
     </fieldset>
+  );
+}
+
+function RecommendationImage({ category }: { category: Category }) {
+  return (
+    <figure className="recommendation-media">
+      <img
+        alt=""
+        decoding="async"
+        loading="lazy"
+        src={recommendationImages[category]}
+      />
+      <figcaption>{friendly(category)} recommendation</figcaption>
+    </figure>
+  );
+}
+
+function CarePlanPreview({
+  id,
+  onSave,
+  preview,
+  savedPlan,
+}: {
+  id: string;
+  onSave: () => void;
+  preview: CarePlanPreviewResponse;
+  savedPlan: CarePlan | null;
+}) {
+  return (
+    <section className="care-plan" id={id}>
+      <p className="eyebrow">Review before saving</p>
+      <h3>{preview.item_name} care plan</h3>
+      <ol>
+        {preview.tasks.map((task) => (
+          <li key={task.task_id}>
+            <strong>{task.title}</strong>
+            <span>{task.instructions} · Due {task.next_due_on}</span>
+          </li>
+        ))}
+      </ol>
+      <button className="primary-button" disabled={Boolean(savedPlan)} onClick={onSave} type="button">
+        {savedPlan ? "Care plan saved" : "Confirm and save plan"}
+      </button>
+    </section>
   );
 }
 
