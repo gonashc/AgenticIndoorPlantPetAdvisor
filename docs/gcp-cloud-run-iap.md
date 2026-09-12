@@ -18,8 +18,11 @@ Cloud Run service/job, act as their service accounts, enable IAP, and edit the t
 policies. Do not add a service-account JSON key to GitHub.
 
 For an external Google account or a project without an organization, the first IAP activation may
-require one manual visit to Cloud Run **Security > Identity-Aware Proxy** to create or select the
-OAuth consent configuration. This is the only interactive setup step.
+require one manual visit to Cloud Run **Security > Identity-Aware Proxy**. Open **Edit policy**, then
+**Configure in IAP**, configure the OAuth consent screen with an **External** audience, and choose
+**Auto generate credentials**. Return to the Cloud Run IAP policy and grant the intended account the
+**IAP-secured Web App User** role. This is the only interactive setup step, and it must happen before
+the deployment script can grant an out-of-organization principal.
 
 ## Release flow
 
@@ -28,8 +31,9 @@ authenticated Google Cloud CLI. The script performs these operations in order:
 
 1. builds an immutable image containing FastAPI and the React production bundle;
 2. updates and executes `advisor-bootstrap`, which applies Alembic before loading demo data;
-3. deploys `advisor-api` with IAP required, Cat disabled, deterministic explanations, MCP disabled,
-   and redacted LangSmith tracing enabled;
+3. deploys `advisor-api` with IAP required, resets the category configuration to the image default
+   (`PLANT,DOG`), uses deterministic explanations, keeps MCP disabled, and enables redacted
+   LangSmith tracing;
 4. grants only the IAP service agent Cloud Run invocation and the configured user/group IAP access.
 
 The LLM and MCP flags deliberately remain off during this release. Enable each only after its

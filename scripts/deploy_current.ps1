@@ -48,7 +48,6 @@ $runtimeSettings = @(
     "APP_ENV=production",
     "AUTH_MODE=google_iap",
     "IAP_AUDIENCE=$audience",
-    "ENABLED_CATEGORIES=PLANT,DOG",
     "WEB_DIST_DIR=/app/web",
     "LANGSMITH_TRACING=true",
     "LANGSMITH_PROJECT=IndoorPlantandPetAdvisor",
@@ -66,6 +65,7 @@ $runtimeSettings = @(
     --network=default `
     --subnet=default `
     --vpc-egress=private-ranges-only `
+    --remove-env-vars=ENABLED_CATEGORIES `
     --update-env-vars=$runtimeSettings `
     --update-secrets="LANGSMITH_API_KEY=langsmith-api-key:latest" `
     --no-allow-unauthenticated `
