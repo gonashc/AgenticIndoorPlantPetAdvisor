@@ -1,16 +1,52 @@
 """Run authenticated health and recommendation smoke tests from Google Cloud."""
 
+import json
 import os
+import time
+from urllib.parse import quote
 
+import google.auth
 import httpx
-from google.auth.transport.requests import Request
+from google.auth.transport.requests import AuthorizedSession, Request
 from google.oauth2 import id_token
+
+
+def _self_signed_iap_jwt(service_account: str, api_url: str) -> str:
+    credentials, _ = google.auth.default(scopes=("https://www.googleapis.com/auth/cloud-platform",))
+    now = int(time.time())
+    payload = json.dumps(
+        {
+            "iss": service_account,
+            "sub": service_account,
+            "aud": f"{api_url}/*",
+            "iat": now,
+            "exp": now + 600,
+        },
+        separators=(",", ":"),
+    )
+    signer = AuthorizedSession(credentials)
+    response = signer.post(
+        "https://iamcredentials.googleapis.com/v1/projects/-/serviceAccounts/"
+        f"{quote(service_account, safe='')}:signJwt",
+        json={"payload": payload},
+        timeout=30,
+    )
+    response.raise_for_status()
+    signed_jwt = response.json().get("signedJwt")
+    if not isinstance(signed_jwt, str) or not signed_jwt:
+        raise RuntimeError("IAM Credentials did not return a signed JWT")
+    return signed_jwt
 
 
 def main() -> int:
     api_url = os.environ["API_URL"].rstrip("/")
+    jwt_service_account = os.environ.get("IAP_JWT_SERVICE_ACCOUNT", "").strip()
     iap_client_id = os.environ.get("IAP_CLIENT_ID", "").strip()
-    token = id_token.fetch_id_token(Request(), iap_client_id or api_url)
+    token = (
+        _self_signed_iap_jwt(jwt_service_account, api_url)
+        if jwt_service_account
+        else id_token.fetch_id_token(Request(), iap_client_id or api_url)
+    )
     headers = {"Authorization": f"Bearer {token}"}
     payload = {
         "category": "PLANT",

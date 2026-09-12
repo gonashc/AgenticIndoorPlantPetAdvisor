@@ -17,6 +17,10 @@ The deployment service account needs only the roles required to submit builds, u
 Cloud Run service/job, act as their service accounts, enable IAP, and edit the two relevant IAM
 policies. Do not add a service-account JSON key to GitHub.
 
+Run `scripts/bootstrap_api_smoke_gcp.ps1` once with an administrator identity. It enables IAM
+Credentials and permits `advisor-api` to sign short-lived JWTs only as itself. The binding is on
+that service account resource, not the project, and no service-account key is created.
+
 For an external Google account or a project without an organization, the first IAP activation may
 require one manual visit to Cloud Run **Security > Identity-Aware Proxy**. Open **Edit policy**, then
 **Configure in IAP**, configure the OAuth consent screen with an **External** audience, and choose
@@ -36,11 +40,13 @@ authenticated Google Cloud CLI. The script performs these operations in order:
    enables redacted LangSmith tracing;
 4. grants only the IAP service agent Cloud Run invocation plus resource-scoped IAP access to the
    configured user/group and API smoke identity;
-5. reads the non-secret IAP OAuth client ID, updates `advisor-api-smoke` to the immutable release
-   image, and requires its authenticated health and recommendation checks to pass.
+5. updates `advisor-api-smoke` to the immutable release image and requires its authenticated
+   health and recommendation checks to pass.
 
-The smoke job must request its ID token for the IAP OAuth client ID. A normal Cloud Run service URL
-audience is valid for IAM-protected services but is rejected by IAP before it reaches FastAPI.
+The smoke job uses a short-lived service-account JWT with the IAP URL as its audience. This works
+with the configured IAP client without storing an OAuth client secret or service-account key. A
+normal Cloud Run identity token with the service URL as its audience is rejected by IAP before it
+reaches FastAPI.
 
 The LLM remains off until its provider-specific evaluation and degradation tests pass. The private
 plant-location MCP can be enabled independently of the adoption MCP.

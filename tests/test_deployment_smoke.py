@@ -3,8 +3,8 @@
 from scripts import smoke_deployed_api
 
 
-def test_iap_client_id_is_used_as_token_audience(monkeypatch: object) -> None:
-    calls: list[str] = []
+def test_self_signed_jwt_is_used_for_iap_smoke(monkeypatch: object) -> None:
+    calls: list[tuple[str, str]] = []
 
     class FakeResponse:
         def raise_for_status(self) -> None:
@@ -37,13 +37,15 @@ def test_iap_client_id_is_used_as_token_audience(monkeypatch: object) -> None:
             return response
 
     monkeypatch.setenv("API_URL", "https://api.example")  # type: ignore[attr-defined]
-    monkeypatch.setenv("IAP_CLIENT_ID", "iap-client.apps.googleusercontent.com")  # type: ignore[attr-defined]
+    monkeypatch.setenv(  # type: ignore[attr-defined]
+        "IAP_JWT_SERVICE_ACCOUNT", "advisor-api@example.iam.gserviceaccount.com"
+    )
     monkeypatch.setattr(  # type: ignore[attr-defined]
-        smoke_deployed_api.id_token,
-        "fetch_id_token",
-        lambda _request, audience: calls.append(audience) or "token",
+        smoke_deployed_api,
+        "_self_signed_iap_jwt",
+        lambda service_account, api_url: calls.append((service_account, api_url)) or "token",
     )
     monkeypatch.setattr(smoke_deployed_api.httpx, "Client", FakeClient)  # type: ignore[attr-defined]
 
     assert smoke_deployed_api.main() == 0
-    assert calls == ["iap-client.apps.googleusercontent.com"]
+    assert calls == [("advisor-api@example.iam.gserviceaccount.com", "https://api.example")]

@@ -189,15 +189,6 @@ if (-not ($iapBinding.members -contains $smokeMember)) {
     if ($LASTEXITCODE -ne 0) { throw "Failed to grant the smoke identity IAP access." }
 }
 
-$iapClientId = (& $GcloudPath iap settings get `
-    --project=$ProjectId `
-    --region=$Region `
-    --resource-type=cloud-run `
-    --service=$ServiceName `
-    --format="value(accessSettings.oauthSettings.clientId)").Trim()
-if ($LASTEXITCODE -ne 0 -or -not $iapClientId) {
-    throw "Could not read the IAP OAuth client ID required by the smoke job."
-}
 $serviceUrl = (& $GcloudPath run services describe $ServiceName `
     --project=$ProjectId `
     --region=$Region `
@@ -211,7 +202,7 @@ if ($LASTEXITCODE -ne 0 -or -not $serviceUrl.StartsWith("https://")) {
     --region=$Region `
     --image=$image `
     --service-account=$apiServiceAccount `
-    --set-env-vars="API_URL=$serviceUrl,IAP_CLIENT_ID=$iapClientId" `
+    --set-env-vars="API_URL=$serviceUrl,IAP_JWT_SERVICE_ACCOUNT=$apiServiceAccount" `
     --command=python `
     --args=scripts/smoke_deployed_api.py `
     --max-retries=0 `
