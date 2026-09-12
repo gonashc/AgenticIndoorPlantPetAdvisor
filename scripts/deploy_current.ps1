@@ -69,7 +69,14 @@ $runtimeSettings = @(
     "MCP_MODE=$McpMode",
     "MCP_AUTH_MODE=$(if ($McpMode -eq 'remote') { 'google_cloud_run' } else { 'none' })"
 )
-$settingsToRemove = @("ENABLED_CATEGORIES", "MCP_ADOPTION_URL", "MCP_ADOPTION_AUDIENCE")
+$settingsToRemove = @(
+    "ENABLED_CATEGORIES",
+    "MCP_ADOPTION_URL",
+    "MCP_ADOPTION_AUDIENCE",
+    # Remove malformed entries left by the original delimiter-based deployment command.
+    ":APP_ENV",
+    "DOG:WEB_DIST_DIR"
+)
 if ($McpMode -eq "remote") {
     $runtimeSettings += "MCP_PLACES_URL=$McpPlacesUrl"
     $runtimeSettings += "MCP_PLACES_AUDIENCE=$McpPlacesAudience"
