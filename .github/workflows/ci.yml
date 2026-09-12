@@ -134,6 +134,26 @@ jobs:
           docker build --file services/climate_mcp/Dockerfile
           --tag advisor-climate-mcp:ci .
 
+      - name: Build catalog MCP container
+        run: >-
+          docker build --file services/catalog_mcp/Dockerfile
+          --tag advisor-catalog-mcp:ci .
+
+      - name: Build regulations MCP container
+        run: >-
+          docker build --file services/regulations_mcp/Dockerfile
+          --tag advisor-regulations-mcp:ci .
+
+      - name: Build commerce MCP container
+        run: >-
+          docker build --file services/commerce_mcp/Dockerfile
+          --tag advisor-commerce-mcp:ci .
+
+      - name: Build care-plan MCP container
+        run: >-
+          docker build --file services/care_plan_mcp/Dockerfile
+          --tag advisor-care-plan-mcp:ci .
+
       - name: Verify migrations from production container
         run: >-
           docker run --rm --network host
@@ -222,6 +242,101 @@ jobs:
 
           for attempt in {1..20}; do
             if curl --fail --silent http://127.0.0.1:8083/health; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          docker rm --force "$container_id"
+          trap - EXIT
+
+      - name: Smoke test catalog MCP container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --network host \
+            --env PORT=8084 \
+            --env APP_ENV=test \
+            --env DATABASE_MODE=url \
+            --env DATABASE_URL="$TEST_DATABASE_URL" \
+            advisor-catalog-mcp:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8084/health; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          docker rm --force "$container_id"
+          trap - EXIT
+
+      - name: Smoke test regulations MCP container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --publish 8086:8080 \
+            --env APP_ENV=test \
+            advisor-regulations-mcp:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8086/health; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          docker rm --force "$container_id"
+          trap - EXIT
+
+      - name: Smoke test commerce MCP container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --publish 8087:8080 \
+            --env APP_ENV=test \
+            advisor-commerce-mcp:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8087/health; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          docker rm --force "$container_id"
+          trap - EXIT
+
+      - name: Smoke test care-plan MCP container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --network host \
+            --env PORT=8085 \
+            --env APP_ENV=test \
+            --env AUTH_MODE=disabled \
+            --env DATABASE_MODE=url \
+            --env DATABASE_URL="$TEST_DATABASE_URL" \
+            advisor-care-plan-mcp:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8085/health; then
               break
             fi
             if [[ "$attempt" == "20" ]]; then

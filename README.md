@@ -23,6 +23,12 @@ the Pinecone adapter performs hybrid search and reranking. An opt-in structured-
 explain—but never change—the selected candidates, scores, or safety decisions. MCP live-source calls
 run afterward on a separate, non-indexed path. See [knowledge, RAG, LLM, and MCP operations](docs/knowledge-rag-llm-mcp.md).
 
+The repository also contains isolated MCP service boundaries for the authoritative catalog,
+current regulations, optional confirmed commerce offers, and authenticated care-plan actions.
+Catalog and Care Plan reuse the PostgreSQL repositories rather than duplicating data. Regulations
+and Commerce expose explicit unavailable responses until reviewed provider adapters are selected;
+they never manufacture current rules, inventory, or prices for the demo.
+
 ## Setup
 
 ```powershell

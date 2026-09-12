@@ -94,6 +94,7 @@ class PostgresCatalogRepository:
             dog_compatible=row.dog_compatible,
             cat_compatible=row.cat_compatible,
             max_hours_alone=float(row.max_hours_alone),
+            content_version=row.content_version,
         )
 
 

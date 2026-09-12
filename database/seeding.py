@@ -38,6 +38,40 @@ async def grant_api_runtime_access(
             await session.execute(text(statement))
 
 
+async def grant_mcp_runtime_access(
+    session_factory: AsyncSessionFactory,
+    catalog_database_user: str,
+    care_plan_database_user: str,
+) -> None:
+    """Grant distinct least-privilege access to database-backed MCP identities."""
+
+    for label, database_user in (
+        ("Catalog MCP", catalog_database_user),
+        ("Care Plan MCP", care_plan_database_user),
+    ):
+        if DATABASE_PRINCIPAL_PATTERN.fullmatch(database_user) is None:
+            raise ValueError(f"{label} database user has an invalid PostgreSQL principal name")
+    catalog_principal = f'"{catalog_database_user}"'
+    care_plan_principal = f'"{care_plan_database_user}"'
+    catalog_tables = (
+        "advisor.alembic_version, advisor.catalog_candidates, "
+        "advisor.catalog_evidence, advisor.plant_toxicity"
+    )
+    care_plan_tables = (
+        "advisor.alembic_version, advisor.care_plan_previews, "
+        "advisor.care_plans, advisor.care_tasks"
+    )
+    statements = (
+        f"GRANT USAGE ON SCHEMA advisor TO {catalog_principal}",
+        f"GRANT SELECT ON {catalog_tables} TO {catalog_principal}",
+        f"GRANT USAGE ON SCHEMA advisor TO {care_plan_principal}",
+        f"GRANT SELECT, INSERT, UPDATE, DELETE ON {care_plan_tables} TO {care_plan_principal}",
+    )
+    async with session_factory.begin() as session:
+        for statement in statements:
+            await session.execute(text(statement))
+
+
 async def replace_catalog(
     session_factory: AsyncSessionFactory,
     candidates: Sequence[CandidateRecord],

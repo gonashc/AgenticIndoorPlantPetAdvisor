@@ -2,10 +2,10 @@
 
 import asyncio
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal, Protocol
 
-from advisor_api.config import Settings
 from google.cloud.sql.connector import Connector, IPTypes
+from pydantic import SecretStr
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
@@ -15,6 +15,25 @@ from sqlalchemy.ext.asyncio import (
 )
 
 type AsyncSessionFactory = async_sessionmaker[AsyncSession]
+
+
+class DatabaseSettings(Protocol):
+    """Minimal configuration consumed by the shared PostgreSQL runtime."""
+
+    database_mode: Literal["memory", "url", "cloud_sql"]
+    database_url: SecretStr | None
+    instance_connection_name: str | None
+    db_user: str | None
+    db_name: str | None
+    db_password: SecretStr | None
+    cloud_sql_enable_iam_auth: bool
+    cloud_sql_ip_type: Literal["PRIVATE", "PUBLIC", "PSC"]
+    db_pool_size: int
+    db_max_overflow: int
+    db_pool_timeout_seconds: int
+    db_pool_recycle_seconds: int
+
+
 REQUIRED_SCHEMA_CAPABILITIES = frozenset(
     {
         "catalog_candidates.candidate_id",
@@ -54,7 +73,10 @@ class DatabaseRuntime:
     session_factory: AsyncSessionFactory
     connector: Connector | None = None
 
-    async def verify(self) -> None:
+    async def verify(
+        self,
+        required_capabilities: frozenset[str] = REQUIRED_SCHEMA_CAPABILITIES,
+    ) -> None:
         async with self.engine.connect() as connection:
             await connection.execute(text("SELECT 1"))
             revision = await connection.scalar(
@@ -73,7 +95,7 @@ class DatabaseRuntime:
             )
         if not revision:
             raise RuntimeError("Database does not have an Alembic schema revision")
-        missing = REQUIRED_SCHEMA_CAPABILITIES - capabilities
+        missing = required_capabilities - capabilities
         if missing:
             raise RuntimeError(
                 "Database schema is incompatible; missing capabilities: "
@@ -90,7 +112,7 @@ class DatabaseRuntime:
             await self.connector.close_async()
 
 
-async def create_database_runtime(settings: Settings) -> DatabaseRuntime:
+async def create_database_runtime(settings: DatabaseSettings) -> DatabaseRuntime:
     if settings.database_mode == "memory":
         raise ValueError("A database runtime cannot be created in memory mode")
 

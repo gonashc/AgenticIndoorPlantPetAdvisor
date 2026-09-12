@@ -32,6 +32,7 @@ class CandidateRecord:
     dog_compatible: bool = True
     cat_compatible: bool = True
     max_hours_alone: float = 24
+    content_version: str = "unknown"
 
 
 class CatalogRepository(Protocol):

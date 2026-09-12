@@ -71,3 +71,44 @@ authoritative scores. Run `scripts/bootstrap_climate_mcp_gcp.ps1` and
 The API does not invoke Climate MCP yet. The current questionnaire provides a ZIP code, while NWS
 requires coordinates. Connect this service only after a reviewed ZIP-to-coordinate boundary is
 available; do not let an LLM invent or resolve coordinates.
+
+## Catalog, regulations, commerce, and care-plan MCP boundaries
+
+Four additional MCP service boundaries are implemented but are not yet connected to the
+recommendation graph:
+
+- Catalog exposes only exact-ID, bounded reads for approved profiles, deterministic constraints,
+  structured toxicity, and provenance. PostgreSQL remains authoritative. It provides no arbitrary
+  query or ranking tool and its production database role must be read-only.
+- Regulations exposes `lookup_pet_regulations` for one selected pet category and jurisdiction.
+  Results accept only HTTPS government sources (plus explicitly allowlisted municipal hosts) and
+  retain a source version. Its provider is disabled until a reviewed adapter can turn current
+  sources into versioned rule records; web-search snippets are not silently promoted to rules.
+- Commerce exposes `find_confirmed_offers` for one already-selected candidate and returns at most
+  three allowlisted, recently observed offers. Its provider is disabled until a retailer contract
+  permits confirmed inventory, price, and pickup data. This remains optional for the demo.
+- Care Plan exposes preview, confirmed creation, pause/reactivate, and task-completion tools by
+  delegating to the existing `CarePlanService`. It never accepts an owner ID. The private caller
+  must forward the original `X-Goog-IAP-JWT-Assertion`, which the service verifies before deriving
+  the owner. Creation still requires the literal `confirmed: true` input.
+
+Each service has a separate ASGI entry point, non-root container, strict output models, bounded
+request sizes, DNS-rebinding protection, a health route, and CI contract tests. Deployment remains
+separate from graph enablement: establish least-privilege Cloud SQL roles for Catalog and Care Plan,
+select and evaluate Regulations/Commerce providers, then add only the tools needed for the selected
+category and intent to the MCP gateway allowlist.
+
+Bootstrap the dedicated identities and Cloud SQL IAM users, then build and deploy the four private
+services with:
+
+```powershell
+$gcloud = "$env:LOCALAPPDATA\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.cmd"
+./scripts/bootstrap_internal_mcps_gcp.ps1 -GcloudPath $gcloud
+./scripts/deploy_internal_mcps.ps1 -GcloudPath $gcloud
+```
+
+The deployment runs a dedicated Cloud Run job under the migration identity to grant Catalog only
+`SELECT` access to its authoritative tables and Care Plan only transactional access to its plan
+tables. It grants the API runtime identity permission to invoke each private service, but it does
+not connect the new tools to the graph. Regulations and Commerce remain visibly degraded until
+their provider settings and reviewed adapters are implemented.
