@@ -34,4 +34,3 @@ USER adoption-mcp
 EXPOSE 8080
 
 CMD ["sh", "-c", "exec uvicorn services.adoption_mcp.asgi:app --host 0.0.0.0 --port ${PORT:-8080} --proxy-headers --forwarded-allow-ips='*'"]
-

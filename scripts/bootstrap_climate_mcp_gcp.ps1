@@ -21,4 +21,3 @@ if ($LASTEXITCODE -ne 0) {
 }
 
 "Climate MCP GCP prerequisites are ready."
-

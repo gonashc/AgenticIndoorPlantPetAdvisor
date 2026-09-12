@@ -76,4 +76,3 @@ if ($LASTEXITCODE -ne 0) { throw "Failed to grant the API access to the climate 
     --project=$ProjectId `
     --region=$Region `
     --format="yaml(status.url,status.latestReadyRevisionName)"
-

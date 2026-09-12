@@ -9,4 +9,3 @@ steps:
       - .
 images:
   - ${_IMAGE}
-

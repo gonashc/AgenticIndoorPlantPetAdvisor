@@ -58,4 +58,3 @@ if ($LASTEXITCODE -ne 0) {
 if ($LASTEXITCODE -ne 0) { throw "Failed to grant the adoption runtime access to its secret." }
 
 "Adoption MCP GCP prerequisites are ready."
-
