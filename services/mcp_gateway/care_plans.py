@@ -1,5 +1,6 @@
 """Authenticated, provider-neutral client for the private Care Plan MCP."""
 
+from typing import Literal
 from uuid import UUID
 
 from advisor_api.contracts.care_plans import (
@@ -9,9 +10,9 @@ from advisor_api.contracts.care_plans import (
     CarePlanPreviewResponse,
     CarePlanUpdateRequest,
 )
-from advisor_api.contracts.errors import ErrorDetail
 from advisor_api.http.errors import ApiError
 
+from services.care_plan_mcp.contracts import CarePlanToolResult
 from services.mcp_gateway.ports import McpToolClient
 
 
@@ -130,29 +131,18 @@ class CarePlanMcpGateway:
         return dict(payload)
 
     @staticmethod
-    def _success_value(payload: dict[str, object], field: str) -> object:
-        outcome = payload.get("outcome")
-        if outcome == "error":
-            raw_error = payload.get("error")
-            if not isinstance(raw_error, dict) or raw_error.get("contract_version") != "v1":
-                raise ValueError("Care Plan MCP returned an invalid error contract")
-            status_code = raw_error.get("status_code")
-            code = raw_error.get("code")
-            message = raw_error.get("message")
-            details = raw_error.get("details", [])
-            if status_code not in {404, 409, 422} or not isinstance(code, str):
-                raise ValueError("Care Plan MCP returned an unsupported domain error")
-            if not isinstance(message, str) or not isinstance(details, list):
-                raise ValueError("Care Plan MCP returned a malformed domain error")
+    def _success_value(payload: dict[str, object], field: Literal["preview", "plan"]) -> object:
+        result = CarePlanToolResult.model_validate(payload)
+        if result.outcome == "error":
+            if result.error is None:
+                raise ValueError("Care Plan MCP error result omitted its error envelope")
             raise ApiError(
-                status_code,
-                code,
-                message,
-                [ErrorDetail.model_validate(detail) for detail in details],
+                result.error.status_code,
+                result.error.code,
+                result.error.message,
+                list(result.error.details),
             )
-        if outcome != "success" or payload.get("error") is not None:
-            raise ValueError("Care Plan MCP returned an invalid success contract")
-        value = payload.get(field)
+        value = result.preview if field == "preview" else result.plan
         if value is None:
             raise ValueError(f"Care Plan MCP success result omitted {field}")
         return value

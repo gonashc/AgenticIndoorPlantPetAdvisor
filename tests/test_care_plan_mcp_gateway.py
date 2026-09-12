@@ -102,18 +102,37 @@ async def test_care_plan_gateway_forwards_assertion_as_transport_metadata() -> N
 
 
 class DomainErrorMcpClient(AssertionCapturingMcpClient):
+    def __init__(self, *, status_code: int = 409) -> None:
+        super().__init__()
+        self.status_code = status_code
+
     async def call_tool(self, **kwargs: object) -> Mapping[str, object]:
         del kwargs
+        is_not_found = self.status_code == 404
         return {
             "outcome": "error",
             "preview": None,
             "plan": None,
             "error": {
                 "contract_version": "v1",
-                "status_code": 409,
-                "code": "CARE_PLAN_PAUSED",
-                "message": "Tasks cannot be completed on a paused plan.",
-                "details": [],
+                "status_code": self.status_code,
+                "code": "RESOURCE_NOT_FOUND" if is_not_found else "CARE_PLAN_PAUSED",
+                "message": (
+                    "The requested care_plan was not found."
+                    if is_not_found
+                    else "Tasks cannot be completed on a paused plan."
+                ),
+                "details": (
+                    [
+                        {
+                            "field": "care_plan",
+                            "code": "NOT_FOUND",
+                            "message": "No matching resource.",
+                        }
+                    ]
+                    if is_not_found
+                    else []
+                ),
             },
         }
 
@@ -136,6 +155,26 @@ async def test_care_plan_gateway_reconstructs_versioned_domain_error() -> None:
 
     assert raised.value.status_code == 409
     assert raised.value.code == "CARE_PLAN_PAUSED"
+
+
+@pytest.mark.asyncio
+async def test_care_plan_gateway_reconstructs_versioned_not_found() -> None:
+    gateway = CarePlanMcpGateway(
+        DomainErrorMcpClient(status_code=404),
+        "https://care.example/mcp",
+        "https://care.example",
+    )
+
+    with pytest.raises(ApiError) as raised:
+        await gateway.get(
+            uuid4(),
+            request_id=uuid4(),
+            user_assertion="signed-iap-assertion",
+        )
+
+    assert raised.value.status_code == 404
+    assert raised.value.code == "RESOURCE_NOT_FOUND"
+    assert raised.value.details[0].field == "care_plan"
 
 
 @pytest.mark.asyncio

@@ -155,6 +155,12 @@ the API with the existing Places/Adoption settings plus the private Care Plan en
   -GcloudPath $gcloud
 ```
 
+The Care Plan deployment advertises `advisor-care-plan-contract=v1` as a Cloud Run service label.
+`deploy_current.ps1` refuses to connect the REST facade when that label is absent or incompatible,
+preventing a newer gateway from calling an older MCP tool set. Deployment scripts encode gcloud
+dictionary flags with a semicolon delimiter so comma-containing values such as
+`ENABLED_CATEGORIES=PLANT,DOG,CAT` remain one setting on Windows and Unix-like runners.
+
 Regulations cannot be promoted merely by adding web search: current rules must be normalized into
 reviewed, source-versioned records from government pages. Commerce remains intentionally excluded
 from the demo path until a retailer API contract confirms inventory, price, and pickup availability.

@@ -7,6 +7,8 @@ from advisor_api.contracts.care_plans import CarePlan, CarePlanPreviewResponse
 from advisor_api.contracts.errors import ErrorDetail
 from pydantic import model_validator
 
+CARE_PLAN_MCP_CONTRACT_VERSION = "v1"
+
 
 class CarePlanToolError(ContractModel):
     """Known domain failure that the REST facade can reproduce exactly."""

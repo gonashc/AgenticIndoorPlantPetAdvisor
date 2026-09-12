@@ -8,6 +8,8 @@ param(
     [string]$GcloudPath = "gcloud"
 )
 
+. (Join-Path $PSScriptRoot "gcloud_dictionary.ps1")
+
 $ErrorActionPreference = "Continue"
 if (-not $ImageTag) {
     $ImageTag = (& git rev-parse --short=12 HEAD).Trim()
@@ -114,6 +116,7 @@ foreach ($service in $services) {
         "MCP_ALLOWED_HOSTS=$provisionalHost"
     )
     $networkArguments = @()
+    $labelArguments = @()
     if ($service.Key -eq "catalog") {
         $runtimeSettings += @(
             "DATABASE_MODE=cloud_sql",
@@ -145,6 +148,7 @@ foreach ($service in $services) {
             "--subnet=default",
             "--vpc-egress=private-ranges-only"
         )
+        $labelArguments = @("--update-labels=advisor-care-plan-contract=v1")
     }
     elseif ($service.Key -eq "regulations") {
         $runtimeSettings += "REGULATIONS_PROVIDER=disabled"
@@ -152,7 +156,7 @@ foreach ($service in $services) {
     elseif ($service.Key -eq "commerce") {
         $runtimeSettings += "COMMERCE_PROVIDER=disabled"
     }
-    $runtimeSettings = $runtimeSettings -join ','
+    $runtimeSettings = ConvertTo-GcloudDictionaryArgument -Entry $runtimeSettings
 
     & $GcloudPath run deploy $service.ServiceName `
         --project=$ProjectId `
@@ -160,6 +164,7 @@ foreach ($service in $services) {
         --image="$($service.Image)" `
         --service-account="$($service.RuntimeAccount)" `
         @networkArguments `
+        @labelArguments `
         --set-env-vars=$runtimeSettings `
         --no-allow-unauthenticated `
         --no-iap `

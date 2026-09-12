@@ -14,6 +14,7 @@ param(
     [string]$McpAdoptionAudience = "",
     [string]$McpCarePlanUrl = "",
     [string]$McpCarePlanAudience = "",
+    [string]$McpCarePlanServiceName = "advisor-care-plan-mcp",
     [ValidateSet("deterministic", "openai")]
     [string]$ExplanationMode = "deterministic",
     [string]$OpenAiModel = "",
@@ -21,6 +22,8 @@ param(
     [string]$SmokeJobName = "advisor-api-smoke",
     [string]$GcloudPath = "gcloud"
 )
+
+. (Join-Path $PSScriptRoot "gcloud_dictionary.ps1")
 
 $ErrorActionPreference = "Continue"
 if (-not $ImageTag) {
@@ -74,6 +77,23 @@ if ($McpMode -eq "remote") {
     }
     if ($McpCarePlanUrl -and $McpCarePlanAudience -notmatch '^https://[^/]+$') {
         throw "The Care Plan MCP endpoint requires an HTTPS audience without a path."
+    }
+    if ($McpCarePlanUrl -and $McpCarePlanServiceName -notmatch '^[a-z][a-z0-9-]{0,62}$') {
+        throw "McpCarePlanServiceName must be a valid Cloud Run service name."
+    }
+}
+if ($McpCarePlanUrl) {
+    $carePlanContractOutput = & $GcloudPath run services describe $McpCarePlanServiceName `
+        --project=$ProjectId `
+        --region=$Region `
+        --format="value(metadata.labels.advisor-care-plan-contract)" 2>$null
+    $carePlanContractExit = $LASTEXITCODE
+    $carePlanContract = (@($carePlanContractOutput) -join "").Trim()
+    if ($carePlanContractExit -ne 0 -or $carePlanContract -ne "v1") {
+        throw (
+            "Care Plan MCP does not advertise the required v1 result contract. " +
+            "Deploy the current Care Plan MCP before enabling API routing."
+        )
     }
 }
 
@@ -167,7 +187,7 @@ else {
     $settingsToRemove += "MCP_CARE_PLAN_URL"
     $settingsToRemove += "MCP_CARE_PLAN_AUDIENCE"
 }
-$runtimeSettings = $runtimeSettings -join ','
+$runtimeSettings = ConvertTo-GcloudDictionaryArgument -Entry $runtimeSettings
 $settingsToRemove = $settingsToRemove -join ','
 
 & $GcloudPath run deploy $ServiceName `

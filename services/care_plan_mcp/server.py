@@ -27,6 +27,7 @@ from database.repositories import PostgresCarePlanRepository
 from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plan_mcp.config import CarePlanMcpSettings
 from services.care_plan_mcp.contracts import (
+    CARE_PLAN_MCP_CONTRACT_VERSION,
     CarePlanToolError,
     CarePlanToolResult,
 )
@@ -239,18 +240,40 @@ def create_server(
     )
     async def health(_: Request) -> Response:
         if care_plans is not None:
-            return JSONResponse({"status": "ok", "service": "advisor-care-plan"})
+            return JSONResponse(
+                {
+                    "status": "ok",
+                    "service": "advisor-care-plan",
+                    "contract_version": CARE_PLAN_MCP_CONTRACT_VERSION,
+                }
+            )
         if probe.database is None:
             return JSONResponse(
-                {"status": "unavailable", "service": "advisor-care-plan"}, status_code=503
+                {
+                    "status": "unavailable",
+                    "service": "advisor-care-plan",
+                    "contract_version": CARE_PLAN_MCP_CONTRACT_VERSION,
+                },
+                status_code=503,
             )
         try:
             await probe.database.ping()
         except Exception:
             return JSONResponse(
-                {"status": "unavailable", "service": "advisor-care-plan"}, status_code=503
+                {
+                    "status": "unavailable",
+                    "service": "advisor-care-plan",
+                    "contract_version": CARE_PLAN_MCP_CONTRACT_VERSION,
+                },
+                status_code=503,
             )
-        return JSONResponse({"status": "ok", "service": "advisor-care-plan"})
+        return JSONResponse(
+            {
+                "status": "ok",
+                "service": "advisor-care-plan",
+                "contract_version": CARE_PLAN_MCP_CONTRACT_VERSION,
+            }
+        )
 
     return server
 
