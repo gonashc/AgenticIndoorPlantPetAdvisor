@@ -7,6 +7,7 @@ from uuid import uuid4
 import pytest
 from advisor_api.contracts.base import Category
 from advisor_api.contracts.care_plans import CarePlanPreviewRequest
+from advisor_api.http.errors import ApiError
 
 from services.mcp_gateway import CarePlanMcpGateway, McpSdkToolClient
 
@@ -37,6 +38,7 @@ class AssertionCapturingMcpClient:
         self.arguments = arguments
         now = datetime.now(UTC)
         return {
+            "outcome": "success",
             "preview": {
                 "metadata": {
                     "request_id": str(uuid4()),
@@ -61,7 +63,8 @@ class AssertionCapturingMcpClient:
                     }
                 ],
                 "confirmation_required": True,
-            }
+            },
+            "error": None,
         }
 
 
@@ -75,6 +78,7 @@ async def test_care_plan_gateway_forwards_assertion_as_transport_metadata() -> N
         timeout_seconds=4,
     )
     session_id = uuid4()
+    request_id = uuid4()
 
     preview = await gateway.preview(
         CarePlanPreviewRequest(
@@ -85,6 +89,7 @@ async def test_care_plan_gateway_forwards_assertion_as_transport_metadata() -> N
             start_date=date(2026, 9, 12),
             timezone="America/New_York",
         ),
+        request_id=request_id,
         user_assertion="signed-iap-assertion",
     )
 
@@ -92,7 +97,45 @@ async def test_care_plan_gateway_forwards_assertion_as_transport_metadata() -> N
     assert client.call["tool_name"] == "preview_care_plan"
     assert client.call["authorization_audience"] == "https://care.example"
     assert client.call["forwarded_user_assertion"] == "signed-iap-assertion"
+    assert client.arguments["request_id"] == str(request_id)
     assert "owner_id" not in client.arguments
+
+
+class DomainErrorMcpClient(AssertionCapturingMcpClient):
+    async def call_tool(self, **kwargs: object) -> Mapping[str, object]:
+        del kwargs
+        return {
+            "outcome": "error",
+            "preview": None,
+            "plan": None,
+            "error": {
+                "contract_version": "v1",
+                "status_code": 409,
+                "code": "CARE_PLAN_PAUSED",
+                "message": "Tasks cannot be completed on a paused plan.",
+                "details": [],
+            },
+        }
+
+
+@pytest.mark.asyncio
+async def test_care_plan_gateway_reconstructs_versioned_domain_error() -> None:
+    gateway = CarePlanMcpGateway(
+        DomainErrorMcpClient(),
+        "https://care.example/mcp",
+        "https://care.example",
+    )
+
+    with pytest.raises(ApiError) as raised:
+        await gateway.complete_task(
+            uuid4(),
+            uuid4(),
+            request_id=uuid4(),
+            user_assertion="signed-iap-assertion",
+        )
+
+    assert raised.value.status_code == 409
+    assert raised.value.code == "CARE_PLAN_PAUSED"
 
 
 @pytest.mark.asyncio

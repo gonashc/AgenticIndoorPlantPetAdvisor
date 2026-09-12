@@ -65,18 +65,54 @@ def main() -> int:
             "pets_present": ["CAT"],
         },
     }
+    cat_payload = {
+        "category": "CAT",
+        "destination": {"zip_code": "10001", "state_code": "NY"},
+        "session_id": "f31a10c4-ec05-4ac4-b99a-4246d404e13e",
+        "use_saved_preferences": False,
+        "questionnaire": {
+            "housing_type": "APARTMENT",
+            "home_size": "SMALL",
+            "rental_allows_pets": True,
+            "outdoor_space": "NONE",
+            "hours_alone": 7,
+            "activity_level": "MEDIUM",
+            "grooming_tolerance": "LOW",
+            "monthly_budget": 220,
+            "children_present": False,
+            "existing_pets": [],
+            "experience": "BEGINNER",
+            "affection_preference": "BALANCED",
+        },
+    }
 
     with httpx.Client(headers=headers, timeout=60) as client:
         live_response = client.get(f"{api_url}/health/live")
         ready_response = client.get(f"{api_url}/health/ready")
         recommendation_response = client.post(f"{api_url}/v1/recommendations", json=payload)
+        cat_response = client.post(f"{api_url}/v1/recommendations", json=cat_payload)
+        missing_plan_response = client.get(
+            f"{api_url}/v1/care-plans/11111111-1111-4111-8111-111111111111"
+        )
     live_response.raise_for_status()
     ready_response.raise_for_status()
     recommendation_response.raise_for_status()
+    cat_response.raise_for_status()
+    if missing_plan_response.status_code != 404:
+        missing_plan_response.raise_for_status()
 
     live = live_response.json()
     ready = ready_response.json()
     recommendation = recommendation_response.json()
+    cat_recommendation = cat_response.json()
+    missing_plan_error = missing_plan_response.json()["error"]
+    if cat_recommendation["category"] != "CAT" or not cat_recommendation["recommendations"]:
+        raise RuntimeError("Cat recommendation smoke check failed")
+    if (
+        missing_plan_error["code"] != "RESOURCE_NOT_FOUND"
+        or missing_plan_response.headers.get("X-Error-Contract-Version") != "v1"
+    ):
+        raise RuntimeError("Care Plan REST-to-MCP error contract smoke check failed")
     evidence_ids = [
         evidence["evidence_id"]
         for item in recommendation["recommendations"]
@@ -95,6 +131,8 @@ def main() -> int:
         f"knowledge={recommendation['metadata']['versions']['knowledge']} "
         f"retrieved_chunks={retrieved_chunks} "
         f"warnings={len(recommendation['warnings'])}"
+        f" cat_recommendations={len(cat_recommendation['recommendations'])}"
+        " care_plan_404=v1"
     )
     return 0
 

@@ -14,9 +14,9 @@ from advisor_api.contracts.care_plans import (
     CarePlanPreviewResponse,
     CarePlanUpdateRequest,
 )
-from advisor_api.http.auth import authenticated_user
+from advisor_api.http.auth import authenticated_user, forwarded_iap_assertion
 from advisor_api.http.context import request_id
-from advisor_api.http.errors import COMMON_ERROR_RESPONSES
+from advisor_api.http.errors import COMMON_ERROR_RESPONSES, ApiError, ServiceUnavailableError
 from advisor_api.ports.auth import AuthenticatedUser
 
 router = APIRouter(prefix="/care-plans", tags=["care-plans"])
@@ -35,9 +35,20 @@ async def preview_care_plan(
     request: Request,
     user: Authenticated,
 ) -> CarePlanPreviewResponse:
-    return await get_container(request).care_plans.preview(
-        payload, request_id(request), user.owner_id
-    )
+    container = get_container(request)
+    current_request_id = request_id(request)
+    if container.care_plan_tools is None:
+        return await container.care_plans.preview(payload, current_request_id, user.owner_id)
+    try:
+        return await container.care_plan_tools.preview(
+            payload,
+            request_id=current_request_id,
+            user_assertion=forwarded_iap_assertion(request),
+        )
+    except ApiError:
+        raise
+    except Exception as error:
+        raise ServiceUnavailableError() from error
 
 
 @router.post(
@@ -53,9 +64,20 @@ async def create_care_plan(
     request: Request,
     user: Authenticated,
 ) -> CarePlan:
-    return await get_container(request).care_plans.create(
-        payload, request_id(request), user.owner_id
-    )
+    container = get_container(request)
+    current_request_id = request_id(request)
+    if container.care_plan_tools is None:
+        return await container.care_plans.create(payload, current_request_id, user.owner_id)
+    try:
+        return await container.care_plan_tools.create(
+            payload,
+            request_id=current_request_id,
+            user_assertion=forwarded_iap_assertion(request),
+        )
+    except ApiError:
+        raise
+    except Exception as error:
+        raise ServiceUnavailableError() from error
 
 
 @router.get(
@@ -70,7 +92,20 @@ async def get_care_plan(
     request: Request,
     user: Authenticated,
 ) -> CarePlan:
-    return await get_container(request).care_plans.get(plan_id, user.owner_id, request_id(request))
+    container = get_container(request)
+    current_request_id = request_id(request)
+    if container.care_plan_tools is None:
+        return await container.care_plans.get(plan_id, user.owner_id, current_request_id)
+    try:
+        return await container.care_plan_tools.get(
+            plan_id,
+            request_id=current_request_id,
+            user_assertion=forwarded_iap_assertion(request),
+        )
+    except ApiError:
+        raise
+    except Exception as error:
+        raise ServiceUnavailableError() from error
 
 
 @router.patch(
@@ -86,9 +121,23 @@ async def update_care_plan(
     request: Request,
     user: Authenticated,
 ) -> CarePlan:
-    return await get_container(request).care_plans.update(
-        plan_id, payload, request_id(request), user.owner_id
-    )
+    container = get_container(request)
+    current_request_id = request_id(request)
+    if container.care_plan_tools is None:
+        return await container.care_plans.update(
+            plan_id, payload, current_request_id, user.owner_id
+        )
+    try:
+        return await container.care_plan_tools.adjust(
+            plan_id,
+            payload,
+            request_id=current_request_id,
+            user_assertion=forwarded_iap_assertion(request),
+        )
+    except ApiError:
+        raise
+    except Exception as error:
+        raise ServiceUnavailableError() from error
 
 
 @router.post(
@@ -104,6 +153,20 @@ async def complete_care_task(
     request: Request,
     user: Authenticated,
 ) -> CarePlan:
-    return await get_container(request).care_plans.complete_task(
-        plan_id, task_id, request_id(request), user.owner_id
-    )
+    container = get_container(request)
+    current_request_id = request_id(request)
+    if container.care_plan_tools is None:
+        return await container.care_plans.complete_task(
+            plan_id, task_id, current_request_id, user.owner_id
+        )
+    try:
+        return await container.care_plan_tools.complete_task(
+            plan_id,
+            task_id,
+            request_id=current_request_id,
+            user_assertion=forwarded_iap_assertion(request),
+        )
+    except ApiError:
+        raise
+    except Exception as error:
+        raise ServiceUnavailableError() from error

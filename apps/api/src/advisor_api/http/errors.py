@@ -167,5 +167,6 @@ COMMON_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     404: {"model": ErrorEnvelope, "description": "Resource not found"},
     409: {"model": ErrorEnvelope, "description": "State conflict"},
     422: {"model": ErrorEnvelope, "description": "Validation or eligibility failure"},
+    503: {"model": ErrorEnvelope, "description": "Required dependency unavailable"},
     500: {"model": ErrorEnvelope, "description": "Unexpected server failure"},
 }

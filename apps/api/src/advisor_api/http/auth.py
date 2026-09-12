@@ -22,4 +22,15 @@ async def authenticated_user(
     verifier = cast(IdentityTokenVerifier, request.app.state.identity_token_verifier)
     principal = await verifier.verify(token)
     request.state.authenticated_user = principal
+    if token is not None:
+        request.state.iap_assertion = token
     return principal
+
+
+def forwarded_iap_assertion(request: Request) -> str:
+    """Return only the assertion already verified by the endpoint dependency."""
+
+    token = getattr(request.state, "iap_assertion", None)
+    if not isinstance(token, str) or not token:
+        raise RuntimeError("A verified IAP assertion is required for the private MCP route")
+    return token

@@ -8,7 +8,7 @@ from advisor_api.contracts.recommendations import RecommendationRequest
 from advisor_api.ports.generation import RecommendationNarrative
 from langchain_core.language_models.chat_models import BaseChatModel
 from langchain_core.messages import HumanMessage, SystemMessage
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 
 from agents.prompts import EXPLANATION_SYSTEM_PROMPT
 from services.orchestration.state import RankedCandidate
@@ -47,7 +47,11 @@ class LangChainStructuredExplanationAdapter:
         if not model_version.strip():
             raise ValueError("Model version cannot be empty")
         self.model_version = model_version
-        self._structured_model = model.with_structured_output(GeneratedNarrativeBatch)
+        self._structured_model = model.with_structured_output(
+            GeneratedNarrativeBatch,
+            method="json_schema",
+            strict=True,
+        )
 
     async def generate(
         self,
@@ -127,3 +131,27 @@ def _prompt_payload(
         ],
     }
     return json.dumps(payload, separators=(",", ":"), sort_keys=True)
+
+
+def build_openai_explanation_adapter(
+    *,
+    api_key: str,
+    model: str,
+    timeout_seconds: float,
+    max_retries: int,
+) -> LangChainStructuredExplanationAdapter:
+    """Build the approved OpenAI adapter with the same options in evals and production."""
+
+    from langchain_openai import ChatOpenAI
+
+    chat_model = ChatOpenAI(
+        api_key=SecretStr(api_key),
+        model=model,
+        reasoning_effort="low",
+        verbosity="low",
+        timeout=timeout_seconds,
+        max_retries=max_retries,
+        store=False,
+        use_responses_api=True,
+    )
+    return LangChainStructuredExplanationAdapter(chat_model, model_version=model)

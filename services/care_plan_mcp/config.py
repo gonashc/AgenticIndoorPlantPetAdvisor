@@ -12,7 +12,7 @@ class CarePlanMcpSettings(BaseSettings):
     app_env: Literal["local", "test", "production"] = "local"
     auth_mode: Literal["disabled", "google_iap"] = "disabled"
     iap_audience: str | None = None
-    enabled_categories: str = "PLANT,DOG"
+    enabled_categories: str = "PLANT,DOG,CAT"
     database_mode: Literal["memory", "url", "cloud_sql"] = "url"
     database_url: SecretStr | None = SecretStr(
         "postgresql+asyncpg://advisor:advisor@127.0.0.1:5432/advisor"

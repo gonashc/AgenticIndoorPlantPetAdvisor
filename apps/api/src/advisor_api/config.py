@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     openapi_enabled: bool = True
     auth_mode: Literal["disabled", "google_iap"] = "disabled"
     iap_audience: str | None = None
-    enabled_categories: str = "PLANT,DOG"
+    enabled_categories: str = "PLANT,DOG,CAT"
     web_dist_dir: Path = Path("/app/web")
     database_mode: Literal["memory", "url", "cloud_sql"] = "memory"
     database_url: SecretStr | None = None

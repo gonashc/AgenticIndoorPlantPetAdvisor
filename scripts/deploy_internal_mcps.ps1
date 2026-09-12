@@ -108,7 +108,11 @@ if ($LASTEXITCODE -ne 0) { throw "MCP database grants failed." }
 foreach ($service in $services) {
     $provisionalAudience = "https://$($service.ServiceName)-$ProjectNumber.$Region.run.app"
     $provisionalHost = ([Uri]$provisionalAudience).Host
-    $runtimeSettings = @("APP_ENV=production", "MCP_ALLOWED_HOSTS=$provisionalHost")
+    $runtimeSettings = @(
+        "APP_ENV=production",
+        "ENABLED_CATEGORIES=PLANT,DOG,CAT",
+        "MCP_ALLOWED_HOSTS=$provisionalHost"
+    )
     $networkArguments = @()
     if ($service.Key -eq "catalog") {
         $runtimeSettings += @(

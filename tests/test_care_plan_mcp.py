@@ -50,6 +50,7 @@ async def test_care_plan_mcp_requires_preview_and_literal_confirmation() -> None
             },
         )
         assert preview.structured_content is not None
+        assert preview.structured_content["outcome"] == "success"
         preview_id = preview.structured_content["preview"]["preview_id"]
         rejected = await client.call_tool(
             "create_care_plan",
@@ -64,8 +65,61 @@ async def test_care_plan_mcp_requires_preview_and_literal_confirmation() -> None
     assert rejected.is_error
     assert not created.is_error
     assert created.structured_content is not None
+    assert created.structured_content["outcome"] == "success"
     assert created.structured_content["plan"]["status"] == "ACTIVE"
     UUID(created.structured_content["plan"]["plan_id"])
+
+
+@pytest.mark.asyncio
+async def test_care_plan_mcp_returns_lossless_not_found_and_conflict_results() -> None:
+    server = server_with_memory_repository()
+    request_id = "22961319-18a2-4336-a873-39057eb2bba8"
+
+    async with Client(server) as client:
+        missing = await client.call_tool(
+            "get_care_plan",
+            {
+                "plan_id": "11111111-1111-4111-8111-111111111111",
+                "request_id": request_id,
+            },
+        )
+        preview = await client.call_tool(
+            "preview_care_plan",
+            {
+                "session_id": "c0a8012e-6d1a-4c8b-9fcb-6d27ea0cb911",
+                "recommendation_id": "plant-spider",
+                "category": "PLANT",
+                "item_name": "Spider Plant",
+                "start_date": "2026-09-12",
+                "timezone": "America/New_York",
+                "request_id": request_id,
+            },
+        )
+        assert preview.structured_content is not None
+        preview_id = preview.structured_content["preview"]["preview_id"]
+        await client.call_tool(
+            "create_care_plan",
+            {"preview_id": preview_id, "confirmed": True, "request_id": request_id},
+        )
+        duplicate = await client.call_tool(
+            "create_care_plan",
+            {"preview_id": preview_id, "confirmed": True, "request_id": request_id},
+        )
+
+    assert not missing.is_error
+    assert missing.structured_content is not None
+    assert missing.structured_content["error"] == {
+        "contract_version": "v1",
+        "status_code": 404,
+        "code": "RESOURCE_NOT_FOUND",
+        "message": "The requested care_plan was not found.",
+        "details": [
+            {"field": "care_plan", "code": "NOT_FOUND", "message": "No matching resource."}
+        ],
+    }
+    assert duplicate.structured_content is not None
+    assert duplicate.structured_content["error"]["status_code"] == 409
+    assert duplicate.structured_content["error"]["code"] == "CARE_PLAN_PREVIEW_ALREADY_CONSUMED"
 
 
 @pytest.mark.asyncio

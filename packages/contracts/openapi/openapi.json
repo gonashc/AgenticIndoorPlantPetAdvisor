@@ -1535,6 +1535,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [
@@ -1621,6 +1631,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [
@@ -1709,6 +1729,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [
@@ -1805,6 +1835,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [
@@ -1903,6 +1943,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [
@@ -2008,6 +2058,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [
@@ -2137,6 +2197,16 @@
               }
             },
             "description": "Unexpected server failure"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Required dependency unavailable"
           }
         },
         "security": [

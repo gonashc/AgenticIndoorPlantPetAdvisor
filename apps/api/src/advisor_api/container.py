@@ -18,7 +18,7 @@ from advisor_api.ports.external_tools import CurrentSourceGateway
 from advisor_api.ports.generation import DeterministicExplanationGenerator, ExplanationGenerator
 from advisor_api.ports.memory import PreferenceMemory
 from advisor_api.ports.observability import RecommendationTracer
-from agents.structured_generation import LangChainStructuredExplanationAdapter
+from agents.structured_generation import build_openai_explanation_adapter
 from agents.supervisor import build_supervisor_graph
 from database.repositories import (
     PostgresCarePlanRepository,
@@ -177,17 +177,12 @@ def _build_explanation_generator(settings: Settings) -> ExplanationGenerator:
         return DeterministicExplanationGenerator()
     if settings.openai_api_key is None or settings.openai_model is None:
         raise ValueError("OpenAI explanation configuration is incomplete")
-    from langchain_openai import ChatOpenAI
-
-    model = ChatOpenAI(
-        api_key=settings.openai_api_key,
+    return build_openai_explanation_adapter(
+        api_key=settings.openai_api_key.get_secret_value(),
         model=settings.openai_model,
-        temperature=0,
-        timeout=settings.openai_timeout_seconds,
+        timeout_seconds=settings.openai_timeout_seconds,
         max_retries=settings.openai_max_retries,
-        store=False,
     )
-    return LangChainStructuredExplanationAdapter(model, model_version=settings.openai_model)
 
 
 def _build_current_source_gateway(settings: Settings) -> CurrentSourceGateway | None:

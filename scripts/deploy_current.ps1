@@ -14,6 +14,10 @@ param(
     [string]$McpAdoptionAudience = "",
     [string]$McpCarePlanUrl = "",
     [string]$McpCarePlanAudience = "",
+    [ValidateSet("deterministic", "openai")]
+    [string]$ExplanationMode = "deterministic",
+    [string]$OpenAiModel = "",
+    [string]$ExplanationApprovalFile = "",
     [string]$SmokeJobName = "advisor-api-smoke",
     [string]$GcloudPath = "gcloud"
 )
@@ -27,6 +31,31 @@ if ($ImageTag -notmatch '^[a-zA-Z0-9_.-]+$') {
 }
 if ($IapMember -notmatch '^(user|group):[^@\s]+@[^@\s]+$') {
     throw "IapMember must be a user: or group: principal."
+}
+if ($ExplanationMode -eq "openai") {
+    if ($OpenAiModel -notmatch '^[a-zA-Z0-9._-]+$') {
+        throw "OpenAiModel must be an exact non-empty model identifier."
+    }
+    if (-not $ExplanationApprovalFile -or -not (Test-Path -LiteralPath $ExplanationApprovalFile)) {
+        throw "An explanation release approval report is required for OpenAI mode."
+    }
+    & git diff --quiet
+    if ($LASTEXITCODE -ne 0) { throw "OpenAI deployment requires a clean working tree." }
+    & git diff --cached --quiet
+    if ($LASTEXITCODE -ne 0) { throw "OpenAI deployment requires a clean index." }
+    $approval = Get-Content -LiteralPath $ExplanationApprovalFile -Raw | ConvertFrom-Json
+    $sourceCommit = (& git rev-parse HEAD).Trim()
+    if (
+        $approval.contract_version -ne "v1" -or
+        $approval.approved -ne $true -or
+        $approval.source_commit -ne $sourceCommit -or
+        $approval.dataset_version -ne "recommendation-eval-v1" -or
+        $approval.suite_version -ne "explanation-release-v1" -or
+        $approval.prompt_version -ne "rag-explanations-v1" -or
+        $approval.model -ne $OpenAiModel
+    ) {
+        throw "The explanation approval report does not match this commit, model, and release suite."
+    }
 }
 if ($McpMode -eq "remote") {
     if (-not $McpPlacesUrl -and -not $McpAdoptionUrl -and -not $McpCarePlanUrl) {
@@ -82,16 +111,28 @@ $runtimeSettings = @(
     "LANGSMITH_PROJECT=IndoorPlantandPetAdvisor",
     "LANGSMITH_HIDE_INPUTS=true",
     "LANGSMITH_HIDE_OUTPUTS=true",
-    "EXPLANATION_MODE=deterministic",
+    "ENABLED_CATEGORIES=PLANT,DOG,CAT",
+    "EXPLANATION_MODE=$ExplanationMode",
     "MCP_MODE=$McpMode",
     "MCP_AUTH_MODE=$(if ($McpMode -eq 'remote') { 'google_cloud_run' } else { 'none' })"
 )
+$secretSettings = "LANGSMITH_API_KEY=langsmith-api-key:latest"
+$secretRemovalArguments = @()
+if ($ExplanationMode -eq "openai") {
+    $runtimeSettings += "OPENAI_MODEL=$OpenAiModel"
+    $secretSettings += ",OPENAI_API_KEY=openai-api-key:latest"
+}
+else {
+    $secretRemovalArguments = @("--remove-secrets=OPENAI_API_KEY")
+}
 $settingsToRemove = @(
-    "ENABLED_CATEGORIES",
     # Remove malformed entries left by the original delimiter-based deployment command.
     ":APP_ENV",
     "DOG:WEB_DIST_DIR"
 )
+if ($ExplanationMode -eq "deterministic") {
+    $settingsToRemove += "OPENAI_MODEL"
+}
 if ($McpMode -eq "remote") {
     if ($McpPlacesUrl) {
         $runtimeSettings += "MCP_PLACES_URL=$McpPlacesUrl"
@@ -139,7 +180,8 @@ $settingsToRemove = $settingsToRemove -join ','
     --vpc-egress=private-ranges-only `
     --remove-env-vars=$settingsToRemove `
     --update-env-vars=$runtimeSettings `
-    --update-secrets="LANGSMITH_API_KEY=langsmith-api-key:latest" `
+    --update-secrets=$secretSettings `
+    @secretRemovalArguments `
     --no-allow-unauthenticated `
     --iap `
     --quiet

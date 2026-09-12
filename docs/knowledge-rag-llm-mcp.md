@@ -30,11 +30,31 @@ production ingestion accept only `AUTHORITATIVE` or `EXPERT_REVIEWED` sources.
 
 ## Safe rollout
 
-Leave `EXPLANATION_MODE=deterministic` and `MCP_MODE=disabled` in production initially. Populate a
-new versioned Pinecone namespace, run `uv run python scripts/run_recommendation_evals.py`, then run
-the LangSmith experiment with `--upload`. Enable the structured model only after safety, ranking,
-grounding, provenance, and degradation-disclosure checks pass. Promote the exact prompt, model,
-knowledge namespace, rules, and scoring versions together.
+Production keeps `EXPLANATION_MODE=deterministic` unless one exact model passes the manual
+`Explanation model release gate` GitHub workflow. The workflow first runs the deterministic safety
+and ranking suite, then exercises the selected model through strict structured output across all
+three categories with bounded synthetic evidence and a prompt-injection canary. It uploads a
+versioned approval report bound to the exact Git commit, model, prompt, dataset, and suite. An
+OpenAI-mode deployment must supply that report to `deploy_current.ps1`; a missing, failed, stale,
+or mismatched report is rejected before the image is built. The production adapter uses the
+Responses API, strict JSON Schema output, low reasoning effort, and no response storage. Runtime
+generation failures still fall back visibly to deterministic explanations.
+
+The initial release-gate candidate is `gpt-5.6-terra`; model activation is not implied by adding
+the workflow or a secret. Add `OPENAI_API_KEY` as a protected GitHub environment secret and add the
+same value to Secret Manager as `openai-api-key` only when ready to run the paid gate. After a
+successful workflow, download `explanation-release-report.json` and deploy with:
+
+```powershell
+./scripts/deploy_current.ps1 `
+  -ExplanationMode openai `
+  -OpenAiModel "gpt-5.6-terra" `
+  -ExplanationApprovalFile "path/to/explanation-release-report.json" `
+  -McpMode remote `
+  -McpCarePlanUrl "https://CARE_PLAN_SERVICE_URL/mcp" `
+  -McpCarePlanAudience "https://CARE_PLAN_SERVICE_URL" `
+  -GcloudPath $gcloud
+```
 
 MCP endpoints are separately enabled with `MCP_MODE=remote`. Plant and adoption services can be
 enabled independently. The application can call only `find_places` and `find_adoptions`, requests
@@ -92,12 +112,15 @@ recommendation graph:
   must forward the original `X-Goog-IAP-JWT-Assertion`, which the service verifies before deriving
   the owner. Creation still requires the literal `confirmed: true` input.
 
-The API composition root can configure an authenticated Care Plan MCP client with
+The API composition root configures an authenticated Care Plan MCP client with
 `MCP_CARE_PLAN_URL` and `MCP_CARE_PLAN_AUDIENCE`. The client obtains a short-lived Cloud Run ID
 token for service authentication and forwards the signed IAP assertion only in transport metadata;
 it never converts identity into an MCP tool argument. Existing versioned care-plan HTTP endpoints
-remain the React application's public contract. Do not route them through MCP until the MCP error
-result can preserve the v1 HTTP not-found and conflict contracts without translation loss.
+remain the React application's public contract. When the private endpoint is configured, those
+REST handlers route preview, confirmed creation, retrieval, adjustment, and task completion through
+MCP. The MCP service returns a discriminated v1 result for known domain failures, and the gateway
+reconstructs the same HTTP 404/409/422 status, code, message, and details without leaking owner IDs.
+Transport and malformed-result failures become the existing v1 503 service-unavailable envelope.
 
 Each service has a separate ASGI entry point, non-root container, strict output models, bounded
 request sizes, DNS-rebinding protection, a health route, and CI contract tests. Deployment remains
@@ -120,8 +143,9 @@ tables. It grants the API runtime identity permission to invoke each private ser
 not connect the new tools to the graph. Regulations and Commerce remain visibly degraded until
 their provider settings and reviewed adapters are implemented.
 
-After the internal services are deployed, rebuild the API with the existing Places/Adoption
-settings plus the private Care Plan endpoint:
+Deploy the Care Plan MCP revision before the API revision. The updated REST facade sends a
+`request_id` tool argument and requires the MCP 1.1 discriminated result contract. Then rebuild
+the API with the existing Places/Adoption settings plus the private Care Plan endpoint:
 
 ```powershell
 ./scripts/deploy_current.ps1 `

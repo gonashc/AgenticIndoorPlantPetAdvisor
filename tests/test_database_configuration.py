@@ -8,6 +8,10 @@ from pydantic import SecretStr, ValidationError
 from database.models import SCHEMA, Base
 
 
+def test_default_release_enables_all_deterministic_specialists() -> None:
+    assert Settings(_env_file=None).enabled_category_values() == frozenset({"PLANT", "DOG", "CAT"})
+
+
 def test_production_rejects_in_memory_persistence() -> None:
     with pytest.raises(ValidationError, match="Production cannot use"):
         Settings(_env_file=None, app_env="production", database_mode="memory")

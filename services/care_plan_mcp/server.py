@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import date
-from typing import Literal
+from typing import Literal, cast
 from uuid import UUID, uuid4
 
 from advisor_api.adapters.auth import GoogleIapTokenVerifier, LocalIdentityTokenVerifier
@@ -15,6 +15,7 @@ from advisor_api.contracts.care_plans import (
     CarePlanStatus,
     CarePlanUpdateRequest,
 )
+from advisor_api.http.errors import ApiError
 from advisor_api.ports.auth import IdentityTokenVerifier
 from mcp.server.mcpserver import Context, MCPServer
 from mcp.server.transport_security import TransportSecuritySettings
@@ -25,7 +26,10 @@ from starlette.responses import JSONResponse, Response
 from database.repositories import PostgresCarePlanRepository
 from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plan_mcp.config import CarePlanMcpSettings
-from services.care_plan_mcp.contracts import CarePlanPreviewToolResult, CarePlanToolResult
+from services.care_plan_mcp.contracts import (
+    CarePlanToolError,
+    CarePlanToolResult,
+)
 from services.care_plans.service import CarePlanService
 
 CARE_PLAN_SCHEMA_CAPABILITIES = frozenset(
@@ -101,7 +105,7 @@ def create_server(
         description=(
             "Previews and performs owner-scoped care-plan actions after verified authentication."
         ),
-        version="1.0.0",
+        version="1.1.0",
         lifespan=lifespan,
     )
 
@@ -121,22 +125,26 @@ def create_server(
         start_date: date,
         timezone: str,
         ctx: Context[CarePlanMcpState],
-    ) -> CarePlanPreviewToolResult:
+        request_id: UUID | None = None,
+    ) -> CarePlanToolResult:
         state = ctx.request_context.lifespan_context
         owner_id = await _owner_id(ctx, state.identity_verifier)
-        preview = await state.care_plans.preview(
-            CarePlanPreviewRequest(
-                session_id=session_id,
-                recommendation_id=recommendation_id,
-                category=category,
-                item_name=item_name,
-                start_date=start_date,
-                timezone=timezone,
-            ),
-            uuid4(),
-            owner_id,
-        )
-        return CarePlanPreviewToolResult(preview=preview)
+        try:
+            preview = await state.care_plans.preview(
+                CarePlanPreviewRequest(
+                    session_id=session_id,
+                    recommendation_id=recommendation_id,
+                    category=category,
+                    item_name=item_name,
+                    start_date=start_date,
+                    timezone=timezone,
+                ),
+                request_id or uuid4(),
+                owner_id,
+            )
+        except ApiError as error:
+            return _error_result(error)
+        return CarePlanToolResult(outcome="success", preview=preview)
 
     @server.tool(
         name="create_care_plan",
@@ -149,15 +157,37 @@ def create_server(
         preview_id: UUID,
         confirmed: Literal[True],
         ctx: Context[CarePlanMcpState],
+        request_id: UUID | None = None,
     ) -> CarePlanToolResult:
         state = ctx.request_context.lifespan_context
         owner_id = await _owner_id(ctx, state.identity_verifier)
-        plan = await state.care_plans.create(
-            CarePlanCreateRequest(preview_id=preview_id, confirmed=confirmed),
-            uuid4(),
-            owner_id,
-        )
-        return CarePlanToolResult(plan=plan)
+        try:
+            plan = await state.care_plans.create(
+                CarePlanCreateRequest(preview_id=preview_id, confirmed=confirmed),
+                request_id or uuid4(),
+                owner_id,
+            )
+        except ApiError as error:
+            return _error_result(error)
+        return CarePlanToolResult(outcome="success", plan=plan)
+
+    @server.tool(
+        name="get_care_plan",
+        description="Retrieve an authenticated user's existing care plan.",
+        structured_output=True,
+    )
+    async def get_care_plan(
+        plan_id: UUID,
+        ctx: Context[CarePlanMcpState],
+        request_id: UUID | None = None,
+    ) -> CarePlanToolResult:
+        state = ctx.request_context.lifespan_context
+        owner_id = await _owner_id(ctx, state.identity_verifier)
+        try:
+            plan = await state.care_plans.get(plan_id, owner_id, request_id or uuid4())
+        except ApiError as error:
+            return _error_result(error)
+        return CarePlanToolResult(outcome="success", plan=plan)
 
     @server.tool(
         name="adjust_care_plan",
@@ -168,16 +198,20 @@ def create_server(
         plan_id: UUID,
         status: CarePlanStatus,
         ctx: Context[CarePlanMcpState],
+        request_id: UUID | None = None,
     ) -> CarePlanToolResult:
         state = ctx.request_context.lifespan_context
         owner_id = await _owner_id(ctx, state.identity_verifier)
-        plan = await state.care_plans.update(
-            plan_id,
-            CarePlanUpdateRequest(status=status),
-            uuid4(),
-            owner_id,
-        )
-        return CarePlanToolResult(plan=plan)
+        try:
+            plan = await state.care_plans.update(
+                plan_id,
+                CarePlanUpdateRequest(status=status),
+                request_id or uuid4(),
+                owner_id,
+            )
+        except ApiError as error:
+            return _error_result(error)
+        return CarePlanToolResult(outcome="success", plan=plan)
 
     @server.tool(
         name="complete_care_task",
@@ -188,11 +222,17 @@ def create_server(
         plan_id: UUID,
         task_id: UUID,
         ctx: Context[CarePlanMcpState],
+        request_id: UUID | None = None,
     ) -> CarePlanToolResult:
         state = ctx.request_context.lifespan_context
         owner_id = await _owner_id(ctx, state.identity_verifier)
-        plan = await state.care_plans.complete_task(plan_id, task_id, uuid4(), owner_id)
-        return CarePlanToolResult(plan=plan)
+        try:
+            plan = await state.care_plans.complete_task(
+                plan_id, task_id, request_id or uuid4(), owner_id
+            )
+        except ApiError as error:
+            return _error_result(error)
+        return CarePlanToolResult(outcome="success", plan=plan)
 
     @server.custom_route(  # type: ignore[untyped-decorator]
         "/health", methods=["GET"], include_in_schema=False
@@ -238,3 +278,17 @@ async def _owner_id(context: Context[CarePlanMcpState], verifier: IdentityTokenV
     token = headers.get("x-goog-iap-jwt-assertion") or headers.get("X-Goog-IAP-JWT-Assertion")
     principal = await verifier.verify(token)
     return principal.owner_id
+
+
+def _error_result(error: ApiError) -> CarePlanToolResult:
+    if error.status_code not in {404, 409, 422}:
+        raise error
+    return CarePlanToolResult(
+        outcome="error",
+        error=CarePlanToolError(
+            status_code=cast(Literal[404, 409, 422], error.status_code),
+            code=error.code,
+            message=error.message,
+            details=error.details,
+        ),
+    )

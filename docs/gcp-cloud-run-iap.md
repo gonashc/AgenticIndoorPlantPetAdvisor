@@ -36,7 +36,8 @@ authenticated Google Cloud CLI. The script performs these operations in order:
 1. builds an immutable image containing FastAPI and the React production bundle;
 2. updates and executes `advisor-bootstrap`, which applies Alembic before loading demo data;
 3. deploys `advisor-api` with IAP required, resets the category configuration to the image default
-   (`PLANT,DOG`), uses deterministic explanations, applies the explicitly selected MCP mode, and
+   (`PLANT,DOG,CAT`), uses deterministic explanations unless an exact-model approval report is
+   supplied, applies the explicitly selected MCP mode, and
    enables redacted LangSmith tracing;
 4. grants only the IAP service agent Cloud Run invocation plus resource-scoped IAP access to the
    configured user/group and API smoke identity;

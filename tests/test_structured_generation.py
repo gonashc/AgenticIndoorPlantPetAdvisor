@@ -29,8 +29,9 @@ class FakeChatModel:
     def __init__(self, output: dict[str, object]) -> None:
         self.output = output
 
-    def with_structured_output(self, schema: object) -> FakeStructuredRunnable:
+    def with_structured_output(self, schema: object, **options: object) -> FakeStructuredRunnable:
         del schema
+        assert options == {"method": "json_schema", "strict": True}
         return FakeStructuredRunnable(self.output)
 
 
