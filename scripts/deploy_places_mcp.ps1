@@ -28,17 +28,8 @@ if ($LASTEXITCODE -ne 0) {
     throw "Secret $SecretName does not exist. Bootstrap the restricted Google Places key first."
 }
 
-$apiUrl = (& $GcloudPath run services describe $ApiServiceName `
-    --project=$ProjectId `
-    --region=$Region `
-    --format="value(status.url)").Trim()
-$apiUrlPrefix = "https://$ApiServiceName-"
-if ($LASTEXITCODE -ne 0 -or -not $apiUrl.StartsWith($apiUrlPrefix)) {
-    throw "Could not derive the Cloud Run hostname from $ApiServiceName."
-}
-$mcpAudience = "https://$ServiceName-$($apiUrl.Substring($apiUrlPrefix.Length))"
-$mcpHost = ([Uri]$mcpAudience).Host
-$mcpUrl = "$mcpAudience/mcp"
+$provisionalAudience = "https://$ServiceName-$ProjectNumber.$Region.run.app"
+$provisionalHost = ([Uri]$provisionalAudience).Host
 
 & $GcloudPath builds submit `
     --project=$ProjectId `
@@ -53,12 +44,30 @@ if ($LASTEXITCODE -ne 0) { throw "Plant-location MCP image build failed." }
     --region=$Region `
     --image=$image `
     --service-account=$mcpServiceAccount `
-    --set-env-vars="APP_ENV=production,MCP_ALLOWED_HOSTS=$mcpHost" `
+    --set-env-vars="APP_ENV=production,MCP_ALLOWED_HOSTS=$provisionalHost" `
     --set-secrets="GOOGLE_PLACES_API_KEY=$SecretName`:latest" `
     --no-allow-unauthenticated `
     --no-iap `
     --quiet
 if ($LASTEXITCODE -ne 0) { throw "Plant-location MCP deployment failed." }
+
+$mcpAudience = (& $GcloudPath run services describe $ServiceName `
+    --project=$ProjectId `
+    --region=$Region `
+    --format="value(status.url)").Trim()
+if ($LASTEXITCODE -ne 0 -or -not $mcpAudience.StartsWith("https://")) {
+    throw "Could not read the plant-location MCP service URL."
+}
+$mcpHost = ([Uri]$mcpAudience).Host
+$mcpUrl = "$mcpAudience/mcp"
+if ($mcpHost -ne $provisionalHost) {
+    & $GcloudPath run services update $ServiceName `
+        --project=$ProjectId `
+        --region=$Region `
+        --update-env-vars="MCP_ALLOWED_HOSTS=$mcpHost" `
+        --quiet
+    if ($LASTEXITCODE -ne 0) { throw "Failed to set the canonical MCP hostname." }
+}
 
 & $GcloudPath run services add-iam-policy-binding $ServiceName `
     --project=$ProjectId `
