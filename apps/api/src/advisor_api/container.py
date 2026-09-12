@@ -15,13 +15,18 @@ from advisor_api.config import Settings
 from advisor_api.observability import build_recommendation_tracer
 from advisor_api.ports.data import CarePlanRepository, CatalogRepository
 from advisor_api.ports.external_tools import CurrentSourceGateway
+from advisor_api.ports.generation import DeterministicExplanationGenerator, ExplanationGenerator
 from advisor_api.ports.memory import PreferenceMemory
 from advisor_api.ports.observability import RecommendationTracer
+from agents.structured_generation import LangChainStructuredExplanationAdapter
 from agents.supervisor import build_supervisor_graph
 from database.repositories import PostgresCarePlanRepository, PostgresCatalogRepository
 from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plans import CarePlanService
+from services.mcp_gateway import McpCurrentSourceGateway, McpSdkToolClient, McpServerConfig
 from services.orchestration.service import RecommendationService
+from services.retrieval.pinecone import PineconeHybridKnowledgeAdapter
+from services.retrieval.ports import KnowledgeRetriever
 from services.safety import SafetyService
 from services.scoring import ScoringService
 
@@ -43,6 +48,9 @@ def build_container(
     current_source_gateway: CurrentSourceGateway | None = None,
     preference_memory: PreferenceMemory | None = None,
     recommendation_tracer: RecommendationTracer | None = None,
+    knowledge_retriever: KnowledgeRetriever | None = None,
+    explanation_generator: ExplanationGenerator | None = None,
+    knowledge_namespace: str = "fake-catalog-v1",
 ) -> ApplicationContainer:
     resolved_catalog = catalog or InMemoryCatalogRepository()
     resolved_plan_repository = care_plan_repository or InMemoryCarePlanRepository()
@@ -54,6 +62,9 @@ def build_container(
         safety,
         current_source_gateway or UnavailableCurrentSourceGateway(),
         preference_memory or EmptyPreferenceMemory(),
+        knowledge_retriever,
+        explanation_generator,
+        knowledge_namespace,
     )
     tracer = recommendation_tracer or build_recommendation_tracer()
     return ApplicationContainer(
@@ -67,8 +78,24 @@ async def build_configured_container(
     settings: Settings,
 ) -> tuple[ApplicationContainer, DatabaseRuntime | None]:
     recommendation_tracer = build_recommendation_tracer(settings)
+    knowledge_retriever = _build_knowledge_retriever(settings)
+    explanation_generator = _build_explanation_generator(settings)
+    current_source_gateway = _build_current_source_gateway(settings)
     if settings.database_mode == "memory":
-        return build_container(recommendation_tracer=recommendation_tracer), None
+        return (
+            build_container(
+                recommendation_tracer=recommendation_tracer,
+                knowledge_retriever=knowledge_retriever,
+                explanation_generator=explanation_generator,
+                current_source_gateway=current_source_gateway,
+                knowledge_namespace=(
+                    settings.pinecone_namespace
+                    if knowledge_retriever is not None
+                    else "fake-catalog-v1"
+                ),
+            ),
+            None,
+        )
     try:
         runtime = await create_database_runtime(settings)
     except Exception:
@@ -85,8 +112,64 @@ async def build_configured_container(
             catalog=PostgresCatalogRepository(runtime.session_factory),
             care_plan_repository=PostgresCarePlanRepository(runtime.session_factory),
             recommendation_tracer=recommendation_tracer,
+            knowledge_retriever=knowledge_retriever,
+            explanation_generator=explanation_generator,
+            current_source_gateway=current_source_gateway,
+            knowledge_namespace=(
+                settings.pinecone_namespace
+                if knowledge_retriever is not None
+                else "fake-catalog-v1"
+            ),
         ),
         runtime,
+    )
+
+
+def _build_knowledge_retriever(settings: Settings) -> KnowledgeRetriever | None:
+    if settings.retrieval_mode == "disabled":
+        return None
+    if settings.pinecone_api_key is None or settings.pinecone_index_host is None:
+        raise ValueError("Pinecone configuration is incomplete")
+    return PineconeHybridKnowledgeAdapter(
+        api_key=settings.pinecone_api_key.get_secret_value(),
+        index_host=settings.pinecone_index_host,
+        index_dimension=settings.pinecone_index_dimension,
+        dense_model=settings.pinecone_dense_model,
+        sparse_model=settings.pinecone_sparse_model,
+        rerank_model=settings.pinecone_rerank_model,
+        alpha=settings.pinecone_hybrid_alpha,
+        timeout_seconds=settings.pinecone_timeout_seconds,
+    )
+
+
+def _build_explanation_generator(settings: Settings) -> ExplanationGenerator:
+    if settings.explanation_mode == "deterministic":
+        return DeterministicExplanationGenerator()
+    if settings.openai_api_key is None or settings.openai_model is None:
+        raise ValueError("OpenAI explanation configuration is incomplete")
+    from langchain_openai import ChatOpenAI
+
+    model = ChatOpenAI(
+        api_key=settings.openai_api_key,
+        model=settings.openai_model,
+        temperature=0,
+        timeout=settings.openai_timeout_seconds,
+        max_retries=settings.openai_max_retries,
+        store=False,
+    )
+    return LangChainStructuredExplanationAdapter(model, model_version=settings.openai_model)
+
+
+def _build_current_source_gateway(settings: Settings) -> CurrentSourceGateway | None:
+    if settings.mcp_mode == "disabled":
+        return None
+    if settings.mcp_places_url is None or settings.mcp_adoption_url is None:
+        raise ValueError("MCP live-source configuration is incomplete")
+    return McpCurrentSourceGateway(
+        McpSdkToolClient(),
+        places=McpServerConfig(settings.mcp_places_url, "find_places"),
+        adoption=McpServerConfig(settings.mcp_adoption_url, "find_adoptions"),
+        timeout_seconds=settings.mcp_timeout_seconds,
     )
 
 

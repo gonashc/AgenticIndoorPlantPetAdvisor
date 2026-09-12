@@ -15,6 +15,8 @@ COPY apps ./apps
 COPY agents ./agents
 COPY database ./database
 COPY services ./services
+COPY scripts ./scripts
+COPY knowledge ./knowledge
 COPY alembic.ini README.md ./
 RUN uv sync --locked --no-dev
 

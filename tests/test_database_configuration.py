@@ -12,6 +12,21 @@ def test_production_rejects_in_memory_persistence() -> None:
         Settings(_env_file=None, app_env="production", database_mode="memory")
 
 
+def test_openai_explanations_require_retrieval() -> None:
+    with pytest.raises(ValidationError, match="approved Pinecone retrieval"):
+        Settings(_env_file=None, explanation_mode="openai")
+
+
+def test_remote_mcp_requires_https_endpoints() -> None:
+    with pytest.raises(ValidationError, match="must both use HTTPS"):
+        Settings(
+            _env_file=None,
+            mcp_mode="remote",
+            mcp_places_url="http://places.example/mcp",
+            mcp_adoption_url="https://adoption.example/mcp",
+        )
+
+
 def test_url_mode_requires_asyncpg_url() -> None:
     settings = Settings(
         _env_file=None,
@@ -52,10 +67,39 @@ def test_cloud_sql_iam_mode_rejects_password() -> None:
         )
 
 
+def test_cloud_sql_iam_mode_accepts_empty_password_from_env_file() -> None:
+    settings = Settings(
+        _env_file=None,
+        app_env="staging",
+        database_mode="cloud_sql",
+        instance_connection_name="project:region:instance",
+        db_user="advisor-api@project.iam",
+        db_name="advisor",
+        db_password=SecretStr(""),
+    )
+
+    assert settings.cloud_sql_enable_iam_auth is True
+
+
+def test_provider_secret_whitespace_is_removed() -> None:
+    settings = Settings(
+        _env_file=None,
+        retrieval_mode="pinecone",
+        pinecone_api_key=SecretStr(" demo-key\r\n"),
+        pinecone_index_host="https://example.svc.pinecone.io",
+    )
+
+    assert settings.pinecone_api_key is not None
+    assert settings.pinecone_api_key.get_secret_value() == "demo-key"
+
+
 def test_authoritative_tables_use_dedicated_schema() -> None:
     expected = {
         "advisor.catalog_candidates",
         "advisor.catalog_evidence",
+        "advisor.knowledge_sources",
+        "advisor.knowledge_chunks",
+        "advisor.plant_toxicity",
         "advisor.care_plan_previews",
         "advisor.care_plans",
         "advisor.care_tasks",

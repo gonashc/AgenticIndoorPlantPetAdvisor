@@ -17,6 +17,7 @@ from sqlalchemy import (
     Numeric,
     String,
     Text,
+    UniqueConstraint,
     func,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -99,6 +100,111 @@ class CatalogEvidenceRow(TimestampMixin, Base):
     reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     content_version: Mapped[str] = mapped_column(String(80), nullable=False)
     candidate: Mapped[CatalogCandidateRow] = relationship(back_populates="evidence")
+
+
+class KnowledgeSourceRow(TimestampMixin, Base):
+    __tablename__ = "knowledge_sources"
+    __table_args__ = (
+        CheckConstraint("category IN ('PLANT', 'DOG', 'CAT')", name="ck_knowledge_category"),
+        CheckConstraint(
+            "status IN ('PENDING', 'INDEXED', 'QUARANTINED')",
+            name="ck_knowledge_status",
+        ),
+        Index("ix_knowledge_sources_status", "status"),
+        {"schema": SCHEMA},
+    )
+
+    source_id: Mapped[str] = mapped_column(String(160), primary_key=True)
+    category: Mapped[str] = mapped_column(String(8), nullable=False)
+    title: Mapped[str] = mapped_column(String(300), nullable=False)
+    publisher: Mapped[str] = mapped_column(String(240), nullable=False)
+    canonical_url: Mapped[str] = mapped_column(Text, nullable=False)
+    license_id: Mapped[str] = mapped_column(String(100), nullable=False)
+    trust_tier: Mapped[str] = mapped_column(String(30), nullable=False)
+    retrieved_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    approved_by: Mapped[str] = mapped_column(String(160), nullable=False)
+    content_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    checksum_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    status: Mapped[str] = mapped_column(String(20), nullable=False)
+    rejection_reasons: Mapped[list[str]] = mapped_column(ARRAY(String(80)), nullable=False)
+    metadata_json: Mapped[dict[str, str]] = mapped_column(JSONB, nullable=False)
+    chunks: Mapped[list["KnowledgeChunkRow"]] = relationship(
+        back_populates="source",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
+
+class KnowledgeChunkRow(TimestampMixin, Base):
+    __tablename__ = "knowledge_chunks"
+    __table_args__ = (
+        UniqueConstraint("namespace", "source_id", "position", name="uq_knowledge_chunk_position"),
+        CheckConstraint("position >= 0", name="ck_knowledge_chunk_position"),
+        CheckConstraint("word_count > 0", name="ck_knowledge_chunk_word_count"),
+        Index("ix_knowledge_chunks_namespace", "namespace"),
+        Index("ix_knowledge_chunks_source_id", "source_id"),
+        {"schema": SCHEMA},
+    )
+
+    chunk_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    source_id: Mapped[str] = mapped_column(
+        ForeignKey(f"{SCHEMA}.knowledge_sources.source_id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    category: Mapped[str] = mapped_column(String(8), nullable=False)
+    candidate_ids: Mapped[list[str]] = mapped_column(ARRAY(String(100)), nullable=False)
+    position: Mapped[int] = mapped_column(Integer, nullable=False)
+    text_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    word_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    namespace: Mapped[str] = mapped_column(String(120), nullable=False)
+    content_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    indexed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    metadata_json: Mapped[dict[str, str]] = mapped_column(JSONB, nullable=False)
+    source: Mapped[KnowledgeSourceRow] = relationship(back_populates="chunks")
+
+
+class PlantToxicityRow(TimestampMixin, Base):
+    """Versioned structured plant toxicity fact from a reviewed source artifact."""
+
+    __tablename__ = "plant_toxicity"
+    __table_args__ = (
+        CheckConstraint(
+            "animal_species IN ('DOG', 'CAT')", name="ck_plant_toxicity_animal_species"
+        ),
+        CheckConstraint(
+            "toxicity_status IN ('TOXIC', 'NON_TOXIC_LISTED')",
+            name="ck_plant_toxicity_status",
+        ),
+        CheckConstraint(
+            "trust_tier IN ('AUTHORITATIVE', 'EXPERT_REVIEWED', 'DEMO_UNVERIFIED')",
+            name="ck_plant_toxicity_trust_tier",
+        ),
+        Index(
+            "ix_plant_toxicity_lookup",
+            "animal_species",
+            "normalized_scientific_name",
+            "active",
+        ),
+        Index("ix_plant_toxicity_source_id", "source_id"),
+        {"schema": SCHEMA},
+    )
+
+    toxicity_id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    common_names: Mapped[list[str]] = mapped_column(ARRAY(Text), nullable=False)
+    scientific_name: Mapped[str] = mapped_column(String(240), nullable=False)
+    normalized_scientific_name: Mapped[str] = mapped_column(String(240), nullable=False)
+    family: Mapped[str | None] = mapped_column(String(160))
+    animal_species: Mapped[str] = mapped_column(String(8), nullable=False)
+    toxicity_status: Mapped[str] = mapped_column(String(24), nullable=False)
+    source_id: Mapped[str] = mapped_column(String(160), nullable=False)
+    canonical_url: Mapped[str] = mapped_column(Text, nullable=False)
+    source_document_sha256: Mapped[str] = mapped_column(String(64), nullable=False)
+    content_version: Mapped[str] = mapped_column(String(100), nullable=False)
+    trust_tier: Mapped[str] = mapped_column(String(30), nullable=False)
+    permission_status: Mapped[str] = mapped_column(String(40), nullable=False)
+    reviewed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
 
 class CarePlanPreviewRow(TimestampMixin, Base):

@@ -1,5 +1,8 @@
 # Recommendation agents
 
-Engineer 2 owns the implemented Supervisor and selected-category specialist behavior. The current flow is deterministic and model-free; a versioned, constrained explanation prompt is ready for a future structured-output model adapter.
+The Supervisor and selected-category specialists keep eligibility, safety, and ranking deterministic.
+A provider-neutral structured explanation stage is available behind a default-off configuration flag;
+it is grounded only in approved retrieved passages and falls back to deterministic explanations.
 
-The eventual control flow is deterministic category routing → one specialist → evaluator → at most two targeted optimizer attempts → safe fallback or structured response.
+The control flow is deterministic category routing → one specialist → approved retrieval → optional
+structured explanation → evaluator → at most two targeted optimizer attempts → safe response.

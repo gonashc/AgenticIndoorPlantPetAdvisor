@@ -1,6 +1,7 @@
 """Deterministic offline evaluators for the v1 recommendation workflow."""
 
 from collections.abc import Callable
+from datetime import UTC
 from pathlib import Path
 from typing import Any, Literal
 from uuid import NAMESPACE_URL, uuid5
@@ -210,6 +211,70 @@ def provenance_complete(
     return _score("provenance_complete", passed, "Compared all reconstructability versions.")
 
 
+def evidence_grounding_integrity(
+    outputs: dict[str, Any], reference_outputs: dict[str, Any]
+) -> dict[str, object]:
+    actual = RecommendationEvaluationOutput.model_validate(outputs)
+    expected = RecommendationReference.model_validate(reference_outputs)
+    if actual.status == "error":
+        return _score(
+            "evidence_grounding_integrity",
+            expected.expected_status == "error",
+            "Not applicable to an expected rejection.",
+        )
+    if actual.response is None:
+        return _score("evidence_grounding_integrity", False, "Successful output had no response.")
+
+    generated_at = actual.response.metadata.generated_at.astimezone(UTC)
+    evidence = [
+        item
+        for recommendation in actual.response.recommendations
+        for item in recommendation.evidence
+    ]
+    unique_per_recommendation = all(
+        len(item.evidence) == len({source.evidence_id for source in item.evidence})
+        for item in actual.response.recommendations
+    )
+    passed = (
+        bool(evidence)
+        and all(
+            item.source_url.startswith("https://")
+            and bool(item.source_name.strip())
+            and bool(item.content_version.strip())
+            and item.reviewed_at.astimezone(UTC) <= generated_at
+            for item in evidence
+        )
+        and unique_per_recommendation
+    )
+    return _score(
+        "evidence_grounding_integrity",
+        passed,
+        "Checked evidence identity, HTTPS provenance, versions, and review timestamps.",
+    )
+
+
+def degradation_disclosure(
+    outputs: dict[str, Any], reference_outputs: dict[str, Any]
+) -> dict[str, object]:
+    actual = RecommendationEvaluationOutput.model_validate(outputs)
+    expected = RecommendationReference.model_validate(reference_outputs)
+    if actual.status == "error":
+        return _score(
+            "degradation_disclosure",
+            expected.expected_status == "error",
+            "Not applicable to an expected rejection.",
+        )
+    if actual.response is None:
+        return _score("degradation_disclosure", False, "Successful output had no response.")
+    is_degraded = actual.response.validation_status.value == "DEGRADED"
+    passed = bool(actual.response.warnings) if is_degraded else not actual.response.warnings
+    return _score(
+        "degradation_disclosure",
+        passed,
+        "Required warnings for degraded results and no warnings for passed results.",
+    )
+
+
 def _score(key: str, passed: bool, comment: str) -> dict[str, object]:
     return {"key": key, "score": int(passed), "comment": comment}
 
@@ -225,4 +290,6 @@ RECOMMENDATION_EVALUATORS: tuple[RecommendationEvaluator, ...] = (
     response_quality,
     ranking_consistency,
     provenance_complete,
+    evidence_grounding_integrity,
+    degradation_disclosure,
 )

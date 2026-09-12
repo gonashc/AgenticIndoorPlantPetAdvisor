@@ -108,11 +108,21 @@ export function App() {
   return (
     <main>
       <header className="hero">
+        <div className="brand-row">
+          <span className="brand-mark" aria-hidden="true">A</span>
+          <span>Canopy &amp; Companion</span>
+          <span className="brand-tag">Evidence-led matching</span>
+        </div>
         <p className="eyebrow">Homegrown guidance</p>
         <h1>Find the right life for your home.</h1>
         <p className="hero-copy">
           Thoughtful plant and pet matches, grounded in safety, lifestyle, and local context.
         </p>
+        <div className="trust-strip" aria-label="How recommendations are made">
+          <span><strong>Safety first</strong> hard constraints</span>
+          <span><strong>Reviewed</strong> source evidence</span>
+          <span><strong>Clear</strong> care expectations</span>
+        </div>
       </header>
 
       <section className="workspace" aria-label="Recommendation advisor">
@@ -248,6 +258,28 @@ export function App() {
                   <span>Cat: {friendly(item.safety.cat_toxicity)}</span>
                   <span>Child: {friendly(item.safety.child_toxicity)}</span>
                 </div>
+                <div className="facts-grid">
+                  <div><span>Starting cost</span><strong>{moneyRange(item.cost.initial_min, item.cost.initial_max)}</strong></div>
+                  <div><span>Monthly care</span><strong>{moneyRange(item.cost.monthly_min, item.cost.monthly_max)}</strong></div>
+                </div>
+                <details className="evidence-panel">
+                  <summary>{item.evidence.length} reviewed source{item.evidence.length === 1 ? "" : "s"}</summary>
+                  {item.evidence.map((source) => (
+                    <a href={source.source_url} key={source.evidence_id} rel="noreferrer" target="_blank">
+                      <span>{source.title}</span><small>{source.source_name} ↗</small>
+                    </a>
+                  ))}
+                </details>
+                {item.local_sources && item.local_sources.length > 0 && (
+                  <div className="nearby-panel">
+                    <span className="best-label">Near you</span>
+                    {item.local_sources.map((source) => (
+                      <a href={source.url} key={`${source.name}-${source.url}`} rel="noreferrer" target="_blank">
+                        {source.name}{source.distance_miles == null ? "" : ` · ${source.distance_miles.toFixed(1)} mi`}
+                      </a>
+                    ))}
+                  </div>
+                )}
                 <button className="secondary-button" onClick={() => void previewCarePlan(item)} type="button">
                   Preview care plan
                 </button>
@@ -324,6 +356,11 @@ function SelectField({ label, onChange, options, value }: { label: string; onCha
 
 function friendly(value: string) {
   return value.toLowerCase().replaceAll("_", " ").replace(/^./, (letter) => letter.toUpperCase());
+}
+
+function moneyRange(minimum: number, maximum: number) {
+  const formatter = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+  return `${formatter.format(minimum)}–${formatter.format(maximum)}`;
 }
 
 function formatError(reason: unknown) {

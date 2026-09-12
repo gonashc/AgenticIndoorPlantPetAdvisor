@@ -1,6 +1,8 @@
-"""SQLAlchemy implementations of the provider-neutral data ports."""
+"""SQLAlchemy implementations of provider-neutral persistence ports."""
 
-from datetime import datetime
+import hashlib
+from collections.abc import Sequence
+from datetime import UTC, datetime
 from uuid import UUID
 
 from advisor_api.contracts.base import (
@@ -20,7 +22,7 @@ from advisor_api.ports.data import (
     CandidateRecord,
     PreviewClaimStatus,
 )
-from sqlalchemy import select
+from sqlalchemy import delete, select, update
 from sqlalchemy.orm import selectinload
 
 from database.models import (
@@ -28,8 +30,11 @@ from database.models import (
     CarePlanRow,
     CareTaskRow,
     CatalogCandidateRow,
+    KnowledgeChunkRow,
+    KnowledgeSourceRow,
 )
 from database.runtime import AsyncSessionFactory
+from services.ingestion.models import ApprovedContentDocument, ContentChunk, QuarantinedContent
 
 
 class PostgresCatalogRepository:
@@ -86,6 +91,98 @@ class PostgresCatalogRepository:
             dog_compatible=row.dog_compatible,
             cat_compatible=row.cat_compatible,
             max_hours_alone=float(row.max_hours_alone),
+        )
+
+
+class PostgresIngestionManifestRepository:
+    """Tracks reviewed source state and exact Pinecone chunk identities."""
+
+    def __init__(self, session_factory: AsyncSessionFactory) -> None:
+        self._sessions = session_factory
+
+    async def begin_source(
+        self,
+        document: ApprovedContentDocument,
+        chunks: Sequence[ContentChunk],
+    ) -> None:
+        if not chunks:
+            raise ValueError("Knowledge manifests require at least one chunk")
+        async with self._sessions.begin() as session:
+            row = await session.get(KnowledgeSourceRow, document.source_id)
+            if row is None:
+                row = KnowledgeSourceRow(source_id=document.source_id)
+                session.add(row)
+            self._apply_document(row, document)
+            row.status = "PENDING"
+            row.rejection_reasons = []
+            await session.execute(
+                delete(KnowledgeChunkRow).where(
+                    KnowledgeChunkRow.source_id == document.source_id,
+                    KnowledgeChunkRow.namespace == chunks[0].namespace,
+                )
+            )
+            session.add_all([self._chunk_row(chunk) for chunk in chunks])
+
+    async def mark_indexed(self, source_id: str, namespace: str) -> None:
+        indexed_at = datetime.now(UTC)
+        async with self._sessions.begin() as session:
+            await session.execute(
+                update(KnowledgeSourceRow)
+                .where(KnowledgeSourceRow.source_id == source_id)
+                .values(status="INDEXED", updated_at=indexed_at)
+            )
+            await session.execute(
+                update(KnowledgeChunkRow)
+                .where(
+                    KnowledgeChunkRow.source_id == source_id,
+                    KnowledgeChunkRow.namespace == namespace,
+                )
+                .values(indexed_at=indexed_at, updated_at=indexed_at)
+            )
+
+    async def quarantine(
+        self,
+        document: ApprovedContentDocument,
+        content: QuarantinedContent,
+    ) -> None:
+        async with self._sessions.begin() as session:
+            row = await session.get(KnowledgeSourceRow, document.source_id)
+            if row is None:
+                row = KnowledgeSourceRow(source_id=document.source_id)
+                session.add(row)
+            self._apply_document(row, document)
+            row.status = "QUARANTINED"
+            row.rejection_reasons = list(content.reasons)
+
+    @staticmethod
+    def _apply_document(row: KnowledgeSourceRow, document: ApprovedContentDocument) -> None:
+        row.category = document.category.value
+        row.title = document.title
+        row.publisher = document.publisher
+        row.canonical_url = document.canonical_url
+        row.license_id = document.license_id
+        row.trust_tier = document.trust_tier.value
+        row.retrieved_at = document.retrieved_at
+        row.reviewed_at = document.reviewed_at
+        row.approved_by = document.approved_by
+        row.content_version = document.content_version
+        row.checksum_sha256 = hashlib.sha256(document.text.encode()).hexdigest()
+        row.metadata_json = dict(document.metadata)
+
+    @staticmethod
+    def _chunk_row(chunk: ContentChunk) -> KnowledgeChunkRow:
+        return KnowledgeChunkRow(
+            chunk_id=chunk.chunk_id,
+            source_id=chunk.source_id,
+            category=chunk.category.value,
+            candidate_ids=list(chunk.candidate_ids),
+            position=chunk.position,
+            text_sha256=chunk.text_sha256,
+            word_count=chunk.word_count,
+            namespace=chunk.namespace,
+            content_version=chunk.content_version,
+            indexed_at=None,
+            metadata_json=dict(chunk.metadata),
         )
 
 

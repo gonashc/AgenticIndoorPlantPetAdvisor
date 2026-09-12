@@ -1,0 +1,170 @@
+{
+  "namespace": "knowledge-demo-usda-cdc-v1",
+  "allowed_licenses": ["US-PUBLIC-DOMAIN"],
+  "documents": [
+    {
+      "source_id": "usda-plants-current-candidates-2026-09",
+      "category": "PLANT",
+      "title": "USDA PLANTS taxonomy for current demo candidates",
+      "publisher": "USDA Natural Resources Conservation Service",
+      "canonical_url": "https://plants.sc.egov.usda.gov/DocumentLibrary/Txt/plantlst.txt",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:13:26-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-2a08310dfc2f",
+      "text_path": "sources/usda-current-plant-taxonomy.md",
+      "candidate_ids": ["plant-spider", "plant-parlor-palm", "plant-pothos", "plant-boston-fern"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "plantlst.txt",
+        "source_sha256": "2A08310DFC2FD33DD441E935ED169AB680BCEA367E7BB5FB6C11D450D0C0D0BF"
+      }
+    },
+    {
+      "source_id": "cdc-dog-selection-care-2026-06",
+      "category": "DOG",
+      "title": "Dogs: selection and care",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/about/dogs.html",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T17:00:00-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "cdc-dogs-2026-06-15",
+      "text_path": "sources/cdc-dog-selection-and-care.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {"data_classification": "demo", "source_type": "web_page"}
+    },
+    {
+      "source_id": "cdc-healthy-around-animals-2019",
+      "category": "DOG",
+      "title": "Stay healthy around animals",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://stacks.cdc.gov/view/cdc/79990",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:47:15-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-eb18d58e2521",
+      "text_path": "sources/cdc-healthy-around-animals.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "stay-healthy-around-animals-coloring-book-P.pdf",
+        "source_sha256": "EB18D58E2521E3AE6D6EDFFEF26162677882A8B88353919C0FA59E7AC6DDAFC1"
+      }
+    },
+    {
+      "source_id": "cdc-cleaning-pet-supplies-cs333959-b",
+      "category": "DOG",
+      "title": "Cleaning and disinfecting pet supplies",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/media/pdfs/Cleaning-pet-supplies_web-infographic-H.pdf",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:47:08-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-c95f4676ac02",
+      "text_path": "sources/cdc-cleaning-pet-supplies.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "Cleaning-pet-supplies_web-infographic-H.pdf",
+        "source_sha256": "C95F4676AC0238D1B5DBFEE7A2A527FFF71A7A22102C54FA3159BD7A79356018"
+      }
+    },
+    {
+      "source_id": "cdc-check-pets-for-ticks",
+      "category": "DOG",
+      "title": "How to check your pet for ticks",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/media/pdfs/publications/check-pets-for-ticks-508.pdf",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:47:00-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-67cf61fcca2a",
+      "text_path": "sources/cdc-check-pets-for-ticks.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "check-pets-for-ticks-508.pdf",
+        "source_sha256": "67CF61FCCA2AE56BDBCF1B5FF124F0B317AD260269931536941E051A31C4B85D"
+      }
+    },
+    {
+      "source_id": "cdc-pet-emergency-checklist-cs336052-b",
+      "category": "DOG",
+      "title": "Pet emergency checklist",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/media/pdfs/disaster-prep-Pet-Emergency-Checklist-1.pdf",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:46:51-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-aabd28bdbff3",
+      "text_path": "sources/cdc-pet-emergency-preparation.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "disaster-prep-Pet-Emergency-Checklist-1.pdf",
+        "source_sha256": "AABD28BDBFF376B9E4C7AACFB3F66448C4405BAE6C36D12C4EDE2378DA145832"
+      }
+    },
+    {
+      "source_id": "cdc-raw-pet-food-cs357519-a",
+      "category": "DOG",
+      "title": "Raw pet food",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/media/pdfs/raw-pet-food-p.pdf",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:46:43-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-34a081c22995",
+      "text_path": "sources/cdc-raw-pet-food.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "raw-pet-food-p.pdf",
+        "source_sha256": "34A081C229955BDA985B6CE98BC0A152DCEE7E2CF809B64D4011947AB7121EBE"
+      }
+    },
+    {
+      "source_id": "cdc-pet-food-safety-cs335984-a",
+      "category": "DOG",
+      "title": "Pet food safety",
+      "publisher": "Centers for Disease Control and Prevention",
+      "canonical_url": "https://www.cdc.gov/healthy-pets/media/pdfs/pet-food-safety-1-pager-H.pdf",
+      "license_id": "US-PUBLIC-DOMAIN",
+      "trust_tier": "DEMO_UNVERIFIED",
+      "retrieved_at": "2026-09-10T16:46:35-04:00",
+      "reviewed_at": "2026-09-10T17:00:00-04:00",
+      "approved_by": "demo-curator:automated-source-extraction",
+      "content_version": "sha256-6dd854666fc4",
+      "text_path": "sources/cdc-pet-food-safety.md",
+      "candidate_ids": ["dog-calm-small-adult", "dog-family-medium-adult", "dog-active-large-adult"],
+      "review_status": "APPROVED",
+      "metadata": {
+        "data_classification": "demo",
+        "source_file": "pet-food-safety-1-pager-H.pdf",
+        "source_sha256": "6DD854666FC450AA9D3B865D59D1EC97BEAA4C96689145B3ACF0E713D6BCE8C4"
+      }
+    }
+  ]
+}

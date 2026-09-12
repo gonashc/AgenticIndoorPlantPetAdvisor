@@ -29,6 +29,16 @@ class RecommendationService:
         "plant_specialist": ("SCORING", 65, "Ranked eligible plant candidates."),
         "dog_specialist": ("SCORING", 65, "Ranked eligible dog profiles."),
         "cat_specialist": ("SCORING", 65, "Ranked eligible cat profiles."),
+        "retrieve_knowledge": (
+            "SCORING",
+            72,
+            "Retrieved and reranked approved knowledge.",
+        ),
+        "generate_explanations": (
+            "EVALUATING",
+            78,
+            "Generated evidence-grounded explanations.",
+        ),
         "evaluate": ("EVALUATING", 85, "Evaluated structure, evidence, and safety."),
         "optimizer": ("OPTIMIZING", 90, "Repaired failed explanation sections."),
     }

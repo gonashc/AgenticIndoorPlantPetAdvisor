@@ -10,7 +10,11 @@ from evaluations import (
     RecommendationEvaluationTarget,
     load_recommendation_dataset,
 )
-from evaluations.recommendations import RecommendationEvaluationCase
+from evaluations.recommendations import (
+    RecommendationEvaluationCase,
+    degradation_disclosure,
+    evidence_grounding_integrity,
+)
 
 DATASET = load_recommendation_dataset()
 
@@ -51,6 +55,49 @@ def test_recommendation_dataset_is_synthetic_and_covers_all_categories() -> None
     assert len(DATASET.cases) >= 5
     assert {case.metadata["category"] for case in DATASET.cases} == {"PLANT", "DOG", "CAT"}
     assert all(case.metadata["source"] == "synthetic" for case in DATASET.cases)
+
+
+@pytest.mark.evaluation
+@pytest.mark.asyncio
+async def test_grounding_gate_rejects_non_https_evidence(
+    evaluation_target: RecommendationEvaluationTarget,
+) -> None:
+    case = DATASET.cases[0]
+    output = await evaluation_target(case.inputs)
+    mutated = deepcopy(output)
+    response = mutated["response"]
+    assert isinstance(response, dict)
+    recommendations = response["recommendations"]
+    assert isinstance(recommendations, list)
+    recommendations[0]["evidence"][0]["source_url"] = "http://untrusted.example/source"
+
+    result = evidence_grounding_integrity(
+        mutated,
+        case.reference_outputs.model_dump(mode="json"),
+    )
+
+    assert result["score"] == 0
+
+
+@pytest.mark.evaluation
+@pytest.mark.asyncio
+async def test_degradation_gate_requires_a_user_visible_warning(
+    evaluation_target: RecommendationEvaluationTarget,
+) -> None:
+    case = DATASET.cases[0]
+    output = await evaluation_target(case.inputs)
+    mutated = deepcopy(output)
+    response = mutated["response"]
+    assert isinstance(response, dict)
+    response["validation_status"] = "DEGRADED"
+    response["warnings"] = []
+
+    result = degradation_disclosure(
+        mutated,
+        case.reference_outputs.model_dump(mode="json"),
+    )
+
+    assert result["score"] == 0
 
 
 def _without_volatile_metadata(output: dict[str, object]) -> dict[str, object]:

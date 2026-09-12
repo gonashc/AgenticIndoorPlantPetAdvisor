@@ -15,9 +15,13 @@ This repository implements the React experience and recommendation API described
 
 All errors use the v1 error envelope and all responses carry `X-Request-ID` and `X-API-Version`. Streaming events have stable IDs, sequence numbers, discriminated event types, and `Last-Event-ID` replay filtering.
 
-## Intended boundary
+## Recommendation architecture
 
-Engineer 2 owns HTTP application behavior, deterministic routing, recommendation orchestration, typed graph state, category subgraphs, scoring, hard constraints, safety checks, bounded repair, prompts, and structured output composition. PostgreSQL/Pinecone implementations and live provider integrations are out of scope here and will be consumed through ports.
+Deterministic routing, hard constraints, safety, and scoring remain authoritative. Approved knowledge
+is registered in PostgreSQL and retrieved through the provider-neutral `KnowledgeRetriever` port;
+the Pinecone adapter performs hybrid search and reranking. An opt-in structured-output model may
+explain—but never change—the selected candidates, scores, or safety decisions. MCP live-source calls
+run afterward on a separate, non-indexed path. See [knowledge, RAG, LLM, and MCP operations](docs/knowledge-rag-llm-mcp.md).
 
 ## Setup
 

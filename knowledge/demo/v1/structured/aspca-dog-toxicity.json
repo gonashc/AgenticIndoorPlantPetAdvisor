@@ -1,0 +1,1802 @@
+{
+  "source": {
+    "source_id": "aspca-dog-plant-toxicity-demo",
+    "title": "ASPCA toxic and non-toxic plant compilation for dogs",
+    "publisher": "ASPCA Animal Poison Control Center",
+    "canonical_url": "https://www.aspca.org/pet-care/aspca-poison-control/toxic-and-non-toxic-plants",
+    "source_document_sha256": "3f0736b5b09d3cf75a2777f72b099590be78b729e41e4f2f0db20f2d1b8cc6ec",
+    "content_version": "aspca-docx-3f0736b5b09d",
+    "trust_tier": "DEMO_UNVERIFIED",
+    "permission_status": "SOURCE_PERMISSION_PENDING",
+    "reviewed_at": "2026-09-11T15:30:00-04:00"
+  },
+  "records": [
+    {
+      "toxicity_id": "12f4d85d2d2d28f1a15e14f5addbab015a0689b0",
+      "common_names": [
+        "Amur Maple"
+      ],
+      "scientific_name": "Acer ginnala",
+      "normalized_scientific_name": "acer ginnala",
+      "family": "Sapindaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "5184ccb3ff15071dfb27fcdda866ea41d9c6688b",
+      "common_names": [
+        "Alyssum"
+      ],
+      "scientific_name": "Alyssum spp.",
+      "normalized_scientific_name": "alyssum spp",
+      "family": "Brassicaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "bea11985d3d35950ec1a33fecfda33195ff6d4fe",
+      "common_names": [
+        "Australian Pine (Norfolk Island Pine)"
+      ],
+      "scientific_name": "Araucaria heterophylla",
+      "normalized_scientific_name": "araucaria heterophylla",
+      "family": "Araucariaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "c05eed8b7d250bf56b4fbcd207e94ceb0652f544",
+      "common_names": [
+        "Bottle Palm (Pony Tail Plant)"
+      ],
+      "scientific_name": "Beaucarnea recurvata",
+      "normalized_scientific_name": "beaucarnea recurvata",
+      "family": "Agavaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "f029ff4838bdde2faabe5e959f11e1440461c131",
+      "common_names": [
+        "Beets"
+      ],
+      "scientific_name": "Beta vulgaris",
+      "normalized_scientific_name": "beta vulgaris",
+      "family": "Chenopodiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "213b9281ee84e37ad98317adaf33df5fcb127c65",
+      "common_names": [
+        "Calathea"
+      ],
+      "scientific_name": "Calathea spp.",
+      "normalized_scientific_name": "calathea spp",
+      "family": "Marantaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "56d9e04a4a5a43179c1589e42770c499e0d0d36d",
+      "common_names": [
+        "Bottlebrush"
+      ],
+      "scientific_name": "Callistemon species",
+      "normalized_scientific_name": "callistemon species",
+      "family": "Myrtaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "edb5643d629722c30eacc170260ecdc649d527bf",
+      "common_names": [
+        "Camellia"
+      ],
+      "scientific_name": "Camellia japonica",
+      "normalized_scientific_name": "camellia japonica",
+      "family": "Theaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "a017f6c953e78dafc689b2dd145fffb9cd3f7777",
+      "common_names": [
+        "Bachelor's Buttons (Cornflower)"
+      ],
+      "scientific_name": "Centaurea cyanus",
+      "normalized_scientific_name": "centaurea cyanus",
+      "family": "Asteraceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "7837126dc8505a71dad2ac866d024b1b72b9252a",
+      "common_names": [
+        "Bamboo Palm (Parlor Palm)"
+      ],
+      "scientific_name": "Chamaedorea elegans",
+      "normalized_scientific_name": "chamaedorea elegans",
+      "family": "Palmae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "4c28796414c9bb5fc1f4648a4608bb4ebcbca85b",
+      "common_names": [
+        "Buttercup Squash"
+      ],
+      "scientific_name": "Cucurbita maxima cv buttercup",
+      "normalized_scientific_name": "cucurbita maxima cv buttercup",
+      "family": "Cucurbitaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "32eac0c30bae591e8afcbb4db2f1215edfb5ba4f",
+      "common_names": [
+        "Butternut Squash"
+      ],
+      "scientific_name": "Cucurbita maxima cv butternut",
+      "normalized_scientific_name": "cucurbita maxima cv butternut",
+      "family": "Cucurbitaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "9430aab2dcd8f0b18700a21cd5d3049eb49ba831",
+      "common_names": [
+        "Banana Squash"
+      ],
+      "scientific_name": "Cucurbita maxima var. banana",
+      "normalized_scientific_name": "cucurbita maxima var. banana",
+      "family": "Cucurbitaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "cfe8fef9f985c0ebc30acab419763d05c00b0974",
+      "common_names": [
+        "Acorn Squash"
+      ],
+      "scientific_name": "Cucurbita pepo",
+      "normalized_scientific_name": "cucurbita pepo",
+      "family": "Cucurbitaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "e45701fa7f82f70335340ca6d05dda8715de5eb1",
+      "common_names": [
+        "California Pitcher Plant (Cobra Lily)"
+      ],
+      "scientific_name": "Darlingtonia californica",
+      "normalized_scientific_name": "darlingtonia californica",
+      "family": "Sarraceniaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "2870c5036eb3774f646021270645d96ea17958f2",
+      "common_names": [
+        "Ball Fern (Rabbit's Foot Fern)"
+      ],
+      "scientific_name": "Davallia spp.",
+      "normalized_scientific_name": "davallia spp",
+      "family": "Polypodiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "b85a315458c9c0fd8a4d0a08e98863392c0dc545",
+      "common_names": [
+        "Areca Palm"
+      ],
+      "scientific_name": "Dypsis lutescens",
+      "normalized_scientific_name": "dypsis lutescens",
+      "family": "Palmae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "b3c33ba42c6cfeae37f53bf38e906155e6f53f8e",
+      "common_names": [
+        "Blue Echeveria"
+      ],
+      "scientific_name": "Echeveria glauca",
+      "normalized_scientific_name": "echeveria glauca",
+      "family": "Crassulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "0ccd7785b05aaf8e0aa96186307a1fd0f1e12a11",
+      "common_names": [
+        "Blue Daisy (Felicia)"
+      ],
+      "scientific_name": "Felicia amelloides",
+      "normalized_scientific_name": "felicia amelloides",
+      "family": "Compositae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "15a3b27fea8697a752ffd5bf50553509aca35fde",
+      "common_names": [
+        "African Daisy (Gerbera Daisy)"
+      ],
+      "scientific_name": "Gerbera jamesonii",
+      "normalized_scientific_name": "gerbera jamesonii",
+      "family": "Compositae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "e8ee043bdd650fc7009d63234b3c32b9b8890f87",
+      "common_names": [
+        "Baby's Breath"
+      ],
+      "scientific_name": "Gypsophila elegans",
+      "normalized_scientific_name": "gypsophila elegans",
+      "family": "Caryophyllaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "5afc8200a8ca9006ab14c79a6bcd1cc05e104806",
+      "common_names": [
+        "Butterfly Ginger"
+      ],
+      "scientific_name": "Hedychium coronarium",
+      "normalized_scientific_name": "hedychium coronarium",
+      "family": "Zingiberaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "c1e4503a6411cd097b09daf5fa6fd1457db19300",
+      "common_names": [
+        "Alumroot (Coral Bells)"
+      ],
+      "scientific_name": "Heuchera sanguinea",
+      "normalized_scientific_name": "heuchera sanguinea",
+      "family": "Saxifragaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "6ae170afbcc23f566db38ef551384dad2e9bae2a",
+      "common_names": [
+        "Baby's Tears (Polka Dot Plant)"
+      ],
+      "scientific_name": "Hypoestes phyllostachya",
+      "normalized_scientific_name": "hypoestes phyllostachya",
+      "family": "Acanthaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "31b2e283d53a70ceffdbd104e048391a03acc8cf",
+      "common_names": [
+        "Bloodleaf"
+      ],
+      "scientific_name": "Iresine herbstii",
+      "normalized_scientific_name": "iresine herbstii",
+      "family": "Amaranthaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "4016fe31c3f515964ecc0ce2ab7b107954087cc7",
+      "common_names": [
+        "Banana"
+      ],
+      "scientific_name": "Musa acuminata",
+      "normalized_scientific_name": "musa acuminata",
+      "family": "Musaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "0e151d6003fc7563fbc2ec50a4c2e56d9404c2a7",
+      "common_names": [
+        "Boston Fern"
+      ],
+      "scientific_name": "Nephrolepis exalta bostoniensis",
+      "normalized_scientific_name": "nephrolepis exalta bostoniensis",
+      "family": "Dryopteridaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "4ea9176f71ca6a7bc79e143e3014b5b081205af2",
+      "common_names": [
+        "Basil"
+      ],
+      "scientific_name": "Ocimum basilicum",
+      "normalized_scientific_name": "ocimum basilicum",
+      "family": "Lamiacea",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "ea295dfd2ef854f3901b99ae35e8c71dcadf21e4",
+      "common_names": [
+        "American Rubber Plant",
+        "Baby Rubber Plant"
+      ],
+      "scientific_name": "Peperomia obtusifolia",
+      "normalized_scientific_name": "peperomia obtusifolia",
+      "family": "Pipericeae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "ce2e562c9f5c8af6c7a364d0640bc683cec7352d",
+      "common_names": [
+        "Bamboo"
+      ],
+      "scientific_name": "Phyllostachys aurea",
+      "normalized_scientific_name": "phyllostachys aurea",
+      "family": "Gramineae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "f0fa83a2b4dabc9183cc0dca43dcb16700fcf1fa",
+      "common_names": [
+        "Aluminum Plant"
+      ],
+      "scientific_name": "Pilea cadieri",
+      "normalized_scientific_name": "pilea cadieri",
+      "family": "Urticaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "468c5a21efa5788a1e2436d3a6c0dea873f6737c",
+      "common_names": [
+        "Artillery Plant"
+      ],
+      "scientific_name": "Pilea microphylla",
+      "normalized_scientific_name": "pilea microphylla",
+      "family": "Urticaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "1ddb90318b2404b24d1f9d176f9c3ade63606cec",
+      "common_names": [
+        "Blackjack Pine (Ponderosa Pine)"
+      ],
+      "scientific_name": "Pinus ponderosa",
+      "normalized_scientific_name": "pinus ponderosa",
+      "family": "Pinaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "0bb7b9a446a4d0a67fabd79ea363f85c8e7a6e75",
+      "common_names": [
+        "Algaroba (Mesquite)"
+      ],
+      "scientific_name": "Prosopis limensis",
+      "normalized_scientific_name": "prosopis limensis",
+      "family": "Mimosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "91abc3fab28c6d178ba792ead6b554b8d5825050",
+      "common_names": [
+        "African Violet"
+      ],
+      "scientific_name": "Saintpaulia spp.",
+      "normalized_scientific_name": "saintpaulia spp",
+      "family": "Gesneriaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "bf46ff49ef8e33d254ca54f27f4de665b5df4941",
+      "common_names": [
+        "Burro's Tail (Donkey's Tail)"
+      ],
+      "scientific_name": "Sedum morganianum",
+      "normalized_scientific_name": "sedum morganianum",
+      "family": "Crassulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "e0526ec16f60c29518afcb5a513a35bbf09ea011",
+      "common_names": [
+        "Canada Hemlock"
+      ],
+      "scientific_name": "Tsuga canadensis",
+      "normalized_scientific_name": "tsuga canadensis",
+      "family": "Pinaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "fc5601902feb8335a8719442b8031b4af9cbd329",
+      "common_names": [
+        "Black Haw (Nannyberry)"
+      ],
+      "scientific_name": "Viburnum lentago",
+      "normalized_scientific_name": "viburnum lentago",
+      "family": "Caprifoliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "NON_TOXIC_LISTED"
+    },
+    {
+      "toxicity_id": "80c4810468e725623cbe73cd8421de3bca1f81ec",
+      "common_names": [
+        "Yarrow"
+      ],
+      "scientific_name": "Achillea millefolium",
+      "normalized_scientific_name": "achillea millefolium",
+      "family": "Asteraceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6dfd4a322eed082687375b926e6a10b08cd285b8",
+      "common_names": [
+        "Desert Rose"
+      ],
+      "scientific_name": "Adenium obesum",
+      "normalized_scientific_name": "adenium obesum",
+      "family": "Apocynaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "968004ee59901dad46e1d2c127afb164ecef2a37",
+      "common_names": [
+        "Horse Chestnut"
+      ],
+      "scientific_name": "Aesculus glabra",
+      "normalized_scientific_name": "aesculus glabra",
+      "family": "Sapindaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "e101199710aa5e0cc4350bcf75961e44ceee788a",
+      "common_names": [
+        "Buckeye (Horse Chestnut)"
+      ],
+      "scientific_name": "Aesculus spp",
+      "normalized_scientific_name": "aesculus spp",
+      "family": "Hippocastanaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "c4b2b92d5d52a03d6295ad0f12cef393f0884275",
+      "common_names": [
+        "Chinese Evergreen"
+      ],
+      "scientific_name": "Aglaonema modestum",
+      "normalized_scientific_name": "aglaonema modestum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "d00e76cbab745d859fc06e62057de1c271518889",
+      "common_names": [
+        "Leek"
+      ],
+      "scientific_name": "Allium ampeloprasum",
+      "normalized_scientific_name": "allium ampeloprasum",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "2c3303f23a2c61412a71d618e1822e1a1ea4370f",
+      "common_names": [
+        "Onion"
+      ],
+      "scientific_name": "Allium cepa",
+      "normalized_scientific_name": "allium cepa",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ae0dae4302c2352ae8f0067626d76ebca662ab4c",
+      "common_names": [
+        "Garlic"
+      ],
+      "scientific_name": "Allium sativum",
+      "normalized_scientific_name": "allium sativum",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ed994cc38ebd157c19f0f4c8bb3ab1f22b79bb85",
+      "common_names": [
+        "Chives"
+      ],
+      "scientific_name": "Allium schoenoprasum",
+      "normalized_scientific_name": "allium schoenoprasum",
+      "family": "Amaryllidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ba5c993987a93ee6292a501617e1bf933b96ae3c",
+      "common_names": [
+        "Alocasia"
+      ],
+      "scientific_name": "Alocasia spp.",
+      "normalized_scientific_name": "alocasia spp",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "c52fb2dfa7c63dd95f178549d67e8a2528952d75",
+      "common_names": [
+        "Barbados Aloe"
+      ],
+      "scientific_name": "Aloe barbadensis",
+      "normalized_scientific_name": "aloe barbadensis",
+      "family": "Aloaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "29d02e318138278cb8e077a878c586c17ca77e47",
+      "common_names": [
+        "Aloe"
+      ],
+      "scientific_name": "Aloe vera",
+      "normalized_scientific_name": "aloe vera",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "d9e12862e4355045e710dd364222ec0dc66e9166",
+      "common_names": [
+        "Amaryllis"
+      ],
+      "scientific_name": "Amaryllis spp.",
+      "normalized_scientific_name": "amaryllis spp",
+      "family": "Amaryllidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "be2a47bb0e9b0b64a314c1b5643c037bce9582b6",
+      "common_names": [
+        "Chamomile"
+      ],
+      "scientific_name": "Anthemis nobilis",
+      "normalized_scientific_name": "anthemis nobilis",
+      "family": "Compositae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "423adb809af2f85cc5bb01e717c5d6690b9dce2f",
+      "common_names": [
+        "Angelica Tree"
+      ],
+      "scientific_name": "Aralia spinosa",
+      "normalized_scientific_name": "aralia spinosa",
+      "family": "Araliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "bad9f89833502af0b553f132e6497a01b83d95bc",
+      "common_names": [
+        "Jack-in-the-pulpit"
+      ],
+      "scientific_name": "Arisaema triphyllum",
+      "normalized_scientific_name": "arisaema triphyllum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a7420f24dc0a253e35abe53beb18d5fd1a7982e6",
+      "common_names": [
+        "Adam-and-Eve",
+        "Arum"
+      ],
+      "scientific_name": "Arum maculatum",
+      "normalized_scientific_name": "arum maculatum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "4f31771aafd837875804b5bd7eb16bfa49d51a1d",
+      "common_names": [
+        "Milkweed"
+      ],
+      "scientific_name": "Asclepias species",
+      "normalized_scientific_name": "asclepias species",
+      "family": "Asclepiadaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "4c8a6b037e0e9dfbb242446e6f21f1ab72fe6fea",
+      "common_names": [
+        "Asparagus Fern"
+      ],
+      "scientific_name": "Asparagus densiflorus cv sprengeri",
+      "normalized_scientific_name": "asparagus densiflorus cv sprengeri",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6da060515b35b05c00dfab1abcf56f75a5d26dd3",
+      "common_names": [
+        "Begonia"
+      ],
+      "scientific_name": "Begonia spp.",
+      "normalized_scientific_name": "begonia spp",
+      "family": "Begoniaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "694a241d7aeaacd9befda5ebc8afaef54a0716d0",
+      "common_names": [
+        "Australian Ivy Palm"
+      ],
+      "scientific_name": "Brassaia actinophylla",
+      "normalized_scientific_name": "brassaia actinophylla",
+      "family": "Araliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f739712898d33ba6a9bca0a3ce8e9682fe673696",
+      "common_names": [
+        "Brunfelsia"
+      ],
+      "scientific_name": "Brunfelsia species",
+      "normalized_scientific_name": "brunfelsia species",
+      "family": "Solanaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "bdf2f15d756720d55e06092631e20afee6d766c5",
+      "common_names": [
+        "Boxwood"
+      ],
+      "scientific_name": "Buxus spp.",
+      "normalized_scientific_name": "buxus spp",
+      "family": "Buxaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6576090d50961f3802da443f2b916351d2590bb3",
+      "common_names": [
+        "Bird of Paradise"
+      ],
+      "scientific_name": "Caesalpinia gilliesii",
+      "normalized_scientific_name": "caesalpinia gilliesii",
+      "family": "Leguminosae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a0928306ba5508be871b3a155f672fcc22e04887",
+      "common_names": [
+        "Caladium",
+        "Elephant Ears (Caladium)"
+      ],
+      "scientific_name": "Caladium hortulanum",
+      "normalized_scientific_name": "caladium hortulanum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "16bec4dd84d93e936fad4512e0ae02f7dc6e1c20",
+      "common_names": [
+        "Hashish / Marijuana",
+        "Marijuana"
+      ],
+      "scientific_name": "Cannabis sativa",
+      "normalized_scientific_name": "cannabis sativa",
+      "family": "Cannabaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "2c13dbd20ded1ff7d339fa8f1e63a1109bb870a8",
+      "common_names": [
+        "American Bittersweet"
+      ],
+      "scientific_name": "Celastrus scandens",
+      "normalized_scientific_name": "celastrus scandens",
+      "family": "Celastraceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f10c3c83deb487e988c476786d318c13a851a747",
+      "common_names": [
+        "Ambrosia Mexicana"
+      ],
+      "scientific_name": "Chenopodium botrys",
+      "normalized_scientific_name": "chenopodium botrys",
+      "family": "Chenopodiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "99e4ce421da6fd46308293c4cd52c50505d79a6c",
+      "common_names": [
+        "Chrysanthemum (Mum)"
+      ],
+      "scientific_name": "Chrysanthemum spp.",
+      "normalized_scientific_name": "chrysanthemum spp",
+      "family": "Compositae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "94f857fd4f6ad2afc6dc873de2c081c9ff7619eb",
+      "common_names": [
+        "Lemon"
+      ],
+      "scientific_name": "Citrus limonia",
+      "normalized_scientific_name": "citrus limonia",
+      "family": "Rutaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "56a1d41b8b3a16b2b1a0c1cff4814352d97f716c",
+      "common_names": [
+        "Grapefruit"
+      ],
+      "scientific_name": "Citrus paradisii",
+      "normalized_scientific_name": "citrus paradisii",
+      "family": "Rutaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "8f999cc250a248d2355395231a2e45b1f6e91f13",
+      "common_names": [
+        "Clematis"
+      ],
+      "scientific_name": "Clematis spp.",
+      "normalized_scientific_name": "clematis spp",
+      "family": "Ranunculaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "b40358169ac9d7590538cf793f7093e6a1c42140",
+      "common_names": [
+        "Clivia Lily"
+      ],
+      "scientific_name": "Clivia spp.",
+      "normalized_scientific_name": "clivia spp",
+      "family": "Amaryllidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "1735b351bcbb77794471f96b397158573b810db1",
+      "common_names": [
+        "Autumn Crocus"
+      ],
+      "scientific_name": "Colchicum autumnale",
+      "normalized_scientific_name": "colchicum autumnale",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "824f89e386259d739fe666b0a294e4d847fae8a8",
+      "common_names": [
+        "Coleus"
+      ],
+      "scientific_name": "Coleus ampoinicus",
+      "normalized_scientific_name": "coleus ampoinicus",
+      "family": "Labiatae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "baaab839f0dc7c40ead33b9d0cf4b096845617cb",
+      "common_names": [
+        "Poison Hemlock"
+      ],
+      "scientific_name": "Conium maculatum",
+      "normalized_scientific_name": "conium maculatum",
+      "family": "Umbelliferae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "bf7151bf91e2a5faed3276d1a1ccf3ae52b5b8d7",
+      "common_names": [
+        "Lily of the Valley"
+      ],
+      "scientific_name": "Convallaria majalis",
+      "normalized_scientific_name": "convallaria majalis",
+      "family": "Asparagaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "08338973f195c2c27693ab774c4828988e15ebcd",
+      "common_names": [
+        "Baby Doll Ti Plant"
+      ],
+      "scientific_name": "Cordyline terminalis",
+      "normalized_scientific_name": "cordyline terminalis",
+      "family": "Agavaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "7c1f8215cdb2fd089b8ffa8a636e595f06e0c369",
+      "common_names": [
+        "Chinese Jade"
+      ],
+      "scientific_name": "Crassula arborescens",
+      "normalized_scientific_name": "crassula arborescens",
+      "family": "Crassulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ae1add2ebdb6f2ccdf2143cfcd877c038c0dc421",
+      "common_names": [
+        "Jade Plant"
+      ],
+      "scientific_name": "Crassula argentea",
+      "normalized_scientific_name": "crassula argentea",
+      "family": "Crassulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "eacd16903c96333b025b20117531217876221588",
+      "common_names": [
+        "Sago Palm"
+      ],
+      "scientific_name": "Cycas revoluta, Zamia species",
+      "normalized_scientific_name": "cycas revoluta, zamia species",
+      "family": "Cycadaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "683e44550b992c75b3f8bea4b9a7552cffe0905b",
+      "common_names": [
+        "Cyclamen"
+      ],
+      "scientific_name": "Cyclamen spp",
+      "normalized_scientific_name": "cyclamen spp",
+      "family": "Primulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "aaa84aca6356e68a79ea3df86f574a4be4410d59",
+      "common_names": [
+        "Dahlia"
+      ],
+      "scientific_name": "Dahlia species",
+      "normalized_scientific_name": "dahlia species",
+      "family": "Compositae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "bb76aaa516300f071fe0e9e1ad6b64d8ae7132c3",
+      "common_names": [
+        "Larkspur"
+      ],
+      "scientific_name": "Delphinium species",
+      "normalized_scientific_name": "delphinium species",
+      "family": "Ranunculaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "15c29174922b3af8a0a981ef83bba6f30e348ef8",
+      "common_names": [
+        "Carnation"
+      ],
+      "scientific_name": "Dianthus caryophyllus",
+      "normalized_scientific_name": "dianthus caryophyllus",
+      "family": "Caryophyllaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "44f888d8c0efc0490563896800b4bd576dd980ec",
+      "common_names": [
+        "Dieffenbachia (Dumbcane)"
+      ],
+      "scientific_name": "Dieffenbachia",
+      "normalized_scientific_name": "dieffenbachia",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f5a10c88045a9122649ebc06aec8d83cd91451cc",
+      "common_names": [
+        "Foxglove"
+      ],
+      "scientific_name": "Digitalis purpurea",
+      "normalized_scientific_name": "digitalis purpurea",
+      "family": "Scrophalariaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "0f43f752d97220edc81717b316ee54aa4fbd3eb1",
+      "common_names": [
+        "Corn Plant / Dracaena"
+      ],
+      "scientific_name": "Dracaena fragrans",
+      "normalized_scientific_name": "dracaena fragrans",
+      "family": "Asparagaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "7ef8d687197678fbc587fc2f8cb16a2c77a6415c",
+      "common_names": [
+        "Madagascar Dragon Tree"
+      ],
+      "scientific_name": "Dracaena marginata",
+      "normalized_scientific_name": "dracaena marginata",
+      "family": "Asparagaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "d67fc46b20a813491b90b9a64ff5fab011b0a6c0",
+      "common_names": [
+        "Devils Ivy (Pothos)",
+        "Golden Pothos",
+        "Pothos"
+      ],
+      "scientific_name": "Epipremnum aureum",
+      "normalized_scientific_name": "epipremnum aureum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "9f6361831634dc59d66f7d2aeae1d24e64510591",
+      "common_names": [
+        "Eucalyptus"
+      ],
+      "scientific_name": "Eucalyptus species",
+      "normalized_scientific_name": "eucalyptus species",
+      "family": "Myrtaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "18ea67d2f250e9ed535e6147b239f2d1022ab584",
+      "common_names": [
+        "Burning Bush"
+      ],
+      "scientific_name": "Euonymus atropurpurea",
+      "normalized_scientific_name": "euonymus atropurpurea",
+      "family": "Celastraceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ce02c9fa44877c183b60049448717a082e66be0e",
+      "common_names": [
+        "Poinsettia"
+      ],
+      "scientific_name": "Euphorbia pulcherrima",
+      "normalized_scientific_name": "euphorbia pulcherrima",
+      "family": "Euphorbiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a4636b00b5f5ee4177c1074a65308688eb9067a8",
+      "common_names": [
+        "Pencil Cactus"
+      ],
+      "scientific_name": "Euphorbia tirucalli",
+      "normalized_scientific_name": "euphorbia tirucalli",
+      "family": "Euphorbiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ac7374527fdbe778a0215a6ef54efb767b79ff8f",
+      "common_names": [
+        "Gladiola"
+      ],
+      "scientific_name": "Gladiolus species",
+      "normalized_scientific_name": "gladiolus species",
+      "family": "Iridaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "27c8b07db3bf9e3f614427f84df7ebea0be79816",
+      "common_names": [
+        "Gloriosa Lily (Climbing Lily)"
+      ],
+      "scientific_name": "Gloriosa superba",
+      "normalized_scientific_name": "gloriosa superba",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "d8cf2b8dfaeaee44a35b93e8afe3f617bd7a56fc",
+      "common_names": [
+        "Branching Ivy (English Ivy)",
+        "English Ivy"
+      ],
+      "scientific_name": "Hedera helix",
+      "normalized_scientific_name": "hedera helix",
+      "family": "Araliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a8d51c060d7ad07dcd4887fdfb948a3a357ed570",
+      "common_names": [
+        "Christmas Rose (Hellebore)"
+      ],
+      "scientific_name": "Helleborus niger",
+      "normalized_scientific_name": "helleborus niger",
+      "family": "Ranunculaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "2307b4a4ac3394301f80a92ca98610428f5688c4",
+      "common_names": [
+        "Giant Hogweed"
+      ],
+      "scientific_name": "Heracleum maximum",
+      "normalized_scientific_name": "heracleum maximum",
+      "family": "Apiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6533bbcc0ae2691766acf948efda5b4ac2451def",
+      "common_names": [
+        "Hosta"
+      ],
+      "scientific_name": "Hosta plataginea",
+      "normalized_scientific_name": "hosta plataginea",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "35ad95a4249ce62d82cf52412dcc2e8f41c29b71",
+      "common_names": [
+        "Hops"
+      ],
+      "scientific_name": "Humulus lupulus",
+      "normalized_scientific_name": "humulus lupulus",
+      "family": "Cannabidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "c97066c0aa38dda384ce12f339e73b3d74cb2146",
+      "common_names": [
+        "Hyacinth"
+      ],
+      "scientific_name": "Hyacinthus orientalis",
+      "normalized_scientific_name": "hyacinthus orientalis",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "35043cd476f6a0348f0538bd2baaaa72cc141681",
+      "common_names": [
+        "Hydrangea"
+      ],
+      "scientific_name": "Hydrangea arborescens",
+      "normalized_scientific_name": "hydrangea arborescens",
+      "family": "Hydrangeaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "03fb3f5ab683da4dfe45480c824a29b0a8906ace",
+      "common_names": [
+        "English Holly"
+      ],
+      "scientific_name": "Ilex aquifolium",
+      "normalized_scientific_name": "ilex aquifolium",
+      "family": "Aquifoliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "0fa40410946a5f47c8f19c0a0083d1e89cbf5ee6",
+      "common_names": [
+        "American Holly",
+        "Holly"
+      ],
+      "scientific_name": "Ilex opaca",
+      "normalized_scientific_name": "ilex opaca",
+      "family": "Aquifoliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "07e6d4b6e029e2a6ec02a19c1857fbe89a6810b6",
+      "common_names": [
+        "Morning Glory"
+      ],
+      "scientific_name": "Ipomoea spp",
+      "normalized_scientific_name": "ipomoea spp",
+      "family": "Convolvulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "b118d9fd326610328fb650c5572b76318d26f07c",
+      "common_names": [
+        "Iris"
+      ],
+      "scientific_name": "Iris species",
+      "normalized_scientific_name": "iris species",
+      "family": "Iridaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "c5021e3693ecd32ebd3c4197e96575469a29076e",
+      "common_names": [
+        "Black Walnut"
+      ],
+      "scientific_name": "Juglans nigra",
+      "normalized_scientific_name": "juglans nigra",
+      "family": "Juglandaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "b76d18690ee86d0bb1a31a7c505393af0374f279",
+      "common_names": [
+        "Kalanchoe"
+      ],
+      "scientific_name": "Kalanchoe spp",
+      "normalized_scientific_name": "kalanchoe spp",
+      "family": "Crassulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f46c736cb7c5741949fd16fd48803546dff605fa",
+      "common_names": [
+        "Laurel (Mountain Laurel)"
+      ],
+      "scientific_name": "Kalmia latifolia",
+      "normalized_scientific_name": "kalmia latifolia",
+      "family": "Ericaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a8e2695a718a040a2b3e970d918040c830ae80fe",
+      "common_names": [
+        "Lantana"
+      ],
+      "scientific_name": "Lantana camara",
+      "normalized_scientific_name": "lantana camara",
+      "family": "Verbenaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "685a4b95222d3568b14d6a45d24e92980e7abca5",
+      "common_names": [
+        "Bay Laurel"
+      ],
+      "scientific_name": "Laurus nobilis",
+      "normalized_scientific_name": "laurus nobilis",
+      "family": "Lauraceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "8ff26ff8886d4d0537269fa4c7d20079f361f5ce",
+      "common_names": [
+        "Lavender"
+      ],
+      "scientific_name": "Lavendula angustifolia",
+      "normalized_scientific_name": "lavendula angustifolia",
+      "family": "Lamiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "09eeb0c1a9e24c39d4dcd1c0d66bc93a11b6a180",
+      "common_names": [
+        "Black Laurel"
+      ],
+      "scientific_name": "Leucothoe spp.",
+      "normalized_scientific_name": "leucothoe spp",
+      "family": "Ericaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "c20e29437541a92357043873dd3d035453ef4296",
+      "common_names": [
+        "Privet"
+      ],
+      "scientific_name": "Ligustrum japonicum",
+      "normalized_scientific_name": "ligustrum japonicum",
+      "family": "Oleaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f0b9695bf0d9b57ddc034ce5790ab2249d92e775",
+      "common_names": [
+        "Common Privet"
+      ],
+      "scientific_name": "Ligustrum vulgare",
+      "normalized_scientific_name": "ligustrum vulgare",
+      "family": "Oleaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "e1c915b11b54f3602562ef4e26cef842d8110cd5",
+      "common_names": [
+        "Tomato Plant (leaves/stems)"
+      ],
+      "scientific_name": "Lycopersicon spp",
+      "normalized_scientific_name": "lycopersicon spp",
+      "family": "Solanaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "29d40e036a7ec0558eb7c7fb3711326d025ab8a9",
+      "common_names": [
+        "Australian Nut (Macadamia)",
+        "Macadamia Nut"
+      ],
+      "scientific_name": "Macadamia integrifolia",
+      "normalized_scientific_name": "macadamia integrifolia",
+      "family": "Proteaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "d4ac2ac99819da2f246cfc020787f800bc6ecab5",
+      "common_names": [
+        "Apple (incl. crabapple)"
+      ],
+      "scientific_name": "Malus sylvestrus",
+      "normalized_scientific_name": "malus sylvestrus",
+      "family": "Rosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "9e3885758e41fc19c3b482944be57d87cbb10b0d",
+      "common_names": [
+        "Bead Tree"
+      ],
+      "scientific_name": "Melia azedarach",
+      "normalized_scientific_name": "melia azedarach",
+      "family": "Meliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "b094c998051ea99e9a45d0e4b84c2f90c3e17f43",
+      "common_names": [
+        "Ceriman (Swiss Cheese Plant)"
+      ],
+      "scientific_name": "Monstera deliciosa",
+      "normalized_scientific_name": "monstera deliciosa",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "e5e4e8a351a4596d64231a5beb92a303caec4cfc",
+      "common_names": [
+        "Heavenly Bamboo (Nandina)"
+      ],
+      "scientific_name": "Nandina domestica",
+      "normalized_scientific_name": "nandina domestica",
+      "family": "Berberidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "7033cc5caf9828475b44028d7bf159753c38efa0",
+      "common_names": [
+        "Jonquil"
+      ],
+      "scientific_name": "Narcissus jonquilla",
+      "normalized_scientific_name": "narcissus jonquilla",
+      "family": "Amaryllidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "110278c3f97d7e05c29d9ca67efb3353ec2457fa",
+      "common_names": [
+        "Daffodil (Narcissus)",
+        "Narcissus"
+      ],
+      "scientific_name": "Narcissus spp",
+      "normalized_scientific_name": "narcissus spp",
+      "family": "Amaryllidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "1fa0dcf9cd7c3636f50f759cd74171a1b83f9d48",
+      "common_names": [
+        "Oleander"
+      ],
+      "scientific_name": "Nerium oleander",
+      "normalized_scientific_name": "nerium oleander",
+      "family": "Apocynaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "1082ef9a886d97d9373ba7ac39ae6694e90cf72d",
+      "common_names": [
+        "Peony"
+      ],
+      "scientific_name": "Paeonis officinalis",
+      "normalized_scientific_name": "paeonis officinalis",
+      "family": "Paeniaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "5e3d2b0b807fefbb5afda00f5f7b1300234e4f35",
+      "common_names": [
+        "Geranium"
+      ],
+      "scientific_name": "Pelargonium species",
+      "normalized_scientific_name": "pelargonium species",
+      "family": "Geraniaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "1749d7cd4c5839837965176e74992f990f2eed5d",
+      "common_names": [
+        "Split Leaf Philodendron"
+      ],
+      "scientific_name": "Philodendron bipennifolium",
+      "normalized_scientific_name": "philodendron bipennifolium",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "326437a2592964e3c3fb6e70b0e76a16f61916bc",
+      "common_names": [
+        "Heartleaf Philodendron"
+      ],
+      "scientific_name": "Philodendron hederaceum",
+      "normalized_scientific_name": "philodendron hederaceum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "96fa7afa87abd46214f817a72c65e51cf0257041",
+      "common_names": [
+        "Mistletoe (American)"
+      ],
+      "scientific_name": "Phoradendron flavescens",
+      "normalized_scientific_name": "phoradendron flavescens",
+      "family": "Viscaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "11f2790349a56d93618376c3721dcfca2e5a323d",
+      "common_names": [
+        "Andromeda Japonica"
+      ],
+      "scientific_name": "Pieris japonica",
+      "normalized_scientific_name": "pieris japonica",
+      "family": "Ericaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "935667c75b3976f294d7014e8e7920786d9a36e8",
+      "common_names": [
+        "Buddhist Pine (Yew Pine)"
+      ],
+      "scientific_name": "Podocarpus macrophylla",
+      "normalized_scientific_name": "podocarpus macrophylla",
+      "family": "Podocarpaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6be71c9be02bc4b6fe7923d33da8cfd768d250cc",
+      "common_names": [
+        "American Mandrake"
+      ],
+      "scientific_name": "Podophyllum peltatum",
+      "normalized_scientific_name": "podophyllum peltatum",
+      "family": "Berberidaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "c1041bdd2a3275b1979a1214bb2b3058c75c6184",
+      "common_names": [
+        "Primrose"
+      ],
+      "scientific_name": "Primula vulgaris",
+      "normalized_scientific_name": "primula vulgaris",
+      "family": "Primulaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "ba3311c9409c9825b58b72eb47fdf77c115457ec",
+      "common_names": [
+        "Apricot"
+      ],
+      "scientific_name": "Prunus armeniaca",
+      "normalized_scientific_name": "prunus armeniaca",
+      "family": "Rosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "d2e3953df78399eb81a6af141b2c56e1b7e34251",
+      "common_names": [
+        "Plum"
+      ],
+      "scientific_name": "Prunus domestica",
+      "normalized_scientific_name": "prunus domestica",
+      "family": "Rosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "16f8c2521227ca9dc5206207a59749220367cbf0",
+      "common_names": [
+        "Peach (pit/leaves)"
+      ],
+      "scientific_name": "Prunus persica",
+      "normalized_scientific_name": "prunus persica",
+      "family": "Rosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f4f4f1726a9a896636e11c90587953694ad22268",
+      "common_names": [
+        "Black Cherry"
+      ],
+      "scientific_name": "Prunus serotina",
+      "normalized_scientific_name": "prunus serotina",
+      "family": "Rosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a22180090fe702a9527a891754b278605f5f3e40",
+      "common_names": [
+        "Buttercup"
+      ],
+      "scientific_name": "Ranunculus spp.",
+      "normalized_scientific_name": "ranunculus spp",
+      "family": "Ranunculaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "588d467eea4a86ee33079bddd98f32671a10a77d",
+      "common_names": [
+        "Rhubarb"
+      ],
+      "scientific_name": "Rheum rhabarbarium",
+      "normalized_scientific_name": "rheum rhabarbarium",
+      "family": "Polygonaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "51b617109a9cd1b2f13370538256c0dae96cade3",
+      "common_names": [
+        "Azalea",
+        "Rhododendron"
+      ],
+      "scientific_name": "Rhododendron spp",
+      "normalized_scientific_name": "rhododendron spp",
+      "family": "Ericaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6bb991d834cb306f9640e055b93072c0aef262fb",
+      "common_names": [
+        "African Wonder Tree",
+        "Castor Bean Plant"
+      ],
+      "scientific_name": "Ricinus communis",
+      "normalized_scientific_name": "ricinus communis",
+      "family": "Euphorbiaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "57dee41f7cd16297cc5e8c63d709b755a4f043b2",
+      "common_names": [
+        "Locust"
+      ],
+      "scientific_name": "Robinia spp.",
+      "normalized_scientific_name": "robinia spp",
+      "family": "Mimosaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "57968adaae90c332834c6627aa82c04269e36d43",
+      "common_names": [
+        "Sorrel"
+      ],
+      "scientific_name": "Rumex scutatus",
+      "normalized_scientific_name": "rumex scutatus",
+      "family": "Polygonaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "b68617139a9571976e245c9405132c1a5decd7a9",
+      "common_names": [
+        "Mother-in-Law's Tongue (Snake Plant)",
+        "Snake Plant"
+      ],
+      "scientific_name": "Sansevieria trifasciata",
+      "normalized_scientific_name": "sansevieria trifasciata",
+      "family": "Agavaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6625b3e0eadd0bfdaa6f048d6e1a5e0c82c9c171",
+      "common_names": [
+        "Schefflera (Umbrella Tree)"
+      ],
+      "scientific_name": "Schefflera",
+      "normalized_scientific_name": "schefflera",
+      "family": "Araliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "2d5901533cdd4e28530a6204cf7bf9c32ff07bae",
+      "common_names": [
+        "Satin Pothos"
+      ],
+      "scientific_name": "Scindapsus pictus",
+      "normalized_scientific_name": "scindapsus pictus",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "0136e0d4b3238cde604e9f4994db6d3e8d24c881",
+      "common_names": [
+        "Black Nightshade"
+      ],
+      "scientific_name": "Solanum nigrum",
+      "normalized_scientific_name": "solanum nigrum",
+      "family": "Solanaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "2f6fceb4e7ae5fc479047d19b71ebedbedf47ee0",
+      "common_names": [
+        "Jerusalem Cherry"
+      ],
+      "scientific_name": "Solanum pseudocapsicum",
+      "normalized_scientific_name": "solanum pseudocapsicum",
+      "family": "Solanaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "5428eed8293276602fd1318ecbfed41b3f549a3e",
+      "common_names": [
+        "Deadly Nightshade",
+        "Nightshade"
+      ],
+      "scientific_name": "Solanum spp",
+      "normalized_scientific_name": "solanum spp",
+      "family": "Solanaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "26e5f5aad5aba95bcfe0f5cb92e77664079ae5f9",
+      "common_names": [
+        "Peace Lily"
+      ],
+      "scientific_name": "Spathiphyllum",
+      "normalized_scientific_name": "spathiphyllum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "f6b7fc2c1043529940ce6bc5d3fa64e6a88db160",
+      "common_names": [
+        "Skunk Cabbage"
+      ],
+      "scientific_name": "Symplocarpus foetidus",
+      "normalized_scientific_name": "symplocarpus foetidus",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "6f6b221c87cc8517460fc08aff77d03d038abf67",
+      "common_names": [
+        "Arrow-Head Vine"
+      ],
+      "scientific_name": "Syngonium podophyllum",
+      "normalized_scientific_name": "syngonium podophyllum",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "a8fc102c043e3b7f2794cbddde3be4c98e7b6143",
+      "common_names": [
+        "English Yew"
+      ],
+      "scientific_name": "Taxus baccata",
+      "normalized_scientific_name": "taxus baccata",
+      "family": "Taxaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "026ce38c05d9e5c366858e2f02a2169c22a3bb65",
+      "common_names": [
+        "American Yew"
+      ],
+      "scientific_name": "Taxus canadensus",
+      "normalized_scientific_name": "taxus canadensus",
+      "family": "Taxaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "051878dca177789ae450b3c0cb4e997eb1414597",
+      "common_names": [
+        "Yew"
+      ],
+      "scientific_name": "Taxus spp.",
+      "normalized_scientific_name": "taxus spp",
+      "family": "Taxaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "75e9ea62482e27429efbf5cb334b759982e1567f",
+      "common_names": [
+        "Yellow Oleander"
+      ],
+      "scientific_name": "Thevetia peruviana",
+      "normalized_scientific_name": "thevetia peruviana",
+      "family": "Apocynaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "1eb11047c310792e702b678d2ea81bdb88f45a44",
+      "common_names": [
+        "Tulip"
+      ],
+      "scientific_name": "Tulipa spp.",
+      "normalized_scientific_name": "tulipa spp",
+      "family": "Liliaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "992033831e712e4c81495b8635a93e4aa8315e25",
+      "common_names": [
+        "Periwinkle (Vinca)"
+      ],
+      "scientific_name": "Vinca rosea",
+      "normalized_scientific_name": "vinca rosea",
+      "family": "Apocynaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "537210723884bfb730eceacb1dc539b97aefe314",
+      "common_names": [
+        "Sweet Pea (Wisteria family note — see individual entry)",
+        "Wisteria"
+      ],
+      "scientific_name": "Wisteria spp.",
+      "normalized_scientific_name": "wisteria spp",
+      "family": "Fabaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "2e642fa7a208b87a4e4f1043acdcbcd9dab1533a",
+      "common_names": [
+        "Yucca"
+      ],
+      "scientific_name": "Yucca spp.",
+      "normalized_scientific_name": "yucca spp",
+      "family": "Agavaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "3bc9f5b8df0716634561ba828bf0d9feb896a4fa",
+      "common_names": [
+        "Cardboard Palm"
+      ],
+      "scientific_name": "Zamia spp.",
+      "normalized_scientific_name": "zamia spp",
+      "family": "Cycadaceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    },
+    {
+      "toxicity_id": "784f3457b1d52f7146c991b38696b46717742048",
+      "common_names": [
+        "Arum Lily",
+        "Calla Lily / Arum Lily"
+      ],
+      "scientific_name": "Zantedeschia aethiopica",
+      "normalized_scientific_name": "zantedeschia aethiopica",
+      "family": "Araceae",
+      "animal_species": "DOG",
+      "toxicity_status": "TOXIC"
+    }
+  ]
+}

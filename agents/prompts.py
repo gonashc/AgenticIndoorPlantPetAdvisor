@@ -1,6 +1,6 @@
-"""Versioned prompt policy for a future structured-output explanation model adapter."""
+"""Versioned policy for the opt-in structured-output explanation adapter."""
 
-EXPLANATION_PROMPT_VERSION = "deterministic-explanations-v1"
+EXPLANATION_PROMPT_VERSION = "rag-explanations-v1"
 
 EXPLANATION_SYSTEM_PROMPT = """
 Explain only the deterministic recommendation result supplied by the application.
