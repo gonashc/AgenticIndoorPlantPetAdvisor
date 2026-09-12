@@ -1,6 +1,34 @@
 {
   "components": {
     "schemas": {
+      "AdvisorySource": {
+        "additionalProperties": false,
+        "description": "A recently observed source used only for non-authoritative live context.",
+        "properties": {
+          "title": {
+            "maxLength": 300,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          },
+          "verified_at": {
+            "format": "date-time",
+            "title": "Verified At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "url",
+          "verified_at"
+        ],
+        "title": "AdvisorySource",
+        "type": "object"
+      },
       "Cadence": {
         "enum": [
           "DAILY",
@@ -682,6 +710,50 @@
         "title": "EvidenceReference",
         "type": "object"
       },
+      "LiveAdvisory": {
+        "additionalProperties": false,
+        "description": "Provider-neutral live context that cannot affect eligibility or score.",
+        "properties": {
+          "kind": {
+            "enum": [
+              "CLIMATE",
+              "REGULATION",
+              "WEB_GUIDANCE"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/AdvisorySource"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "title": "Sources",
+            "type": "array"
+          },
+          "summary": {
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Summary",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 160,
+            "minLength": 1,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "title",
+          "summary",
+          "sources"
+        ],
+        "title": "LiveAdvisory",
+        "type": "object"
+      },
       "LocalSource": {
         "additionalProperties": false,
         "properties": {
@@ -1261,6 +1333,14 @@
           "category": {
             "$ref": "#/components/schemas/Category"
           },
+          "live_advisories": {
+            "items": {
+              "$ref": "#/components/schemas/LiveAdvisory"
+            },
+            "maxItems": 12,
+            "title": "Live Advisories",
+            "type": "array"
+          },
           "metadata": {
             "$ref": "#/components/schemas/RequestMetadata"
           },
@@ -1526,6 +1606,16 @@
             },
             "description": "Validation or eligibility failure"
           },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
+          },
           "500": {
             "content": {
               "application/json": {
@@ -1621,6 +1711,16 @@
               }
             },
             "description": "Validation or eligibility failure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           },
           "500": {
             "content": {
@@ -1719,6 +1819,16 @@
               }
             },
             "description": "Validation or eligibility failure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           },
           "500": {
             "content": {
@@ -1825,6 +1935,16 @@
               }
             },
             "description": "Validation or eligibility failure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           },
           "500": {
             "content": {
@@ -1933,6 +2053,16 @@
               }
             },
             "description": "Validation or eligibility failure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           },
           "500": {
             "content": {
@@ -2048,6 +2178,16 @@
               }
             },
             "description": "Validation or eligibility failure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           },
           "500": {
             "content": {
@@ -2187,6 +2327,16 @@
               }
             },
             "description": "Validation or eligibility failure"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Rate limit exceeded"
           },
           "500": {
             "content": {

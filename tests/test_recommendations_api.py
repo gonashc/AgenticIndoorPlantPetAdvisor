@@ -2,7 +2,17 @@
 
 import json
 
+from advisor_api import create_app
+from advisor_api.config import Settings
+from advisor_api.container import build_container
+from advisor_api.ports.traffic import RateLimitExceeded
 from fastapi.testclient import TestClient
+
+
+class AlwaysLimited:
+    async def acquire(self, *, owner_key: str, route_group: str) -> None:
+        del owner_key, route_group
+        raise RateLimitExceeded(17)
 
 
 def _dog_exclusion_payload() -> dict[str, object]:
@@ -149,3 +159,19 @@ def test_cat_category_uses_profile_results(client: TestClient) -> None:
         item["safety"]["cat_toxicity"] == "NOT_APPLICABLE"
         for item in response.json()["recommendations"]
     )
+
+
+def test_rate_limit_uses_versioned_error_and_retry_header(
+    plant_payload: dict[str, object],
+) -> None:
+    app = create_app(
+        Settings(_env_file=None, app_env="test"),
+        build_container(rate_limiter=AlwaysLimited()),
+    )
+    with TestClient(app, raise_server_exceptions=False) as limited_client:
+        response = limited_client.post("/v1/recommendations", json=plant_payload)
+
+    assert response.status_code == 429
+    assert response.headers["retry-after"] == "17"
+    assert response.headers["x-error-contract-version"] == "v1"
+    assert response.json()["error"]["code"] == "RATE_LIMIT_EXCEEDED"

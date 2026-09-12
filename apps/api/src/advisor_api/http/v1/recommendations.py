@@ -8,14 +8,14 @@ from fastapi.responses import StreamingResponse
 
 from advisor_api.container import get_container
 from advisor_api.contracts.recommendations import RecommendationRequest, RecommendationResponse
-from advisor_api.http.auth import authenticated_user
+from advisor_api.http.auth import rate_limited_user
 from advisor_api.http.context import request_id
 from advisor_api.http.errors import COMMON_ERROR_RESPONSES
 from advisor_api.http.streaming import encode_sse, sequence_from_last_event_id
 from advisor_api.ports.auth import AuthenticatedUser
 
 router = APIRouter(prefix="/recommendations", tags=["recommendations"])
-Authenticated = Annotated[AuthenticatedUser, Depends(authenticated_user)]
+Authenticated = Annotated[AuthenticatedUser, Depends(rate_limited_user)]
 
 
 @router.post(
@@ -30,8 +30,9 @@ async def create_recommendation(
     request: Request,
     user: Authenticated,
 ) -> RecommendationResponse:
-    del user
-    return await get_container(request).recommendations.recommend(payload, request_id(request))
+    return await get_container(request).recommendations.recommend(
+        payload, request_id(request), user.owner_id
+    )
 
 
 @router.post(
@@ -57,10 +58,10 @@ async def stream_recommendation(
     user: Authenticated,
     last_event_id: Annotated[str | None, Header(alias="Last-Event-ID")] = None,
 ) -> StreamingResponse:
-    del user
     events = get_container(request).recommendations.stream(
         payload,
         request_id(request),
+        user.owner_id,
         after_sequence=sequence_from_last_event_id(last_event_id),
     )
 

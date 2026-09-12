@@ -4,6 +4,7 @@ param(
     [string]$Region = "us-east1",
     [string]$ServiceName = "advisor-climate-mcp",
     [string]$Repository = "advisor",
+    [string]$GeocodingSecretName = "google-geocoding-api-key",
     [string]$ImageTag = "",
     [string]$GcloudPath = "gcloud"
 )
@@ -28,6 +29,11 @@ if ($LASTEXITCODE -ne 0) {
     throw "Climate MCP service account does not exist. Run its bootstrap script first."
 }
 
+& $GcloudPath secrets describe $GeocodingSecretName --project=$ProjectId --quiet | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    throw "Geocoding secret $GeocodingSecretName does not exist. Run the climate bootstrap first."
+}
+
 & $GcloudPath builds submit `
     --project=$ProjectId `
     --region=$Region `
@@ -41,7 +47,8 @@ if ($LASTEXITCODE -ne 0) { throw "Climate MCP image build failed." }
     --region=$Region `
     --image=$image `
     --service-account=$mcpServiceAccount `
-    --set-env-vars="APP_ENV=production,MCP_ALLOWED_HOSTS=$provisionalHost" `
+    --set-env-vars="APP_ENV=production,ZIP_COORDINATE_PROVIDER=google,MCP_ALLOWED_HOSTS=$provisionalHost" `
+    --set-secrets="GOOGLE_GEOCODING_API_KEY=$GeocodingSecretName`:latest" `
     --no-allow-unauthenticated `
     --no-iap `
     --quiet

@@ -33,6 +33,8 @@ class Settings(BaseSettings):
     db_max_overflow: int = 2
     db_pool_timeout_seconds: int = 30
     db_pool_recycle_seconds: int = 1800
+    checkpoint_mode: Literal["disabled", "memory", "postgres"] = "disabled"
+    checkpoint_database_url: SecretStr | None = None
     langsmith_tracing: bool = False
     langsmith_api_key: SecretStr | None = None
     langsmith_project: str = "advisor-local"
@@ -64,13 +66,27 @@ class Settings(BaseSettings):
     mcp_adoption_audience: str | None = None
     mcp_care_plan_url: str | None = None
     mcp_care_plan_audience: str | None = None
+    mcp_climate_url: str | None = None
+    mcp_climate_audience: str | None = None
+    mcp_regulations_url: str | None = None
+    mcp_regulations_audience: str | None = None
+    mcp_you_url: str | None = None
+    mcp_you_audience: str | None = None
     mcp_timeout_seconds: float = 8.0
+    redis_mode: Literal["disabled", "redis"] = "disabled"
+    redis_url: SecretStr | None = None
+    redis_socket_timeout_seconds: float = 1.0
+    rate_limit_requests: int = 60
+    rate_limit_window_seconds: int = 60
+    mcp_cache_ttl_seconds: int = 300
 
     @field_validator(
         "db_password",
         "langsmith_api_key",
         "pinecone_api_key",
         "openai_api_key",
+        "checkpoint_database_url",
+        "redis_url",
         mode="before",
     )
     @classmethod
@@ -113,6 +129,14 @@ class Settings(BaseSettings):
             raise ValueError("Production cannot use the in-memory persistence adapters")
         if self.app_env == "production" and self.auth_mode != "google_iap":
             raise ValueError("Production requires AUTH_MODE=google_iap")
+        if self.app_env == "production" and self.checkpoint_mode != "postgres":
+            raise ValueError("Production requires PostgreSQL LangGraph checkpoints")
+        if self.checkpoint_mode == "postgres":
+            if self.checkpoint_database_url is None:
+                raise ValueError("CHECKPOINT_DATABASE_URL is required for PostgreSQL checkpoints")
+            checkpoint_url = self.checkpoint_database_url.get_secret_value()
+            if not checkpoint_url.startswith(("postgresql://", "postgres://")):
+                raise ValueError("CHECKPOINT_DATABASE_URL must be a psycopg PostgreSQL URL")
         if self.auth_mode == "google_iap" and (
             not self.iap_audience or not self.iap_audience.startswith("/projects/")
         ):
@@ -159,11 +183,27 @@ class Settings(BaseSettings):
                 raise ValueError("OPENAI_MODEL is required when EXPLANATION_MODE=openai")
         if self.mcp_timeout_seconds <= 0:
             raise ValueError("MCP_TIMEOUT_SECONDS must be positive")
+        if self.redis_socket_timeout_seconds <= 0:
+            raise ValueError("REDIS_SOCKET_TIMEOUT_SECONDS must be positive")
+        if self.rate_limit_requests < 1 or self.rate_limit_window_seconds < 1:
+            raise ValueError("Rate limit values must be positive")
+        if self.mcp_cache_ttl_seconds < 1:
+            raise ValueError("MCP cache TTL must be positive")
+        if self.redis_mode == "redis" and (
+            self.redis_url is None
+            or not self.redis_url.get_secret_value().startswith(("redis://", "rediss://"))
+        ):
+            raise ValueError("REDIS_URL must be configured with a Redis URL")
+        if self.app_env == "production" and self.redis_mode != "redis":
+            raise ValueError("Production requires Redis rate limiting and provider caching")
         if self.mcp_mode == "remote":
             endpoints = (
                 self.mcp_places_url,
                 self.mcp_adoption_url,
                 self.mcp_care_plan_url,
+                self.mcp_climate_url,
+                self.mcp_regulations_url,
+                self.mcp_you_url,
             )
             configured = tuple(url for url in endpoints if url)
             if not configured:
@@ -177,6 +217,9 @@ class Settings(BaseSettings):
                     (self.mcp_places_url, self.mcp_places_audience),
                     (self.mcp_adoption_url, self.mcp_adoption_audience),
                     (self.mcp_care_plan_url, self.mcp_care_plan_audience),
+                    (self.mcp_climate_url, self.mcp_climate_audience),
+                    (self.mcp_regulations_url, self.mcp_regulations_audience),
+                    (self.mcp_you_url, self.mcp_you_audience),
                 )
                 if any(url and not audience for url, audience in pairs):
                     raise ValueError("Each private MCP endpoint requires an audience")

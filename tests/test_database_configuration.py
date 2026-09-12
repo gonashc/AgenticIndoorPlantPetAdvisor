@@ -27,6 +27,32 @@ def test_production_requires_iap_authentication() -> None:
         )
 
 
+def test_production_requires_durable_checkpoints_after_authentication() -> None:
+    with pytest.raises(ValidationError, match="PostgreSQL LangGraph checkpoints"):
+        Settings(
+            _env_file=None,
+            app_env="production",
+            database_mode="url",
+            database_url=SecretStr("postgresql+asyncpg://user:secret@localhost/advisor"),
+            auth_mode="google_iap",
+            iap_audience="/projects/123/locations/us-east1/services/advisor-api",
+        )
+
+
+def test_production_requires_redis_after_checkpoint_configuration() -> None:
+    with pytest.raises(ValidationError, match="Redis rate limiting"):
+        Settings(
+            _env_file=None,
+            app_env="production",
+            database_mode="url",
+            database_url=SecretStr("postgresql+asyncpg://user:secret@localhost/advisor"),
+            auth_mode="google_iap",
+            iap_audience="/projects/123/locations/us-east1/services/advisor-api",
+            checkpoint_mode="postgres",
+            checkpoint_database_url=SecretStr("postgresql://user:secret@localhost/checkpoints"),
+        )
+
+
 def test_iap_authentication_requires_resource_audience() -> None:
     with pytest.raises(ValidationError, match="IAP_AUDIENCE"):
         Settings(_env_file=None, app_env="test", auth_mode="google_iap")
@@ -82,6 +108,18 @@ def test_remote_mcp_can_enable_only_the_care_plan_service() -> None:
 
     assert settings.mcp_places_url is None
     assert settings.mcp_adoption_url is None
+
+
+def test_remote_mcp_can_enable_only_the_climate_service() -> None:
+    settings = Settings(
+        _env_file=None,
+        mcp_mode="remote",
+        mcp_auth_mode="google_cloud_run",
+        mcp_climate_url="https://climate.example/mcp",
+        mcp_climate_audience="https://climate.example",
+    )
+
+    assert settings.mcp_climate_url == "https://climate.example/mcp"
 
 
 def test_care_plan_mcp_rejects_public_authentication_mode() -> None:

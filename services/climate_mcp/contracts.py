@@ -42,3 +42,9 @@ class GetWeatherResult(McpContract):
     advisory: Literal[
         "General weather context only; follow National Weather Service and local authorities."
     ] = "General weather context only; follow National Weather Service and local authorities."
+
+
+class GetWeatherForZipResult(GetWeatherResult):
+    zip_code: str = Field(pattern=r"^\d{5}$")
+    city: str | None = Field(default=None, max_length=100)
+    state_code: str = Field(pattern=r"^[A-Z]{2}$")

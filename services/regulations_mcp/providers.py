@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Literal, Protocol
 
+from services.you_search import YouSearchClient
+
 PetCategory = Literal["DOG", "CAT"]
 RegulationTopic = Literal[
     "LICENSING",
@@ -36,6 +38,14 @@ class RegulationRecord:
 class RegulationProviderResult:
     available: bool
     rules: Sequence[RegulationRecord]
+    discovery_sources: Sequence["RegulationDiscoveryRecord"] = ()
+
+
+@dataclass(frozen=True, slots=True)
+class RegulationDiscoveryRecord:
+    title: str
+    url: str
+    description: str
 
 
 class RegulationProvider(Protocol):
@@ -62,3 +72,37 @@ class DisabledRegulationProvider:
     ) -> RegulationProviderResult:
         del category, state_code, city, limit
         return RegulationProviderResult(available=False, rules=())
+
+
+class YouComRegulationDiscoveryProvider:
+    """Discovers official pages without promoting search snippets into rules."""
+
+    def __init__(self, client: YouSearchClient) -> None:
+        self._client = client
+
+    async def lookup(
+        self,
+        *,
+        category: PetCategory,
+        state_code: str,
+        city: str | None,
+        limit: int,
+    ) -> RegulationProviderResult:
+        jurisdiction = f"{city}, {state_code}" if city else state_code
+        query = (
+            f"official {jurisdiction} {category.lower()} licensing vaccination restraint "
+            "animal regulations (site:.gov OR site:.us)"
+        )
+        results = await self._client.search(query=query, limit=min(limit, 5))
+        return RegulationProviderResult(
+            available=False,
+            rules=(),
+            discovery_sources=tuple(
+                RegulationDiscoveryRecord(
+                    title=item.title,
+                    url=item.url,
+                    description=item.description,
+                )
+                for item in results
+            ),
+        )

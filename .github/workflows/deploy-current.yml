@@ -15,7 +15,7 @@ jobs:
   deploy:
     name: migrate-and-deploy
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
 
     steps:
       - name: Check out repository
@@ -34,7 +34,19 @@ jobs:
           project_id: indoorplantpetadvisor
           version: ">= 584.0.0"
 
-      - name: Build and deploy MCP, then migrate and deploy API
+      - name: Deploy climate MCP
+        shell: pwsh
+        run: ./scripts/deploy_climate_mcp.ps1 -ImageTag $env:GITHUB_SHA
+
+      - name: Deploy regulations and internal MCPs
+        shell: pwsh
+        run: ./scripts/deploy_internal_mcps.ps1 -ImageTag $env:GITHUB_SHA
+
+      - name: Deploy You.com guidance MCP
+        shell: pwsh
+        run: ./scripts/deploy_you_mcp.ps1 -ImageTag $env:GITHUB_SHA
+
+      - name: Deploy Places MCP, migrate, and deploy API
         shell: pwsh
         run: >-
           ./scripts/deploy_places_mcp.ps1

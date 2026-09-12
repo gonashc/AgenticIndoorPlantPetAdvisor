@@ -4,6 +4,7 @@ param(
     [string]$Region = "us-east1",
     [string]$InstanceName = "advisor-postgres",
     [string]$Repository = "advisor",
+    [string]$YouSecretName = "you-api-key",
     [string]$ImageTag = "",
     [string]$GcloudPath = "gcloud"
 )
@@ -69,6 +70,11 @@ foreach ($service in $services) {
     if ($LASTEXITCODE -ne 0) { throw "$($service.ServiceName) image build failed." }
 }
 
+& $GcloudPath secrets describe $YouSecretName --project=$ProjectId --quiet | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    throw "You.com secret $YouSecretName is required by the Regulations MCP."
+}
+
 $catalogImage = ($services | Where-Object { $_.Key -eq "catalog" }).Image
 $grantSettings = @(
     "APP_ENV=test",
@@ -117,6 +123,7 @@ foreach ($service in $services) {
     )
     $networkArguments = @()
     $labelArguments = @()
+    $secretArguments = @()
     if ($service.Key -eq "catalog") {
         $runtimeSettings += @(
             "DATABASE_MODE=cloud_sql",
@@ -151,7 +158,8 @@ foreach ($service in $services) {
         $labelArguments = @("--update-labels=advisor-care-plan-contract=v1")
     }
     elseif ($service.Key -eq "regulations") {
-        $runtimeSettings += "REGULATIONS_PROVIDER=disabled"
+        $runtimeSettings += "REGULATIONS_PROVIDER=you_discovery"
+        $secretArguments = @("--set-secrets=YOU_API_KEY=$YouSecretName`:latest")
     }
     elseif ($service.Key -eq "commerce") {
         $runtimeSettings += "COMMERCE_PROVIDER=disabled"
@@ -165,6 +173,7 @@ foreach ($service in $services) {
         --service-account="$($service.RuntimeAccount)" `
         @networkArguments `
         @labelArguments `
+        @secretArguments `
         --set-env-vars=$runtimeSettings `
         --no-allow-unauthenticated `
         --no-iap `

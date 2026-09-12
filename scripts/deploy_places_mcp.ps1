@@ -5,6 +5,9 @@ param(
     [string]$ServiceName = "advisor-places-mcp",
     [string]$AdoptionServiceName = "advisor-adoption-mcp",
     [string]$CarePlanServiceName = "advisor-care-plan-mcp",
+    [string]$ClimateServiceName = "advisor-climate-mcp",
+    [string]$RegulationsServiceName = "advisor-regulations-mcp",
+    [string]$YouServiceName = "advisor-you-mcp",
     [string]$ApiServiceName = "advisor-api",
     [string]$Repository = "advisor",
     [string]$SecretName = "google-places-api-key",
@@ -111,6 +114,20 @@ $carePlanAudience = (@($carePlanAudienceOutput) -join "").Trim()
 if ($carePlanDescribeExit -eq 0 -and $carePlanAudience) {
     $apiDeployParameters.McpCarePlanUrl = "$carePlanAudience/mcp"
     $apiDeployParameters.McpCarePlanAudience = $carePlanAudience
+}
+foreach ($service in @(
+    @{ Name = $ClimateServiceName; Url = "McpClimateUrl"; Audience = "McpClimateAudience" },
+    @{ Name = $RegulationsServiceName; Url = "McpRegulationsUrl"; Audience = "McpRegulationsAudience" },
+    @{ Name = $YouServiceName; Url = "McpYouUrl"; Audience = "McpYouAudience" }
+)) {
+    $serviceAudienceOutput = & $GcloudPath run services describe $service.Name `
+        --project=$ProjectId --region=$Region --format="value(status.url)" 2>$null
+    $serviceDescribeExit = $LASTEXITCODE
+    $serviceAudience = (@($serviceAudienceOutput) -join "").Trim()
+    if ($serviceDescribeExit -eq 0 -and $serviceAudience) {
+        $apiDeployParameters[$service.Url] = "$serviceAudience/mcp"
+        $apiDeployParameters[$service.Audience] = $serviceAudience
+    }
 }
 
 & (Join-Path $PSScriptRoot "deploy_current.ps1") @apiDeployParameters

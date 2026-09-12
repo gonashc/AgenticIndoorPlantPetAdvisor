@@ -66,3 +66,21 @@ Migration `0004_care_plan_ownership` assigns any earlier anonymous demo rows to 
 principal and makes `owner_id` non-null. New previews and plans derive their owner from a verified IAP
 assertion, and every read, confirmation, and mutation includes the owner predicate. Client payloads
 cannot provide or change ownership.
+
+## LangGraph checkpoint database
+
+The official asynchronous LangGraph checkpointer uses psycopg rather than the application's
+Cloud SQL asyncpg connector. Create a small dedicated database and password-authenticated role on
+the same private Cloud SQL instance, with ownership limited to that checkpoint database. Store its
+private-IP connection string as a Secret Manager value, never in source or shell history:
+
+```powershell
+$env:CHECKPOINT_DATABASE_URL = "postgresql://CHECKPOINT_USER:PASSWORD@PRIVATE_IP:5432/advisor_checkpoints"
+./scripts/bootstrap_checkpointing_gcp.ps1
+$env:CHECKPOINT_DATABASE_URL = $null
+```
+
+The API initializes the official checkpointer tables idempotently during startup. Recommendation
+threads use an opaque hash of the authenticated owner and request IDs. The application database
+continues to use IAM authentication; this dedicated credential exists only because the upstream
+checkpointer requires a psycopg connection.

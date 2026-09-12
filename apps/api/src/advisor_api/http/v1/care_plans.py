@@ -14,13 +14,13 @@ from advisor_api.contracts.care_plans import (
     CarePlanPreviewResponse,
     CarePlanUpdateRequest,
 )
-from advisor_api.http.auth import authenticated_user, forwarded_iap_assertion
+from advisor_api.http.auth import forwarded_iap_assertion, rate_limited_user
 from advisor_api.http.context import request_id
 from advisor_api.http.errors import COMMON_ERROR_RESPONSES, ApiError, ServiceUnavailableError
 from advisor_api.ports.auth import AuthenticatedUser
 
 router = APIRouter(prefix="/care-plans", tags=["care-plans"])
-Authenticated = Annotated[AuthenticatedUser, Depends(authenticated_user)]
+Authenticated = Annotated[AuthenticatedUser, Depends(rate_limited_user)]
 
 
 @router.post(

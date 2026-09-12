@@ -1,6 +1,5 @@
 """FastAPI application composition root."""
 
-from asyncio import to_thread
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -45,7 +44,7 @@ def create_app(
                     await database_runtime.close()
             finally:
                 if owned_container is not None:
-                    await to_thread(owned_container.close)
+                    await owned_container.aclose()
 
     app = FastAPI(
         title=resolved_settings.app_name,

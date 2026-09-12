@@ -3,7 +3,7 @@
 from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import field_validator, model_validator
+from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +16,10 @@ class ClimateMcpSettings(BaseSettings):
         "AgenticIndoorPlantPetAdvisor/1.0 (https://github.com/gonashc/AgenticIndoorPlantPetAdvisor)"
     )
     nws_timeout_seconds: float = 8.0
+    zip_coordinate_provider: Literal["disabled", "google"] = "disabled"
+    google_geocoding_api_key: SecretStr | None = None
+    google_geocoding_url: str = "https://maps.googleapis.com/maps/api/geocode/json"
+    google_geocoding_timeout_seconds: float = 5.0
     mcp_allowed_hosts: str = "localhost:*,127.0.0.1:*"
 
     @field_validator("nws_user_agent")
@@ -34,6 +38,20 @@ class ClimateMcpSettings(BaseSettings):
             raise ValueError("NWS_USER_AGENT must identify the application")
         if self.nws_timeout_seconds <= 0:
             raise ValueError("NWS_TIMEOUT_SECONDS must be positive")
+        geocoding_url = urlparse(self.google_geocoding_url)
+        if geocoding_url.scheme != "https" or not geocoding_url.hostname:
+            raise ValueError("GOOGLE_GEOCODING_URL must be an HTTPS URL")
+        if self.app_env == "production" and geocoding_url.hostname != "maps.googleapis.com":
+            raise ValueError("Production must use the official Google Geocoding API")
+        if self.google_geocoding_timeout_seconds <= 0:
+            raise ValueError("GOOGLE_GEOCODING_TIMEOUT_SECONDS must be positive")
+        if self.zip_coordinate_provider == "google" and (
+            self.google_geocoding_api_key is None
+            or not self.google_geocoding_api_key.get_secret_value().strip()
+        ):
+            raise ValueError("GOOGLE_GEOCODING_API_KEY is required for Google ZIP resolution")
+        if self.app_env == "production" and self.zip_coordinate_provider != "google":
+            raise ValueError("Production Climate MCP requires bounded ZIP resolution")
         if self.app_env == "production" and not self.allowed_hosts():
             raise ValueError("MCP_ALLOWED_HOSTS is required in production")
         return self

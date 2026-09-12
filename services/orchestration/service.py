@@ -2,6 +2,7 @@
 
 from collections.abc import AsyncIterator, Mapping
 from datetime import UTC, datetime
+from hashlib import sha256
 from typing import cast
 from uuid import UUID
 
@@ -17,6 +18,7 @@ from advisor_api.contracts.streaming import (
 )
 from advisor_api.http.errors import ApiError, CategoryUnavailableError
 from advisor_api.ports.observability import RecommendationTracer
+from langchain_core.runnables import RunnableConfig
 
 from agents.supervisor import Graph
 from services.orchestration.state import RecommendationState
@@ -41,6 +43,11 @@ class RecommendationService:
         ),
         "evaluate": ("EVALUATING", 85, "Evaluated structure, evidence, and safety."),
         "optimizer": ("OPTIMIZING", 90, "Repaired failed explanation sections."),
+        "enrich_live_context": (
+            "EVALUATING",
+            94,
+            "Loaded bounded climate, regulation, and current web context.",
+        ),
     }
 
     def __init__(
@@ -54,7 +61,7 @@ class RecommendationService:
         self._enabled_categories = enabled_categories
 
     async def recommend(
-        self, request: RecommendationRequest, request_id: UUID
+        self, request: RecommendationRequest, request_id: UUID, owner_id: UUID
     ) -> RecommendationResponse:
         self._require_enabled(request)
         with self._tracer.trace(
@@ -62,7 +69,10 @@ class RecommendationService:
             category=request.category,
             transport="http",
         ):
-            result = await self._graph.ainvoke(self._initial_state(request, request_id))
+            result = await self._graph.ainvoke(
+                self._initial_state(request, request_id),
+                self._graph_config(request_id, owner_id),
+            )
         state = cast(RecommendationState, result)
         return state["response"]
 
@@ -70,6 +80,7 @@ class RecommendationService:
         self,
         request: RecommendationRequest,
         request_id: UUID,
+        owner_id: UUID,
         *,
         after_sequence: int = 0,
     ) -> AsyncIterator[RecommendationStreamEvent]:
@@ -95,6 +106,7 @@ class RecommendationService:
                 final_response: RecommendationResponse | None = None
                 async for chunk in self._graph.astream(
                     self._initial_state(request, request_id),
+                    self._graph_config(request_id, owner_id),
                     stream_mode="updates",
                     version="v2",
                 ):
@@ -164,6 +176,13 @@ class RecommendationService:
     @staticmethod
     def _initial_state(request: RecommendationRequest, request_id: UUID) -> RecommendationState:
         return {"request": request, "request_id": request_id}
+
+    @staticmethod
+    def _graph_config(request_id: UUID, owner_id: UUID) -> RunnableConfig:
+        """Derive an opaque tenant-isolated thread from the owner and request IDs."""
+
+        thread_id = sha256(f"{owner_id}:{request_id}".encode()).hexdigest()
+        return RunnableConfig(configurable={"thread_id": thread_id})
 
     def _require_enabled(self, request: RecommendationRequest) -> None:
         if request.category.value not in self._enabled_categories:

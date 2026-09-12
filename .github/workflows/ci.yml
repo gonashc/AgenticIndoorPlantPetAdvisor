@@ -33,10 +33,20 @@ jobs:
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
 
     env:
       MIGRATION_DATABASE_URL: postgresql+psycopg://advisor:advisor@127.0.0.1:5432/advisor
       TEST_DATABASE_URL: postgresql+asyncpg://advisor:advisor@127.0.0.1:5432/advisor
+      TEST_REDIS_URL: redis://127.0.0.1:6379/0
       UV_PYTHON: "3.12"
 
     steps:
@@ -153,6 +163,11 @@ jobs:
         run: >-
           docker build --file services/care_plan_mcp/Dockerfile
           --tag advisor-care-plan-mcp:ci .
+
+      - name: Build You.com guidance MCP container
+        run: >-
+          docker build --file services/you_mcp/Dockerfile
+          --tag advisor-you-mcp:ci .
 
       - name: Verify migrations from production container
         run: >-
@@ -337,6 +352,28 @@ jobs:
 
           for attempt in {1..20}; do
             if curl --fail --silent http://127.0.0.1:8085/health; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
+          docker rm --force "$container_id"
+          trap - EXIT
+
+      - name: Smoke test You.com guidance MCP container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --publish 8088:8080 \
+            --env APP_ENV=test \
+            advisor-you-mcp:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8088/health; then
               break
             fi
             if [[ "$attempt" == "20" ]]; then

@@ -1,5 +1,6 @@
 """Recommendation request and response contracts."""
 
+from datetime import datetime
 from typing import Annotated, Literal
 from uuid import UUID
 
@@ -81,6 +82,23 @@ class SafetyDisclosure(ContractModel):
     hard_constraints_passed: Literal[True] = True
 
 
+class AdvisorySource(ContractModel):
+    """A recently observed source used only for non-authoritative live context."""
+
+    title: str = Field(min_length=1, max_length=300)
+    url: str
+    verified_at: datetime
+
+
+class LiveAdvisory(ContractModel):
+    """Provider-neutral live context that cannot affect eligibility or score."""
+
+    kind: Literal["CLIMATE", "REGULATION", "WEB_GUIDANCE"]
+    title: str = Field(min_length=1, max_length=160)
+    summary: str = Field(min_length=1, max_length=1000)
+    sources: list[AdvisorySource] = Field(min_length=1, max_length=5)
+
+
 class RecommendationItem(ContractModel):
     recommendation_id: str
     name: str
@@ -108,5 +126,6 @@ class RecommendationResponse(ContractModel):
     session_id: UUID
     category: Category
     recommendations: list[RecommendationItem] = Field(min_length=1, max_length=3)
+    live_advisories: list[LiveAdvisory] = Field(default_factory=list, max_length=12)
     validation_status: ValidationStatus
     warnings: list[str] = Field(default_factory=list)

@@ -85,7 +85,9 @@ class RecommendationEvaluationTarget:
         request = REQUEST_ADAPTER.validate_python(request_data)
         request_id = uuid5(NAMESPACE_URL, f"advisor-eval:{request.session_id}")
         try:
-            response = await self._container.recommendations.recommend(request, request_id)
+            response = await self._container.recommendations.recommend(
+                request, request_id, request.session_id
+            )
         except ApiError as exc:
             return RecommendationEvaluationOutput(
                 status="error",

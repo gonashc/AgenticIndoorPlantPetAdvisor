@@ -133,6 +133,15 @@ progress::-webkit-progress-value { background: var(--forest); }
 .nearby-panel { display: grid; gap: 5px; margin: 12px 0 16px; padding: 12px; border-radius: 10px; background: #edf2e9; }
 .nearby-panel a { color: var(--forest-dark); font-size: .82rem; font-weight: 650; text-decoration: none; }
 .warning { padding: 12px; border-radius: 10px; background: #faf1e6; color: #79512e; }
+.live-context { display: grid; gap: 16px; padding: 20px; border: 1px solid #cdd9cd; border-radius: 18px; background: #f5f8f1; }
+.live-context h3, .live-advisory h4, .live-advisory p { margin: 0; }
+.live-context-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 12px; }
+.live-advisory { display: grid; gap: 8px; padding: 14px; border-radius: 12px; background: #fff; box-shadow: 0 8px 24px rgb(38 70 50 / 7%); }
+.live-advisory > span { color: var(--green); font-size: .72rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.live-advisory h4 { font-size: 1rem; }
+.live-advisory p { color: var(--muted); font-size: .9rem; }
+.live-advisory a { color: var(--green); font-size: .82rem; font-weight: 700; }
+.live-context-note { margin: 0; color: var(--muted); font-size: .78rem; }
 .care-plan { margin-top: 24px; padding: 24px; border-radius: 18px; background: #e6eee5; }
 .care-plan ol { display: grid; gap: 12px; padding-left: 22px; }
 .care-plan li { padding-left: 5px; }

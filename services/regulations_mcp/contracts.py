@@ -33,12 +33,22 @@ class RegulationRule(McpContract):
     confidence: Literal["RECENTLY_OBSERVED"] = "RECENTLY_OBSERVED"
 
 
+class RegulationDiscoverySource(McpContract):
+    title: str = Field(min_length=1, max_length=300)
+    url: str
+    description: str = Field(min_length=1, max_length=1000)
+    verified_at: datetime
+    confidence: Literal["RECENTLY_OBSERVED"] = "RECENTLY_OBSERVED"
+
+
 class RegulationLookupResult(McpContract):
-    status: Literal["AVAILABLE", "UNAVAILABLE"]
+    status: Literal["AVAILABLE", "DISCOVERY_ONLY", "UNAVAILABLE"]
     category: Literal["DOG", "CAT"]
     state_code: str = Field(pattern=r"^[A-Z]{2}$")
     city: str | None = Field(default=None, max_length=100)
     rules: list[RegulationRule] = Field(max_length=8)
+    discovery_sources: list[RegulationDiscoverySource] = Field(default_factory=list, max_length=8)
+    retrieved_at: datetime
     notice: Literal[
         "Verify current requirements with the cited government authority before acting."
     ] = "Verify current requirements with the cited government authority before acting."

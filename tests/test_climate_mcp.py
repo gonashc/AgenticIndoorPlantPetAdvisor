@@ -8,6 +8,7 @@ from mcp import Client
 from pydantic import ValidationError
 
 from services.climate_mcp.config import ClimateMcpSettings
+from services.climate_mcp.geocoding import GoogleZipCoordinateClient, ResolvedZip
 from services.climate_mcp.nws import (
     AlertReading,
     ForecastReading,
@@ -44,6 +45,18 @@ class StubWeatherProvider:
                     source_url="https://api.weather.gov/alerts/example",
                 ),
             ),
+        )
+
+
+class StubZipProvider:
+    async def resolve(self, zip_code: str) -> ResolvedZip:
+        assert zip_code == "10001"
+        return ResolvedZip(
+            zip_code=zip_code,
+            latitude=40.7506,
+            longitude=-73.9972,
+            city="New York",
+            state_code="NY",
         )
 
 
@@ -158,6 +171,59 @@ async def test_climate_mcp_returns_structured_advisory_weather() -> None:
     assert result.structured_content["forecast"]["temperature"] == 72
     assert result.structured_content["alerts"][0]["event"] == "Heat Advisory"
     assert "General weather context only" in result.structured_content["advisory"]
+
+
+@pytest.mark.asyncio
+async def test_google_zip_resolver_requires_exact_us_postal_match() -> None:
+    def handler(request: httpx.Request) -> httpx.Response:
+        assert request.url.params["components"] == "postal_code:10001|country:US"
+        assert request.url.params["key"] == "test-key"
+        return httpx.Response(
+            200,
+            json={
+                "status": "OK",
+                "results": [
+                    {
+                        "address_components": [
+                            {"short_name": "10001", "types": ["postal_code"]},
+                            {"short_name": "New York", "types": ["locality"]},
+                            {"short_name": "NY", "types": ["administrative_area_level_1"]},
+                            {"short_name": "US", "types": ["country"]},
+                        ],
+                        "geometry": {"location": {"lat": 40.7506, "lng": -73.9972}},
+                    }
+                ],
+            },
+        )
+
+    provider = GoogleZipCoordinateClient(
+        api_key="test-key",
+        base_url="https://maps.googleapis.com/maps/api/geocode/json",
+        timeout_seconds=2,
+        transport=httpx.MockTransport(handler),
+    )
+
+    result = await provider.resolve("10001")
+
+    assert result.state_code == "NY"
+    assert result.city == "New York"
+
+
+@pytest.mark.asyncio
+async def test_climate_mcp_resolves_zip_before_weather_lookup() -> None:
+    server = create_server(settings(), StubWeatherProvider(), StubZipProvider())
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "get_weather_for_zip",
+            {"category": "CAT", "zip_code": "10001"},
+        )
+
+    assert not result.is_error
+    assert result.structured_content is not None
+    assert result.structured_content["state_code"] == "NY"
+    assert result.structured_content["city"] == "New York"
+    assert result.structured_content["forecast"]["temperature"] == 72
 
 
 @pytest.mark.asyncio

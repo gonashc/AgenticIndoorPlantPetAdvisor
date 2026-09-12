@@ -112,6 +112,21 @@ export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
         /**
+         * AdvisorySource
+         * @description A recently observed source used only for non-authoritative live context.
+         */
+        AdvisorySource: {
+            /** Title */
+            title: string;
+            /** Url */
+            url: string;
+            /**
+             * Verified At
+             * Format: date-time
+             */
+            verified_at: string;
+        };
+        /**
          * Cadence
          * @enum {string}
          */
@@ -432,6 +447,23 @@ export interface components {
             /** Title */
             title: string;
         };
+        /**
+         * LiveAdvisory
+         * @description Provider-neutral live context that cannot affect eligibility or score.
+         */
+        LiveAdvisory: {
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "CLIMATE" | "REGULATION" | "WEB_GUIDANCE";
+            /** Sources */
+            sources: components["schemas"]["AdvisorySource"][];
+            /** Summary */
+            summary: string;
+            /** Title */
+            title: string;
+        };
         /** LocalSource */
         LocalSource: {
             confidence: components["schemas"]["Confidence"];
@@ -702,6 +734,8 @@ export interface components {
         /** RecommendationResponse */
         RecommendationResponse: {
             category: components["schemas"]["Category"];
+            /** Live Advisories */
+            live_advisories?: components["schemas"]["LiveAdvisory"][];
             metadata: components["schemas"]["RequestMetadata"];
             /** Recommendations */
             recommendations: components["schemas"]["RecommendationItem"][];
@@ -863,6 +897,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Unexpected server failure */
             500: {
                 headers: {
@@ -941,6 +984,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Unexpected server failure */
             500: {
                 headers: {
@@ -1010,6 +1062,15 @@ export interface operations {
             };
             /** @description Validation or eligibility failure */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1097,6 +1158,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Unexpected server failure */
             500: {
                 headers: {
@@ -1167,6 +1237,15 @@ export interface operations {
             };
             /** @description Validation or eligibility failure */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1252,6 +1331,15 @@ export interface operations {
                     "application/json": components["schemas"]["ErrorEnvelope"];
                 };
             };
+            /** @description Rate limit exceeded */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
             /** @description Unexpected server failure */
             500: {
                 headers: {
@@ -1325,6 +1413,15 @@ export interface operations {
             };
             /** @description Validation or eligibility failure */
             422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Rate limit exceeded */
+            429: {
                 headers: {
                     [name: string]: unknown;
                 };

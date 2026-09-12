@@ -21,13 +21,19 @@ Deterministic routing, hard constraints, safety, and scoring remain authoritativ
 is registered in PostgreSQL and retrieved through the provider-neutral `KnowledgeRetriever` port;
 the Pinecone adapter performs hybrid search and reranking. An opt-in structured-output model may
 explain—but never change—the selected candidates, scores, or safety decisions. MCP live-source calls
-run afterward on a separate, non-indexed path. See [knowledge, RAG, LLM, and MCP operations](docs/knowledge-rag-llm-mcp.md).
+run afterward on a separate, non-indexed path. Climate uses a bounded ZIP resolver; regulations
+preserve discoveries separately from reviewed rules; and You.com accepts only internally
+constructed, allowlisted guidance searches. See
+[knowledge, RAG, LLM, and MCP operations](docs/knowledge-rag-llm-mcp.md).
 
 The repository also contains isolated MCP service boundaries for the authoritative catalog,
-current regulations, optional confirmed commerce offers, and authenticated care-plan actions.
-Catalog and Care Plan reuse the PostgreSQL repositories rather than duplicating data. Regulations
-and Commerce expose explicit unavailable responses until reviewed provider adapters are selected;
-they never manufacture current rules, inventory, or prices for the demo.
+current regulations, optional confirmed commerce offers, current You.com guidance, and
+authenticated care-plan actions. Search discoveries are advisory and never become authoritative
+rules automatically. Commerce remains unavailable until a contracted provider is selected.
+
+Production recommendation runs use PostgreSQL LangGraph checkpoints with tenant-isolated thread
+IDs. Redis provides atomic per-owner rate limits and fail-open caching for read-only MCP calls only;
+care-plan mutations are never cached.
 
 ## Setup
 

@@ -18,12 +18,14 @@ dependencies = [
   "langchain-core>=1.6,<2.0",
   "langchain-openai>=1.1,<2.0",
   "langgraph>=1.1,<2.0",
+  "langgraph-checkpoint-postgres>=3.0,<4.0",
   "langsmith>=0.4,<1.0",
   "mcp>=2.0,<3.0",
   "pinecone>=10.0,<11.0",
   "pydantic-settings",
   "psycopg[binary]>=3.2,<4.0",
   "sqlalchemy[asyncio]>=2.0,<3.0",
+  "redis>=6.0,<7.0",
   "uvicorn[standard]",
 ]
 

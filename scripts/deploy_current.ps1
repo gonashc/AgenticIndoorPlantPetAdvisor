@@ -14,7 +14,16 @@ param(
     [string]$McpAdoptionAudience = "",
     [string]$McpCarePlanUrl = "",
     [string]$McpCarePlanAudience = "",
+    [string]$McpClimateUrl = "",
+    [string]$McpClimateAudience = "",
+    [string]$McpRegulationsUrl = "",
+    [string]$McpRegulationsAudience = "",
+    [string]$McpYouUrl = "",
+    [string]$McpYouAudience = "",
     [string]$McpCarePlanServiceName = "advisor-care-plan-mcp",
+    [string]$RedisUrl = "",
+    [string]$RedisInstanceName = "advisor-cache",
+    [string]$CheckpointDatabaseSecret = "langgraph-database-url",
     [ValidateSet("deterministic", "openai")]
     [string]$ExplanationMode = "deterministic",
     [string]$OpenAiModel = "",
@@ -61,10 +70,17 @@ if ($ExplanationMode -eq "openai") {
     }
 }
 if ($McpMode -eq "remote") {
-    if (-not $McpPlacesUrl -and -not $McpAdoptionUrl -and -not $McpCarePlanUrl) {
+    if (
+        -not $McpPlacesUrl -and -not $McpAdoptionUrl -and -not $McpCarePlanUrl -and
+        -not $McpClimateUrl -and -not $McpRegulationsUrl -and -not $McpYouUrl
+    ) {
         throw "At least one MCP endpoint is required when remote mode is enabled."
     }
-    foreach ($endpoint in @($McpPlacesUrl, $McpAdoptionUrl, $McpCarePlanUrl) | Where-Object { $_ }) {
+    $allMcpUrls = @(
+        $McpPlacesUrl, $McpAdoptionUrl, $McpCarePlanUrl,
+        $McpClimateUrl, $McpRegulationsUrl, $McpYouUrl
+    )
+    foreach ($endpoint in $allMcpUrls | Where-Object { $_ }) {
         if ($endpoint -notmatch '^https://.+/mcp$') {
             throw "Each MCP URL must be an HTTPS endpoint ending in /mcp."
         }
@@ -78,9 +94,35 @@ if ($McpMode -eq "remote") {
     if ($McpCarePlanUrl -and $McpCarePlanAudience -notmatch '^https://[^/]+$') {
         throw "The Care Plan MCP endpoint requires an HTTPS audience without a path."
     }
+    foreach ($pair in @(
+        @{ Url = $McpClimateUrl; Audience = $McpClimateAudience; Name = "Climate" },
+        @{ Url = $McpRegulationsUrl; Audience = $McpRegulationsAudience; Name = "Regulations" },
+        @{ Url = $McpYouUrl; Audience = $McpYouAudience; Name = "You.com" }
+    )) {
+        if ($pair.Url -and $pair.Audience -notmatch '^https://[^/]+$') {
+            throw "$($pair.Name) MCP requires an HTTPS audience without a path."
+        }
+    }
     if ($McpCarePlanUrl -and $McpCarePlanServiceName -notmatch '^[a-z][a-z0-9-]{0,62}$') {
         throw "McpCarePlanServiceName must be a valid Cloud Run service name."
     }
+}
+if (-not $RedisUrl) {
+    $redisHost = (& $GcloudPath redis instances describe $RedisInstanceName `
+        --project=$ProjectId --region=$Region --format="value(host)").Trim()
+    $redisPort = (& $GcloudPath redis instances describe $RedisInstanceName `
+        --project=$ProjectId --region=$Region --format="value(port)").Trim()
+    if ($LASTEXITCODE -ne 0 -or -not $redisHost -or -not $redisPort) {
+        throw "Redis instance $RedisInstanceName is required. Run bootstrap_redis_gcp.ps1 first."
+    }
+    $RedisUrl = "redis://$redisHost`:$redisPort"
+}
+if ($RedisUrl -notmatch '^rediss?://[^\s]+$') {
+    throw "RedisUrl must be a non-empty redis:// or rediss:// URL."
+}
+& $GcloudPath secrets describe $CheckpointDatabaseSecret --project=$ProjectId --quiet | Out-Null
+if ($LASTEXITCODE -ne 0) {
+    throw "Checkpoint database secret $CheckpointDatabaseSecret does not exist."
 }
 if ($McpCarePlanUrl) {
     $carePlanContractOutput = & $GcloudPath run services describe $McpCarePlanServiceName `
@@ -133,10 +175,16 @@ $runtimeSettings = @(
     "LANGSMITH_HIDE_OUTPUTS=true",
     "ENABLED_CATEGORIES=PLANT,DOG,CAT",
     "EXPLANATION_MODE=$ExplanationMode",
+    "CHECKPOINT_MODE=postgres",
+    "REDIS_MODE=redis",
+    "REDIS_URL=$RedisUrl",
     "MCP_MODE=$McpMode",
     "MCP_AUTH_MODE=$(if ($McpMode -eq 'remote') { 'google_cloud_run' } else { 'none' })"
 )
-$secretSettings = "LANGSMITH_API_KEY=langsmith-api-key:latest"
+$secretSettings = (
+    "LANGSMITH_API_KEY=langsmith-api-key:latest," +
+    "CHECKPOINT_DATABASE_URL=$CheckpointDatabaseSecret`:latest"
+)
 $secretRemovalArguments = @()
 if ($ExplanationMode -eq "openai") {
     $runtimeSettings += "OPENAI_MODEL=$OpenAiModel"
@@ -178,6 +226,20 @@ if ($McpMode -eq "remote") {
         $settingsToRemove += "MCP_CARE_PLAN_URL"
         $settingsToRemove += "MCP_CARE_PLAN_AUDIENCE"
     }
+    foreach ($endpoint in @(
+        @{ Url = $McpClimateUrl; Audience = $McpClimateAudience; Prefix = "MCP_CLIMATE" },
+        @{ Url = $McpRegulationsUrl; Audience = $McpRegulationsAudience; Prefix = "MCP_REGULATIONS" },
+        @{ Url = $McpYouUrl; Audience = $McpYouAudience; Prefix = "MCP_YOU" }
+    )) {
+        if ($endpoint.Url) {
+            $runtimeSettings += "$($endpoint.Prefix)_URL=$($endpoint.Url)"
+            $runtimeSettings += "$($endpoint.Prefix)_AUDIENCE=$($endpoint.Audience)"
+        }
+        else {
+            $settingsToRemove += "$($endpoint.Prefix)_URL"
+            $settingsToRemove += "$($endpoint.Prefix)_AUDIENCE"
+        }
+    }
 }
 else {
     $settingsToRemove += "MCP_PLACES_URL"
@@ -186,6 +248,12 @@ else {
     $settingsToRemove += "MCP_ADOPTION_AUDIENCE"
     $settingsToRemove += "MCP_CARE_PLAN_URL"
     $settingsToRemove += "MCP_CARE_PLAN_AUDIENCE"
+    $settingsToRemove += "MCP_CLIMATE_URL"
+    $settingsToRemove += "MCP_CLIMATE_AUDIENCE"
+    $settingsToRemove += "MCP_REGULATIONS_URL"
+    $settingsToRemove += "MCP_REGULATIONS_AUDIENCE"
+    $settingsToRemove += "MCP_YOU_URL"
+    $settingsToRemove += "MCP_YOU_AUDIENCE"
 }
 $runtimeSettings = ConvertTo-GcloudDictionaryArgument -Entry $runtimeSettings
 $settingsToRemove = $settingsToRemove -join ','

@@ -12,12 +12,18 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
 from services.regulations_mcp.config import RegulationsMcpSettings
-from services.regulations_mcp.contracts import RegulationLookupResult, RegulationRule
+from services.regulations_mcp.contracts import (
+    RegulationDiscoverySource,
+    RegulationLookupResult,
+    RegulationRule,
+)
 from services.regulations_mcp.providers import (
     DisabledRegulationProvider,
     PetCategory,
     RegulationProvider,
+    YouComRegulationDiscoveryProvider,
 )
+from services.you_search import YouSearchClient
 
 _CITY = re.compile(r"^[A-Za-z][A-Za-z .'-]{0,99}$")
 
@@ -27,7 +33,19 @@ def create_server(
     provider: RegulationProvider | None = None,
 ) -> MCPServer[None]:
     resolved = settings or RegulationsMcpSettings()
-    regulation_provider = provider or DisabledRegulationProvider()
+    regulation_provider = provider
+    if regulation_provider is None and resolved.regulations_provider == "you_discovery":
+        if resolved.you_api_key is None:
+            raise ValueError("Regulations discovery configuration is incomplete")
+        regulation_provider = YouComRegulationDiscoveryProvider(
+            YouSearchClient(
+                api_key=resolved.you_api_key.get_secret_value(),
+                base_url=resolved.you_search_url,
+                timeout_seconds=resolved.you_timeout_seconds,
+                government_only=True,
+            )
+        )
+    regulation_provider = regulation_provider or DisabledRegulationProvider()
     allowed_hosts = resolved.allowed_source_hosts()
     server: MCPServer[None] = MCPServer(
         name="advisor-regulations",
@@ -87,17 +105,34 @@ def create_server(
                     verified_at=verified_at,
                 )
             )
-        status: Literal["AVAILABLE", "UNAVAILABLE"] = (
-            "AVAILABLE" if result.available else "UNAVAILABLE"
-        )
-        if status == "UNAVAILABLE" and rules:
-            raise ValueError("Unavailable regulation providers cannot return rules")
+        discovery_sources = [
+            RegulationDiscoverySource(
+                title=item.title,
+                url=item.url,
+                description=item.description,
+                verified_at=verified_at,
+            )
+            for item in result.discovery_sources[:limit]
+        ]
+        for discovery_item in result.discovery_sources[:limit]:
+            _validate_government_url(discovery_item.url, allowed_hosts)
+        status: Literal["AVAILABLE", "DISCOVERY_ONLY", "UNAVAILABLE"]
+        if result.available:
+            status = "AVAILABLE"
+        elif discovery_sources:
+            status = "DISCOVERY_ONLY"
+        else:
+            status = "UNAVAILABLE"
+        if not result.available and rules:
+            raise ValueError("Unreviewed regulation providers cannot return rules")
         return RegulationLookupResult(
             status=status,
             category=cast(Literal["DOG", "CAT"], category),
             state_code=normalized_state,
             city=normalized_city,
             rules=rules,
+            discovery_sources=discovery_sources,
+            retrieved_at=verified_at,
         )
 
     @server.custom_route(  # type: ignore[untyped-decorator]
@@ -106,9 +141,15 @@ def create_server(
     async def health(_: Request) -> Response:
         return JSONResponse(
             {
-                "status": "ok" if provider is not None else "degraded",
+                "status": "ok"
+                if not isinstance(regulation_provider, DisabledRegulationProvider)
+                else "degraded",
                 "service": "advisor-regulations",
-                "provider": "configured" if provider is not None else "disabled",
+                "provider": (
+                    "configured"
+                    if not isinstance(regulation_provider, DisabledRegulationProvider)
+                    else "disabled"
+                ),
             }
         )
 

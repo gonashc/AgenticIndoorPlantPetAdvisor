@@ -6,7 +6,11 @@ import pytest
 from mcp import Client
 
 from services.regulations_mcp.config import RegulationsMcpSettings
-from services.regulations_mcp.providers import RegulationProviderResult, RegulationRecord
+from services.regulations_mcp.providers import (
+    RegulationDiscoveryRecord,
+    RegulationProviderResult,
+    RegulationRecord,
+)
 from services.regulations_mcp.server import create_server
 
 
@@ -73,6 +77,47 @@ async def test_regulations_mcp_is_explicitly_unavailable_without_provider() -> N
     assert result.structured_content is not None
     assert result.structured_content["status"] == "UNAVAILABLE"
     assert result.structured_content["rules"] == []
+
+
+class StubDiscoveryProvider:
+    async def lookup(
+        self,
+        *,
+        category: str,
+        state_code: str,
+        city: str | None,
+        limit: int,
+    ) -> RegulationProviderResult:
+        del category, state_code, city, limit
+        return RegulationProviderResult(
+            available=False,
+            rules=(),
+            discovery_sources=(
+                RegulationDiscoveryRecord(
+                    title="Official pet licensing page",
+                    url="https://www.nyc.gov/site/doh/services/dog-licenses.page",
+                    description="Official information about dog licensing.",
+                ),
+            ),
+        )
+
+
+@pytest.mark.asyncio
+async def test_search_discovery_is_not_promoted_to_a_regulation_rule() -> None:
+    server = create_server(settings(), StubDiscoveryProvider())  # type: ignore[arg-type]
+
+    async with Client(server) as client:
+        result = await client.call_tool(
+            "lookup_pet_regulations",
+            {"category": "DOG", "state_code": "NY", "city": "New York"},
+        )
+
+    assert result.structured_content is not None
+    assert result.structured_content["status"] == "DISCOVERY_ONLY"
+    assert result.structured_content["rules"] == []
+    assert result.structured_content["discovery_sources"][0]["url"].startswith(
+        "https://www.nyc.gov"
+    )
 
 
 @pytest.mark.asyncio

@@ -81,29 +81,27 @@ grants only the dedicated adoption runtime identity access. Deploy with
 `scripts/deploy_adoption_mcp.ps1`; the script keeps the existing Places MCP configured and updates
 the API to call both private services with short-lived Cloud Run identity tokens.
 
-The climate MCP exposes `get_weather` over latitude/longitude and returns the current hourly NWS
-forecast plus at most three active alerts. It uses only the official `api.weather.gov` host in
-production, follows only provider-discovered URLs on that host, and supplies the identifying
-User-Agent required by NWS. Its output is explicitly advisory and cannot alter hard exclusions or
-authoritative scores. Run `scripts/bootstrap_climate_mcp_gcp.ps1` and
-`scripts/deploy_climate_mcp.ps1` to create its dedicated identity and private Cloud Run service.
-
-The API does not invoke Climate MCP yet. The current questionnaire provides a ZIP code, while NWS
-requires coordinates. Connect this service only after a reviewed ZIP-to-coordinate boundary is
-available; do not let an LLM invent or resolve coordinates.
+The climate MCP exposes `get_weather_for_zip` and retains the coordinate-based `get_weather` tool
+for compatibility. The ZIP tool accepts exactly one five-digit U.S. ZIP, resolves it through the
+Google Geocoding component filter restricted to `postal_code` and country `US`, rejects partial or
+mismatched responses, and then calls NWS with the validated coordinates. Production permits only
+the official Google and NWS hosts. The API invokes this tool only after ranking, and the response is
+advisory: it cannot alter hard exclusions or authoritative scores. Run
+`scripts/bootstrap_climate_mcp_gcp.ps1` and `scripts/deploy_climate_mcp.ps1` to provision the
+restricted geocoding key and deploy the private service.
 
 ## Catalog, regulations, commerce, and care-plan MCP boundaries
 
-Four additional MCP service boundaries are implemented but are not yet connected to the
-recommendation graph:
+The following internal MCP boundaries remain isolated from authoritative selection logic:
 
 - Catalog exposes only exact-ID, bounded reads for approved profiles, deterministic constraints,
   structured toxicity, and provenance. PostgreSQL remains authoritative. It provides no arbitrary
   query or ranking tool and its production database role must be read-only.
 - Regulations exposes `lookup_pet_regulations` for one selected pet category and jurisdiction.
-  Results accept only HTTPS government sources (plus explicitly allowlisted municipal hosts) and
-  retain a source version. Its provider is disabled until a reviewed adapter can turn current
-  sources into versioned rule records; web-search snippets are not silently promoted to rules.
+  Its You.com discovery provider accepts only HTTPS government results and returns them as
+  `DISCOVERY_ONLY`; snippets never enter the authoritative `rules` collection. Reviewed versioned
+  rules can still be supplied through the separate provider port. The API displays this context
+  only after deterministic ranking.
 - Commerce exposes `find_confirmed_offers` for one already-selected candidate and returns at most
   three allowlisted, recently observed offers. Its provider is disabled until a retailer contract
   permits confirmed inventory, price, and pickup data. This remains optional for the demo.
@@ -114,6 +112,25 @@ recommendation graph:
   headers, so the private hop cannot reuse the original header name. The MCP service re-verifies
   the assertion signature, issuer, and API audience before deriving the owner. Creation still
   requires the literal `confirmed: true` input.
+
+The You.com guidance MCP exposes only `search_current_guidance`. It does not accept arbitrary user
+queries: category, state, and one to three already-ranked candidate IDs are validated before the
+service constructs a fixed search query. Results are restricted to configured source hosts, capped
+at five, never indexed, and shown as recently observed advisory context. Deploy it with
+`scripts/bootstrap_you_mcp_gcp.ps1` and `scripts/deploy_you_mcp.ps1`.
+
+## Durable execution, caching, and throttling
+
+Production compiles the supervisor with the official asynchronous PostgreSQL LangGraph
+checkpointer. Each thread ID is an opaque hash of the authenticated owner and request IDs, which
+prevents a caller-selected request ID from crossing tenant boundaries. `CHECKPOINT_DATABASE_URL`
+uses the psycopg URL format and is stored in Secret Manager.
+
+Redis applies an atomic per-owner, per-operation fixed-window limit to all versioned product APIs.
+If Redis is unavailable, rate limiting fails closed with the v1 HTTP 503 envelope. Redis caching is
+fail-open and covers only allowlisted read-only MCP tools; authenticated care-plan mutations and
+forwarded IAP assertions are never cached. Use `scripts/bootstrap_redis_gcp.ps1` to provision the
+single-environment Memorystore instance.
 
 The API composition root configures an authenticated Care Plan MCP client with
 `MCP_CARE_PLAN_URL` and `MCP_CARE_PLAN_AUDIENCE`. The client obtains a short-lived Cloud Run ID

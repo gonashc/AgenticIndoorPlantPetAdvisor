@@ -1,11 +1,13 @@
 """Deterministic fakes for independent Engineer 2 development and tests."""
 
+from collections.abc import Sequence
 from datetime import UTC, datetime
 from uuid import UUID
 
 from advisor_api.contracts.base import Category, CostEstimate, EvidenceReference, LocalSource
 from advisor_api.contracts.care_plans import CarePlan, CarePlanPreviewResponse
 from advisor_api.ports.data import CandidateRecord, PreviewClaimStatus
+from advisor_api.ports.external_tools import LiveContextResult
 
 
 def _evidence(entity_id: str, title: str) -> tuple[EvidenceReference, ...]:
@@ -277,6 +279,19 @@ class UnavailableCurrentSourceGateway:
     ) -> tuple[LocalSource, ...]:
         del category, candidate_id, zip_code
         return ()
+
+
+class UnavailableLiveContextGateway:
+    async def enrich(
+        self,
+        *,
+        category: Category,
+        candidate_ids: Sequence[str],
+        zip_code: str,
+        state_code: str | None,
+    ) -> LiveContextResult:
+        del category, candidate_ids, zip_code, state_code
+        return LiveContextResult()
 
 
 class EmptyPreferenceMemory:

@@ -51,8 +51,11 @@ async def run(arguments: argparse.Namespace) -> None:
     )
     if regulations.is_error or not regulations.structured_content:
         raise RuntimeError("Regulations MCP smoke call failed")
-    if regulations.structured_content.get("status") != "UNAVAILABLE":
-        raise RuntimeError("Regulations MCP must remain unavailable without a provider")
+    regulation_status = regulations.structured_content.get("status")
+    if regulation_status not in {"DISCOVERY_ONLY", "UNAVAILABLE"}:
+        raise RuntimeError("Regulations MCP returned an unexpected discovery status")
+    if regulation_status == "DISCOVERY_ONLY" and regulations.structured_content.get("rules"):
+        raise RuntimeError("Regulation search discoveries were promoted into rules")
 
     commerce = await call_tool(
         arguments.commerce_url,
@@ -81,7 +84,7 @@ async def run(arguments: argparse.Namespace) -> None:
     if not care_plan.is_error:
         raise RuntimeError("Care Plan MCP accepted a mutation without an IAP user assertion")
 
-    print("catalog=ok regulations=unavailable commerce=unavailable care_plan_auth=required")
+    print("catalog=ok regulations=discovery-safe commerce=unavailable care_plan_auth=required")
 
 
 def parse_args() -> argparse.Namespace:

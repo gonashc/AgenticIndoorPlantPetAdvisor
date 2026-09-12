@@ -72,6 +72,16 @@ class ServiceUnavailableError(ApiError):
         )
 
 
+class RateLimitError(ApiError):
+    def __init__(self, retry_after_seconds: int) -> None:
+        super().__init__(
+            HTTPStatus.TOO_MANY_REQUESTS,
+            "RATE_LIMIT_EXCEEDED",
+            "Too many requests. Retry after the indicated delay.",
+            headers={"Retry-After": str(max(1, retry_after_seconds))},
+        )
+
+
 class NoEligibleCandidatesError(ApiError):
     def __init__(self, category: Category) -> None:
         super().__init__(
@@ -166,6 +176,7 @@ COMMON_ERROR_RESPONSES: dict[int | str, dict[str, Any]] = {
     401: {"model": ErrorEnvelope, "description": "Authentication required"},
     404: {"model": ErrorEnvelope, "description": "Resource not found"},
     409: {"model": ErrorEnvelope, "description": "State conflict"},
+    429: {"model": ErrorEnvelope, "description": "Rate limit exceeded"},
     422: {"model": ErrorEnvelope, "description": "Validation or eligibility failure"},
     503: {"model": ErrorEnvelope, "description": "Required dependency unavailable"},
     500: {"model": ErrorEnvelope, "description": "Unexpected server failure"},

@@ -2,7 +2,7 @@
 
 from collections.abc import Mapping
 from datetime import UTC, datetime
-from typing import Literal
+from typing import Any, Literal
 
 from advisor_api.contracts.base import (
     Category,
@@ -19,13 +19,14 @@ from advisor_api.contracts.recommendations import (
 )
 from advisor_api.http.errors import NoEligibleCandidatesError
 from advisor_api.ports.data import CatalogRepository
-from advisor_api.ports.external_tools import CurrentSourceGateway
+from advisor_api.ports.external_tools import CurrentSourceGateway, LiveContextGateway
 from advisor_api.ports.generation import (
     DeterministicExplanationGenerator,
     ExplanationGenerator,
     RecommendationNarrative,
 )
 from advisor_api.ports.memory import PreferenceMemory
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph import END, START, StateGraph
 from langgraph.graph.state import CompiledStateGraph
 
@@ -49,9 +50,11 @@ def build_supervisor_graph(
     safety: SafetyService,
     source_gateway: CurrentSourceGateway,
     memory: PreferenceMemory,
+    live_context_gateway: LiveContextGateway,
     knowledge_retriever: KnowledgeRetriever | None = None,
     explanation_generator: ExplanationGenerator | None = None,
     knowledge_namespace: str = "fake-catalog-v1",
+    checkpointer: BaseCheckpointSaver[Any] | None = None,
 ) -> Graph:
     retriever = knowledge_retriever or EmptyKnowledgeRetriever()
     generator = explanation_generator or DeterministicExplanationGenerator()
@@ -92,10 +95,10 @@ def build_supervisor_graph(
 
     def next_after_evaluation(
         state: RecommendationState,
-    ) -> Literal["optimizer", "compose"]:
+    ) -> Literal["optimizer", "enrich_live_context"]:
         if state.get("validation_issues") and state.get("repair_attempts", 0) < 2:
             return "optimizer"
-        return "compose"
+        return "enrich_live_context"
 
     async def retrieve_knowledge(state: RecommendationState) -> dict[str, object]:
         ranked = state.get("ranked_candidates", ())
@@ -139,6 +142,20 @@ def build_supervisor_graph(
                 "explanation_prompt_version": fallback.prompt_version,
                 "explanation_model_version": fallback.model_version,
             }
+
+    async def enrich_live_context(state: RecommendationState) -> dict[str, object]:
+        ranked = state.get("ranked_candidates", ())
+        request = state["request"]
+        result = await live_context_gateway.enrich(
+            category=request.category,
+            candidate_ids=tuple(item.candidate.candidate_id for item in ranked),
+            zip_code=request.destination.zip_code,
+            state_code=request.destination.state_code,
+        )
+        return {
+            "live_advisories": result.advisories,
+            "system_warnings": (*state.get("system_warnings", ()), *result.warnings),
+        }
 
     async def compose(state: RecommendationState) -> dict[str, object]:
         ranked = state.get("ranked_candidates", ())
@@ -219,6 +236,7 @@ def build_supervisor_graph(
             session_id=state["request"].session_id,
             category=state["request"].category,
             recommendations=items,
+            live_advisories=list(state.get("live_advisories", ())),
             validation_status=(
                 ValidationStatus.PASSED if has_live_sources else ValidationStatus.DEGRADED
             ),
@@ -238,6 +256,7 @@ def build_supervisor_graph(
     builder.add_node("generate_explanations", generate_explanations)
     builder.add_node("evaluate", evaluate)
     builder.add_node("optimizer", optimize)
+    builder.add_node("enrich_live_context", enrich_live_context)
     builder.add_node("compose", compose)
     builder.add_edge(START, "prepare")
     builder.add_edge("prepare", "apply_safety")
@@ -249,8 +268,9 @@ def build_supervisor_graph(
     builder.add_edge("generate_explanations", "evaluate")
     builder.add_conditional_edges("evaluate", next_after_evaluation)
     builder.add_edge("optimizer", "evaluate")
+    builder.add_edge("enrich_live_context", "compose")
     builder.add_edge("compose", END)
-    return builder.compile(name="recommendation-supervisor-v1")
+    return builder.compile(checkpointer=checkpointer, name="recommendation-supervisor-v1")
 
 
 def _knowledge_query_text(request: RecommendationRequest) -> str:
