@@ -34,9 +34,9 @@ jobs:
           project_id: indoorplantpetadvisor
           version: ">= 584.0.0"
 
-      - name: Build, migrate, and deploy immutable revision
+      - name: Build and deploy MCP, then migrate and deploy API
         shell: pwsh
         run: >-
-          ./scripts/deploy_current.ps1
+          ./scripts/deploy_places_mcp.ps1
           -ImageTag $env:GITHUB_SHA
           -IapMember '${{ vars.IAP_MEMBER }}'
