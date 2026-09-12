@@ -19,6 +19,7 @@ import {
 const categories: { value: Category; label: string; description: string }[] = [
   { value: "PLANT", label: "Plant", description: "A safer green match for your space" },
   { value: "DOG", label: "Dog", description: "A breed profile that fits your routine" },
+  { value: "CAT", label: "Cat", description: "An indoor companion matched to your pace" },
 ];
 
 const api = createAdvisorClient();
@@ -32,6 +33,7 @@ export function App() {
   const [preview, setPreview] = useState<CarePlanPreviewResponse | null>(null);
   const [savedPlan, setSavedPlan] = useState<CarePlan | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const resultsRef = useRef<HTMLElement | null>(null);
   const sessionId = useMemo(() => crypto.randomUUID(), []);
 
   const update = <K extends keyof QuestionnaireDraft>(key: K, value: QuestionnaireDraft[K]) => {
@@ -48,6 +50,9 @@ export function App() {
     setSavedPlan(null);
     setProgress({ percent: 0, message: "Starting your recommendation" });
     setIsLoading(true);
+    if (window.matchMedia?.("(max-width: 1100px)").matches) {
+      resultsRef.current?.scrollIntoView?.({ behavior: "smooth", block: "start" });
+    }
 
     try {
       await api.streamRecommendations(
@@ -109,7 +114,7 @@ export function App() {
       <header className="hero">
         <div className="brand-row">
           <span className="brand-mark" aria-hidden="true">A</span>
-          <span>Canopy &amp; Companion</span>
+          <span className="brand-name">Canopy &amp; Companion</span>
           <span className="brand-tag">Evidence-led matching</span>
           <span className="auth-tag">Protected by Google sign-in</span>
         </div>
@@ -133,6 +138,12 @@ export function App() {
             void requestRecommendations();
           }}
         >
+          <div className="form-intro">
+            <p className="eyebrow">Your preferences</p>
+            <h2>Build your match profile</h2>
+            <p>Share the essentials so every recommendation fits your home and care capacity.</p>
+          </div>
+
           <fieldset className="category-picker">
             <legend>What are you hoping to welcome home?</legend>
             <div className="category-grid">
@@ -148,6 +159,7 @@ export function App() {
                     type="radio"
                     value={category.value}
                   />
+                  <CategoryIcon category={category.value} />
                   <span className="category-name">{category.label}</span>
                   <span>{category.description}</span>
                 </label>
@@ -155,8 +167,10 @@ export function App() {
             </div>
           </fieldset>
 
-          <div className="field-grid">
-            <Field label="ZIP code">
+          <fieldset className="form-section">
+            <legend className="section-legend">About your home</legend>
+            <div className="field-grid">
+              <Field label="ZIP code">
               <input
                 autoComplete="postal-code"
                 inputMode="numeric"
@@ -165,16 +179,16 @@ export function App() {
                 required
                 value={draft.zipCode}
               />
-            </Field>
-            <Field label="State">
+              </Field>
+              <Field label="State">
               <input
                 autoComplete="address-level1"
                 maxLength={2}
                 onChange={(event) => update("stateCode", event.target.value.toUpperCase())}
                 value={draft.stateCode}
               />
-            </Field>
-            <Field label="Monthly budget">
+              </Field>
+              <Field label="Monthly budget">
               <input
                 min="0"
                 onChange={(event) => update("monthlyBudget", event.target.valueAsNumber)}
@@ -182,14 +196,15 @@ export function App() {
                 type="number"
                 value={draft.monthlyBudget}
               />
-            </Field>
-            <SelectField
-              label="Your experience"
-              onChange={(value) => update("experience", value as QuestionnaireDraft["experience"])}
-              options={["BEGINNER", "INTERMEDIATE", "EXPERT"]}
-              value={draft.experience}
-            />
-          </div>
+              </Field>
+              <SelectField
+                label="Your experience"
+                onChange={(value) => update("experience", value as QuestionnaireDraft["experience"])}
+                options={["BEGINNER", "INTERMEDIATE", "EXPERT"]}
+                value={draft.experience}
+              />
+            </div>
+          </fieldset>
 
           {draft.category === "PLANT" ? (
             <PlantFields draft={draft} update={update} />
@@ -206,12 +221,13 @@ export function App() {
             Children live in this home
           </label>
 
-          <button className="primary-button" disabled={isLoading} type="submit">
-            {isLoading ? "Finding thoughtful matches…" : "Find my matches"}
+          <button className="primary-button submit-button" disabled={isLoading} type="submit">
+            <span>{isLoading ? "Finding thoughtful matches…" : "Find my matches"}</span>
+            <span className="button-arrow" aria-hidden="true">→</span>
           </button>
         </form>
 
-        <aside className="results" aria-live="polite">
+        <aside className="results" aria-busy={isLoading} aria-live="polite" ref={resultsRef}>
           <div className="results-heading">
             <div>
               <p className="eyebrow">Your shortlist</p>
@@ -224,6 +240,11 @@ export function App() {
             <div className="progress-panel">
               <div className="progress-copy"><span>{progress.message}</span><strong>{progress.percent}%</strong></div>
               <progress max="100" value={progress.percent}>{progress.percent}%</progress>
+              <div className="progress-stages" aria-hidden="true">
+                <span className={progress.percent >= 10 ? "active" : ""}>Understand</span>
+                <span className={progress.percent >= 45 ? "active" : ""}>Check safety</span>
+                <span className={progress.percent >= 80 ? "active" : ""}>Rank matches</span>
+              </div>
             </div>
           )}
 
@@ -232,7 +253,27 @@ export function App() {
           {!result && !isLoading && !error && (
             <div className="empty-state">
               <div className="leaf-mark">⌁</div>
-              <p>Tell us about your space and routine. We’ll show why each option fits—and flag concerns clearly.</p>
+              <h3>Your profile is taking shape</h3>
+              <p>Adjust any answer and this snapshot updates with you. We’ll explain every match and flag concerns clearly.</p>
+              <div className="profile-chips" aria-label="Current match profile">
+                {profileHighlights(draft).map((highlight) => (
+                  <span key={highlight}>{highlight}</span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isLoading && !result && !error && (
+            <div className="loading-cards" aria-hidden="true">
+              {[0, 1].map((item) => (
+                <div className="skeleton-card" key={item}>
+                  <span className="skeleton skeleton-label" />
+                  <span className="skeleton skeleton-title" />
+                  <span className="skeleton skeleton-copy" />
+                  <span className="skeleton skeleton-copy short" />
+                  <div className="skeleton-pills"><span /><span /><span /></div>
+                </div>
+              ))}
             </div>
           )}
 
@@ -311,33 +352,81 @@ type UpdateDraft = <K extends keyof QuestionnaireDraft>(key: K, value: Questionn
 
 function PlantFields({ draft, update }: { draft: QuestionnaireDraft; update: UpdateDraft }) {
   return (
-    <div className="field-grid contextual-fields">
-      <SelectField label="Light" onChange={(value) => update("lightLevel", value as QuestionnaireDraft["lightLevel"])} options={["LOW", "MEDIUM", "BRIGHT_INDIRECT", "DIRECT"]} value={draft.lightLevel} />
-      <SelectField label="Humidity" onChange={(value) => update("humidity", value as QuestionnaireDraft["humidity"])} options={["LOW", "AVERAGE", "HIGH"]} value={draft.humidity} />
-      <SelectField label="Available space" onChange={(value) => update("availableSpace", value as QuestionnaireDraft["availableSpace"])} options={["SMALL", "MEDIUM", "LARGE"]} value={draft.availableSpace} />
-      <SelectField label="Watering time" onChange={(value) => update("wateringAvailability", value as QuestionnaireDraft["wateringAvailability"])} options={["LOW", "MEDIUM", "HIGH"]} value={draft.wateringAvailability} />
-      <Field label="Indoor temperature (°F)"><input max="100" min="40" onChange={(event) => update("indoorTemperatureF", event.target.valueAsNumber)} type="number" value={draft.indoorTemperatureF} /></Field>
-      <SelectField label="Pets at home" onChange={(value) => update("petsPresent", value ? [value as "DOG" | "CAT"] : [])} options={["", "DOG", "CAT"]} value={draft.petsPresent[0] ?? ""} />
-    </div>
+    <fieldset className="form-section contextual-section">
+      <legend className="section-legend">Plant care fit</legend>
+      <div className="field-grid">
+        <SelectField label="Light" onChange={(value) => update("lightLevel", value as QuestionnaireDraft["lightLevel"])} options={["LOW", "MEDIUM", "BRIGHT_INDIRECT", "DIRECT"]} value={draft.lightLevel} />
+        <SelectField label="Humidity" onChange={(value) => update("humidity", value as QuestionnaireDraft["humidity"])} options={["LOW", "AVERAGE", "HIGH"]} value={draft.humidity} />
+        <SelectField label="Available space" onChange={(value) => update("availableSpace", value as QuestionnaireDraft["availableSpace"])} options={["SMALL", "MEDIUM", "LARGE"]} value={draft.availableSpace} />
+        <SelectField label="Watering time" onChange={(value) => update("wateringAvailability", value as QuestionnaireDraft["wateringAvailability"])} options={["LOW", "MEDIUM", "HIGH"]} value={draft.wateringAvailability} />
+        <Field label="Indoor temperature (°F)"><input max="100" min="40" onChange={(event) => update("indoorTemperatureF", event.target.valueAsNumber)} type="number" value={draft.indoorTemperatureF} /></Field>
+        <SelectField label="Pets at home" onChange={(value) => update("petsPresent", value ? [value as "DOG" | "CAT"] : [])} options={["", "DOG", "CAT"]} value={draft.petsPresent[0] ?? ""} />
+      </div>
+    </fieldset>
   );
 }
 
 function PetFields({ draft, update }: { draft: QuestionnaireDraft; update: UpdateDraft }) {
   return (
-    <div className="field-grid contextual-fields">
-      <SelectField label="Housing" onChange={(value) => update("housingType", value as QuestionnaireDraft["housingType"])} options={["APARTMENT", "CONDO", "HOUSE"]} value={draft.housingType} />
-      <SelectField label="Home size" onChange={(value) => update("homeSize", value as QuestionnaireDraft["homeSize"])} options={["SMALL", "MEDIUM", "LARGE"]} value={draft.homeSize} />
-      <SelectField label="Activity level" onChange={(value) => update("activityLevel", value as QuestionnaireDraft["activityLevel"])} options={["LOW", "MEDIUM", "HIGH"]} value={draft.activityLevel} />
-      <SelectField label="Grooming tolerance" onChange={(value) => update("groomingTolerance", value as QuestionnaireDraft["groomingTolerance"])} options={["LOW", "MEDIUM", "HIGH"]} value={draft.groomingTolerance} />
-      <Field label="Hours alone daily"><input max="24" min="0" onChange={(event) => update("hoursAlone", event.target.valueAsNumber)} type="number" value={draft.hoursAlone} /></Field>
-      <SelectField label="Existing pets" onChange={(value) => update("existingPets", value ? [value as "DOG" | "CAT"] : [])} options={["", "DOG", "CAT"]} value={draft.existingPets[0] ?? ""} />
-      <SelectField label="Outdoor space" onChange={(value) => update("outdoorSpace", value as QuestionnaireDraft["outdoorSpace"])} options={["NONE", "BALCONY", "YARD"]} value={draft.outdoorSpace} />
-      <label className="check-field compact"><input checked={draft.rentalAllowsPets} onChange={(event) => update("rentalAllowsPets", event.target.checked)} type="checkbox" />Housing allows pets</label>
-      {draft.category === "CAT" && (
-        <SelectField label="Affection style" onChange={(value) => update("affectionPreference", value as QuestionnaireDraft["affectionPreference"])} options={["INDEPENDENT", "BALANCED", "AFFECTIONATE"]} value={draft.affectionPreference} />
-      )}
-    </div>
+    <fieldset className="form-section contextual-section">
+      <legend className="section-legend">Lifestyle fit</legend>
+      <div className="field-grid">
+        <SelectField label="Housing" onChange={(value) => update("housingType", value as QuestionnaireDraft["housingType"])} options={["APARTMENT", "CONDO", "HOUSE"]} value={draft.housingType} />
+        <SelectField label="Home size" onChange={(value) => update("homeSize", value as QuestionnaireDraft["homeSize"])} options={["SMALL", "MEDIUM", "LARGE"]} value={draft.homeSize} />
+        <SelectField label="Activity level" onChange={(value) => update("activityLevel", value as QuestionnaireDraft["activityLevel"])} options={["LOW", "MEDIUM", "HIGH"]} value={draft.activityLevel} />
+        <SelectField label="Grooming tolerance" onChange={(value) => update("groomingTolerance", value as QuestionnaireDraft["groomingTolerance"])} options={["LOW", "MEDIUM", "HIGH"]} value={draft.groomingTolerance} />
+        <Field label="Hours alone daily"><input max="24" min="0" onChange={(event) => update("hoursAlone", event.target.valueAsNumber)} type="number" value={draft.hoursAlone} /></Field>
+        <SelectField label="Existing pets" onChange={(value) => update("existingPets", value ? [value as "DOG" | "CAT"] : [])} options={["", "DOG", "CAT"]} value={draft.existingPets[0] ?? ""} />
+        <SelectField label="Outdoor space" onChange={(value) => update("outdoorSpace", value as QuestionnaireDraft["outdoorSpace"])} options={["NONE", "BALCONY", "YARD"]} value={draft.outdoorSpace} />
+        <label className="check-field compact"><input checked={draft.rentalAllowsPets} onChange={(event) => update("rentalAllowsPets", event.target.checked)} type="checkbox" />Housing allows pets</label>
+        {draft.category === "CAT" && (
+          <SelectField label="Affection style" onChange={(value) => update("affectionPreference", value as QuestionnaireDraft["affectionPreference"])} options={["INDEPENDENT", "BALANCED", "AFFECTIONATE"]} value={draft.affectionPreference} />
+        )}
+      </div>
+    </fieldset>
   );
+}
+
+function CategoryIcon({ category }: { category: Category }) {
+  return (
+    <span className="category-icon" aria-hidden="true">
+      {category === "PLANT" ? (
+        <svg focusable="false" viewBox="0 0 32 32">
+          <path d="M7 24C7 13 14 6 25 6c0 11-7 18-18 18Z" />
+          <path d="M8 24c4-6 8-10 14-14" />
+        </svg>
+      ) : category === "DOG" ? (
+        <svg focusable="false" viewBox="0 0 32 32">
+          <circle cx="9" cy="11" r="3" />
+          <circle cx="16" cy="8" r="3" />
+          <circle cx="23" cy="11" r="3" />
+          <path d="M9 22c0-5 3-8 7-8s7 3 7 8c0 3-2 5-5 4l-2-1-2 1c-3 1-5-1-5-4Z" />
+        </svg>
+      ) : (
+        <svg focusable="false" viewBox="0 0 32 32">
+          <path d="m8 13 1-7 6 4h2l6-4 1 7v5c0 6-3 9-8 9s-8-3-8-9v-5Z" />
+          <path d="M12 18h.01M20 18h.01M14 22c1 .8 3 .8 4 0M10 21 5 19m5 5-5 1m17-4 5-2m-5 5 5 1" />
+        </svg>
+      )}
+    </span>
+  );
+}
+
+function profileHighlights(draft: QuestionnaireDraft) {
+  const budget = Number.isFinite(draft.monthlyBudget)
+    ? `$${Math.round(draft.monthlyBudget)} monthly`
+    : "Budget to set";
+  const environment =
+    draft.category === "PLANT"
+      ? `${friendly(draft.lightLevel)} light`
+      : `${friendly(draft.activityLevel)} activity`;
+
+  return [
+    `${friendly(draft.category)} match`,
+    `${friendly(draft.experience)} experience`,
+    budget,
+    environment,
+  ];
 }
 
 function Field({ children, label }: { children: ReactNode; label: string }) {
