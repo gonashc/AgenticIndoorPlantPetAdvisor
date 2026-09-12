@@ -92,6 +92,13 @@ recommendation graph:
   must forward the original `X-Goog-IAP-JWT-Assertion`, which the service verifies before deriving
   the owner. Creation still requires the literal `confirmed: true` input.
 
+The API composition root can configure an authenticated Care Plan MCP client with
+`MCP_CARE_PLAN_URL` and `MCP_CARE_PLAN_AUDIENCE`. The client obtains a short-lived Cloud Run ID
+token for service authentication and forwards the signed IAP assertion only in transport metadata;
+it never converts identity into an MCP tool argument. Existing versioned care-plan HTTP endpoints
+remain the React application's public contract. Do not route them through MCP until the MCP error
+result can preserve the v1 HTTP not-found and conflict contracts without translation loss.
+
 Each service has a separate ASGI entry point, non-root container, strict output models, bounded
 request sizes, DNS-rebinding protection, a health route, and CI contract tests. Deployment remains
 separate from graph enablement: establish least-privilege Cloud SQL roles for Catalog and Care Plan,
@@ -112,3 +119,18 @@ The deployment runs a dedicated Cloud Run job under the migration identity to gr
 tables. It grants the API runtime identity permission to invoke each private service, but it does
 not connect the new tools to the graph. Regulations and Commerce remain visibly degraded until
 their provider settings and reviewed adapters are implemented.
+
+After the internal services are deployed, rebuild the API with the existing Places/Adoption
+settings plus the private Care Plan endpoint:
+
+```powershell
+./scripts/deploy_current.ps1 `
+  -McpMode remote `
+  -McpCarePlanUrl "https://CARE_PLAN_SERVICE_URL/mcp" `
+  -McpCarePlanAudience "https://CARE_PLAN_SERVICE_URL" `
+  -GcloudPath $gcloud
+```
+
+Regulations cannot be promoted merely by adding web search: current rules must be normalized into
+reviewed, source-versioned records from government pages. Commerce remains intentionally excluded
+from the demo path until a retailer API contract confirms inventory, price, and pickup availability.

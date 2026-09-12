@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     mcp_places_audience: str | None = None
     mcp_adoption_url: str | None = None
     mcp_adoption_audience: str | None = None
+    mcp_care_plan_url: str | None = None
+    mcp_care_plan_audience: str | None = None
     mcp_timeout_seconds: float = 8.0
 
     @field_validator(
@@ -158,16 +160,23 @@ class Settings(BaseSettings):
         if self.mcp_timeout_seconds <= 0:
             raise ValueError("MCP_TIMEOUT_SECONDS must be positive")
         if self.mcp_mode == "remote":
-            endpoints = (self.mcp_places_url, self.mcp_adoption_url)
+            endpoints = (
+                self.mcp_places_url,
+                self.mcp_adoption_url,
+                self.mcp_care_plan_url,
+            )
             configured = tuple(url for url in endpoints if url)
             if not configured:
                 raise ValueError("At least one remote MCP endpoint is required")
             if not all(url.startswith("https://") for url in configured):
                 raise ValueError("Remote MCP endpoints must use HTTPS")
+            if self.mcp_care_plan_url and self.mcp_auth_mode != "google_cloud_run":
+                raise ValueError("Care Plan MCP requires private Cloud Run authentication")
             if self.mcp_auth_mode == "google_cloud_run":
                 pairs = (
                     (self.mcp_places_url, self.mcp_places_audience),
                     (self.mcp_adoption_url, self.mcp_adoption_audience),
+                    (self.mcp_care_plan_url, self.mcp_care_plan_audience),
                 )
                 if any(url and not audience for url, audience in pairs):
                     raise ValueError("Each private MCP endpoint requires an audience")

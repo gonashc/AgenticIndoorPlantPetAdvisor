@@ -13,6 +13,7 @@ class McpToolClient(Protocol):
         arguments: Mapping[str, object],
         timeout_seconds: float,
         authorization_audience: str | None = None,
+        forwarded_user_assertion: str | None = None,
     ) -> Mapping[str, object]: ...
 
 

@@ -2,6 +2,7 @@
 
 import pytest
 from advisor_api.config import Settings
+from advisor_api.container import build_configured_container
 from pydantic import SecretStr, ValidationError
 
 from database.models import SCHEMA, Base
@@ -64,6 +65,46 @@ def test_remote_mcp_can_enable_only_the_adoption_service() -> None:
     )
 
     assert settings.mcp_places_url is None
+
+
+def test_remote_mcp_can_enable_only_the_care_plan_service() -> None:
+    settings = Settings(
+        _env_file=None,
+        mcp_mode="remote",
+        mcp_auth_mode="google_cloud_run",
+        mcp_care_plan_url="https://care.example/mcp",
+        mcp_care_plan_audience="https://care.example",
+    )
+
+    assert settings.mcp_places_url is None
+    assert settings.mcp_adoption_url is None
+
+
+def test_care_plan_mcp_rejects_public_authentication_mode() -> None:
+    with pytest.raises(ValidationError, match="private Cloud Run"):
+        Settings(
+            _env_file=None,
+            mcp_mode="remote",
+            mcp_care_plan_url="https://care.example/mcp",
+        )
+
+
+@pytest.mark.asyncio
+async def test_care_plan_only_mcp_configuration_builds_api_container() -> None:
+    settings = Settings(
+        _env_file=None,
+        app_env="test",
+        mcp_mode="remote",
+        mcp_auth_mode="google_cloud_run",
+        mcp_care_plan_url="https://care.example/mcp",
+        mcp_care_plan_audience="https://care.example",
+    )
+
+    container, runtime = await build_configured_container(settings)
+
+    assert container.care_plan_tools is not None
+    assert runtime is None
+    container.close()
 
 
 def test_private_mcp_endpoint_requires_an_audience() -> None:

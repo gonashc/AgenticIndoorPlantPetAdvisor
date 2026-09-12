@@ -28,6 +28,7 @@ from database.repositories import (
 from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plans import CarePlanService
 from services.mcp_gateway import (
+    CarePlanMcpGateway,
     GoogleCloudRunIdTokenProvider,
     McpCurrentSourceGateway,
     McpSdkToolClient,
@@ -44,6 +45,7 @@ from services.scoring import ScoringService
 class ApplicationContainer:
     recommendations: RecommendationService
     care_plans: CarePlanService
+    care_plan_tools: CarePlanMcpGateway | None
     recommendation_tracer: RecommendationTracer
 
     def close(self) -> None:
@@ -60,6 +62,7 @@ def build_container(
     knowledge_retriever: KnowledgeRetriever | None = None,
     explanation_generator: ExplanationGenerator | None = None,
     safety: SafetyService | None = None,
+    care_plan_tools: CarePlanMcpGateway | None = None,
     enabled_categories: frozenset[str] = frozenset({"PLANT", "DOG", "CAT"}),
     knowledge_namespace: str = "fake-catalog-v1",
 ) -> ApplicationContainer:
@@ -81,6 +84,7 @@ def build_container(
     return ApplicationContainer(
         recommendations=RecommendationService(graph, tracer, enabled_categories),
         care_plans=CarePlanService(resolved_plan_repository, enabled_categories),
+        care_plan_tools=care_plan_tools,
         recommendation_tracer=tracer,
     )
 
@@ -92,6 +96,7 @@ async def build_configured_container(
     knowledge_retriever = _build_knowledge_retriever(settings)
     explanation_generator = _build_explanation_generator(settings)
     current_source_gateway = _build_current_source_gateway(settings)
+    care_plan_tools = _build_care_plan_gateway(settings)
     if settings.database_mode == "memory":
         return (
             build_container(
@@ -99,6 +104,7 @@ async def build_configured_container(
                 knowledge_retriever=knowledge_retriever,
                 explanation_generator=explanation_generator,
                 current_source_gateway=current_source_gateway,
+                care_plan_tools=care_plan_tools,
                 enabled_categories=settings.enabled_category_values(),
                 knowledge_namespace=(
                     settings.pinecone_namespace
@@ -127,6 +133,7 @@ async def build_configured_container(
             knowledge_retriever=knowledge_retriever,
             explanation_generator=explanation_generator,
             current_source_gateway=current_source_gateway,
+            care_plan_tools=care_plan_tools,
             safety=SafetyService(
                 PostgresPlantToxicityRepository(
                     runtime.session_factory,
@@ -186,6 +193,8 @@ def _build_explanation_generator(settings: Settings) -> ExplanationGenerator:
 def _build_current_source_gateway(settings: Settings) -> CurrentSourceGateway | None:
     if settings.mcp_mode == "disabled":
         return None
+    if settings.mcp_places_url is None and settings.mcp_adoption_url is None:
+        return None
     token_provider = (
         GoogleCloudRunIdTokenProvider() if settings.mcp_auth_mode == "google_cloud_run" else None
     )
@@ -211,6 +220,19 @@ def _build_current_source_gateway(settings: Settings) -> CurrentSourceGateway | 
         McpSdkToolClient(token_provider),
         places=places,
         adoption=adoption,
+        timeout_seconds=settings.mcp_timeout_seconds,
+    )
+
+
+def _build_care_plan_gateway(settings: Settings) -> CarePlanMcpGateway | None:
+    if settings.mcp_mode == "disabled" or settings.mcp_care_plan_url is None:
+        return None
+    if settings.mcp_auth_mode != "google_cloud_run" or settings.mcp_care_plan_audience is None:
+        raise ValueError("Care Plan MCP requires private Cloud Run authentication")
+    return CarePlanMcpGateway(
+        McpSdkToolClient(GoogleCloudRunIdTokenProvider()),
+        settings.mcp_care_plan_url,
+        settings.mcp_care_plan_audience,
         timeout_seconds=settings.mcp_timeout_seconds,
     )
 

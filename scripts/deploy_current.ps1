@@ -12,6 +12,8 @@ param(
     [string]$McpPlacesAudience = "",
     [string]$McpAdoptionUrl = "",
     [string]$McpAdoptionAudience = "",
+    [string]$McpCarePlanUrl = "",
+    [string]$McpCarePlanAudience = "",
     [string]$GcloudPath = "gcloud"
 )
 
@@ -26,10 +28,10 @@ if ($IapMember -notmatch '^(user|group):[^@\s]+@[^@\s]+$') {
     throw "IapMember must be a user: or group: principal."
 }
 if ($McpMode -eq "remote") {
-    if (-not $McpPlacesUrl -and -not $McpAdoptionUrl) {
+    if (-not $McpPlacesUrl -and -not $McpAdoptionUrl -and -not $McpCarePlanUrl) {
         throw "At least one MCP endpoint is required when remote mode is enabled."
     }
-    foreach ($endpoint in @($McpPlacesUrl, $McpAdoptionUrl) | Where-Object { $_ }) {
+    foreach ($endpoint in @($McpPlacesUrl, $McpAdoptionUrl, $McpCarePlanUrl) | Where-Object { $_ }) {
         if ($endpoint -notmatch '^https://.+/mcp$') {
             throw "Each MCP URL must be an HTTPS endpoint ending in /mcp."
         }
@@ -39,6 +41,9 @@ if ($McpMode -eq "remote") {
     }
     if ($McpAdoptionUrl -and $McpAdoptionAudience -notmatch '^https://[^/]+$') {
         throw "The Adoption MCP endpoint requires an HTTPS audience without a path."
+    }
+    if ($McpCarePlanUrl -and $McpCarePlanAudience -notmatch '^https://[^/]+$') {
+        throw "The Care Plan MCP endpoint requires an HTTPS audience without a path."
     }
 }
 
@@ -102,12 +107,22 @@ if ($McpMode -eq "remote") {
         $settingsToRemove += "MCP_ADOPTION_URL"
         $settingsToRemove += "MCP_ADOPTION_AUDIENCE"
     }
+    if ($McpCarePlanUrl) {
+        $runtimeSettings += "MCP_CARE_PLAN_URL=$McpCarePlanUrl"
+        $runtimeSettings += "MCP_CARE_PLAN_AUDIENCE=$McpCarePlanAudience"
+    }
+    else {
+        $settingsToRemove += "MCP_CARE_PLAN_URL"
+        $settingsToRemove += "MCP_CARE_PLAN_AUDIENCE"
+    }
 }
 else {
     $settingsToRemove += "MCP_PLACES_URL"
     $settingsToRemove += "MCP_PLACES_AUDIENCE"
     $settingsToRemove += "MCP_ADOPTION_URL"
     $settingsToRemove += "MCP_ADOPTION_AUDIENCE"
+    $settingsToRemove += "MCP_CARE_PLAN_URL"
+    $settingsToRemove += "MCP_CARE_PLAN_AUDIENCE"
 }
 $runtimeSettings = $runtimeSettings -join ','
 $settingsToRemove = $settingsToRemove -join ','

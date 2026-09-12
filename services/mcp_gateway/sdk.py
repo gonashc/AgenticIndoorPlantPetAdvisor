@@ -22,7 +22,16 @@ class McpSdkToolClient:
         arguments: Mapping[str, object],
         timeout_seconds: float,
         authorization_audience: str | None = None,
+        forwarded_user_assertion: str | None = None,
     ) -> Mapping[str, object]:
+        if forwarded_user_assertion is not None and authorization_audience is None:
+            raise ValueError("User assertions may be forwarded only to authenticated MCP services")
+        if forwarded_user_assertion is not None and (
+            not forwarded_user_assertion.strip()
+            or "\r" in forwarded_user_assertion
+            or "\n" in forwarded_user_assertion
+        ):
+            raise ValueError("The forwarded user assertion is invalid")
         if authorization_audience is None:
             async with Client(server_url, read_timeout_seconds=timeout_seconds) as client:
                 result = await client.call_tool(
@@ -35,9 +44,10 @@ class McpSdkToolClient:
                 raise ValueError("Private MCP service authentication is not configured")
             token = await self._token_provider.token_for(authorization_audience)
             timeout = httpx2.Timeout(timeout_seconds)
-            async with httpx2.AsyncClient(
-                headers={"Authorization": f"Bearer {token}"}, timeout=timeout
-            ) as http_client:
+            headers = {"Authorization": f"Bearer {token}"}
+            if forwarded_user_assertion is not None:
+                headers["X-Goog-IAP-JWT-Assertion"] = forwarded_user_assertion
+            async with httpx2.AsyncClient(headers=headers, timeout=timeout) as http_client:
                 transport = streamable_http_client(server_url, http_client=http_client)
                 async with Client(transport, read_timeout_seconds=timeout_seconds) as client:
                     result = await client.call_tool(

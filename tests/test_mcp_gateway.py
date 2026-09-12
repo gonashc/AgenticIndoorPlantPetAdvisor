@@ -22,9 +22,11 @@ class StubMcpClient:
         arguments: Mapping[str, object],
         timeout_seconds: float,
         authorization_audience: str | None = None,
+        forwarded_user_assertion: str | None = None,
     ) -> Mapping[str, object]:
         assert timeout_seconds in {4, 8}
         assert authorization_audience is None
+        assert forwarded_user_assertion is None
         self.calls.append((server_url, tool_name, arguments))
         return self.response
 
