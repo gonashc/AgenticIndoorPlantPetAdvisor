@@ -34,7 +34,13 @@ authenticated Google Cloud CLI. The script performs these operations in order:
 3. deploys `advisor-api` with IAP required, resets the category configuration to the image default
    (`PLANT,DOG`), uses deterministic explanations, applies the explicitly selected MCP mode, and
    enables redacted LangSmith tracing;
-4. grants only the IAP service agent Cloud Run invocation and the configured user/group IAP access.
+4. grants only the IAP service agent Cloud Run invocation plus resource-scoped IAP access to the
+   configured user/group and API smoke identity;
+5. reads the non-secret IAP OAuth client ID, updates `advisor-api-smoke` to the immutable release
+   image, and requires its authenticated health and recommendation checks to pass.
+
+The smoke job must request its ID token for the IAP OAuth client ID. A normal Cloud Run service URL
+audience is valid for IAM-protected services but is rejected by IAP before it reaches FastAPI.
 
 The LLM remains off until its provider-specific evaluation and degradation tests pass. The private
 plant-location MCP can be enabled independently of the adoption MCP.

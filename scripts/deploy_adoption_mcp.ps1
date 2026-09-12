@@ -4,6 +4,7 @@ param(
     [string]$Region = "us-east1",
     [string]$ServiceName = "advisor-adoption-mcp",
     [string]$PlacesServiceName = "advisor-places-mcp",
+    [string]$CarePlanServiceName = "advisor-care-plan-mcp",
     [string]$ApiServiceName = "advisor-api",
     [string]$Repository = "advisor",
     [string]$SecretName = "rescuegroups-api-key",
@@ -90,20 +91,33 @@ if ($LASTEXITCODE -ne 0 -or -not $placesAudience.StartsWith("https://")) {
     throw "The deployed Places MCP service is required before connecting Adoption MCP."
 }
 
-& (Join-Path $PSScriptRoot "deploy_current.ps1") `
-    -ProjectId $ProjectId `
-    -ProjectNumber $ProjectNumber `
-    -Region $Region `
-    -ServiceName $ApiServiceName `
-    -Repository $Repository `
-    -ImageTag $ImageTag `
-    -IapMember $IapMember `
-    -McpMode remote `
-    -McpPlacesUrl "$placesAudience/mcp" `
-    -McpPlacesAudience $placesAudience `
-    -McpAdoptionUrl $mcpUrl `
-    -McpAdoptionAudience $mcpAudience `
-    -GcloudPath $GcloudPath
+$apiDeployParameters = @{
+    ProjectId           = $ProjectId
+    ProjectNumber       = $ProjectNumber
+    Region              = $Region
+    ServiceName         = $ApiServiceName
+    Repository          = $Repository
+    ImageTag            = $ImageTag
+    IapMember           = $IapMember
+    McpMode             = "remote"
+    McpPlacesUrl        = "$placesAudience/mcp"
+    McpPlacesAudience   = $placesAudience
+    McpAdoptionUrl      = $mcpUrl
+    McpAdoptionAudience = $mcpAudience
+    GcloudPath          = $GcloudPath
+}
+$carePlanAudienceOutput = & $GcloudPath run services describe $CarePlanServiceName `
+    --project=$ProjectId `
+    --region=$Region `
+    --format="value(status.url)" 2>$null
+$carePlanDescribeExit = $LASTEXITCODE
+$carePlanAudience = (@($carePlanAudienceOutput) -join "").Trim()
+if ($carePlanDescribeExit -eq 0 -and $carePlanAudience) {
+    $apiDeployParameters.McpCarePlanUrl = "$carePlanAudience/mcp"
+    $apiDeployParameters.McpCarePlanAudience = $carePlanAudience
+}
+
+& (Join-Path $PSScriptRoot "deploy_current.ps1") @apiDeployParameters
 if (-not $?) { throw "API deployment with adoption MCP failed." }
 
 & $GcloudPath run services describe $ServiceName `

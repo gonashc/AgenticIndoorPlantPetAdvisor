@@ -14,6 +14,7 @@ param(
     [string]$McpAdoptionAudience = "",
     [string]$McpCarePlanUrl = "",
     [string]$McpCarePlanAudience = "",
+    [string]$SmokeJobName = "advisor-api-smoke",
     [string]$GcloudPath = "gcloud"
 )
 
@@ -50,6 +51,7 @@ if ($McpMode -eq "remote") {
 $image = "$Region-docker.pkg.dev/$ProjectId/$Repository/api:$ImageTag"
 $audience = "/projects/$ProjectNumber/locations/$Region/services/$ServiceName"
 $iapServiceAgent = "serviceAccount:service-$ProjectNumber@gcp-sa-iap.iam.gserviceaccount.com"
+$apiServiceAccount = "advisor-api@$ProjectId.iam.gserviceaccount.com"
 
 & $GcloudPath services enable iap.googleapis.com --project=$ProjectId --quiet
 if ($LASTEXITCODE -ne 0) { throw "Failed to enable the IAP API." }
@@ -131,7 +133,7 @@ $settingsToRemove = $settingsToRemove -join ','
     --project=$ProjectId `
     --region=$Region `
     --image=$image `
-    --service-account="advisor-api@$ProjectId.iam.gserviceaccount.com" `
+    --service-account=$apiServiceAccount `
     --network=default `
     --subnet=default `
     --vpc-egress=private-ranges-only `
@@ -173,6 +175,56 @@ if (-not ($iapBinding.members -contains $IapMember)) {
         --quiet
     if ($LASTEXITCODE -ne 0) { throw "Failed to grant the requested principal IAP access." }
 }
+
+$smokeMember = "serviceAccount:$apiServiceAccount"
+if (-not ($iapBinding.members -contains $smokeMember)) {
+    & $GcloudPath iap web add-iam-policy-binding `
+        --project=$ProjectId `
+        --region=$Region `
+        --resource-type=cloud-run `
+        --service=$ServiceName `
+        --member=$smokeMember `
+        --role=roles/iap.httpsResourceAccessor `
+        --quiet
+    if ($LASTEXITCODE -ne 0) { throw "Failed to grant the smoke identity IAP access." }
+}
+
+$iapClientId = (& $GcloudPath iap settings get `
+    --project=$ProjectId `
+    --region=$Region `
+    --resource-type=cloud-run `
+    --service=$ServiceName `
+    --format="value(accessSettings.oauthSettings.clientId)").Trim()
+if ($LASTEXITCODE -ne 0 -or -not $iapClientId) {
+    throw "Could not read the IAP OAuth client ID required by the smoke job."
+}
+$serviceUrl = (& $GcloudPath run services describe $ServiceName `
+    --project=$ProjectId `
+    --region=$Region `
+    --format="value(status.url)").Trim()
+if ($LASTEXITCODE -ne 0 -or -not $serviceUrl.StartsWith("https://")) {
+    throw "Could not read the deployed API URL."
+}
+
+& $GcloudPath run jobs deploy $SmokeJobName `
+    --project=$ProjectId `
+    --region=$Region `
+    --image=$image `
+    --service-account=$apiServiceAccount `
+    --set-env-vars="API_URL=$serviceUrl,IAP_CLIENT_ID=$iapClientId" `
+    --command=python `
+    --args=scripts/smoke_deployed_api.py `
+    --max-retries=0 `
+    --task-timeout=10m `
+    --quiet
+if ($LASTEXITCODE -ne 0) { throw "Failed to configure the authenticated API smoke job." }
+
+& $GcloudPath run jobs execute $SmokeJobName `
+    --project=$ProjectId `
+    --region=$Region `
+    --wait `
+    --quiet
+if ($LASTEXITCODE -ne 0) { throw "Authenticated API smoke checks failed." }
 
 & $GcloudPath run services describe $ServiceName `
     --project=$ProjectId `

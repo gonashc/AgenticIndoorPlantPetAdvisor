@@ -4,6 +4,7 @@ param(
     [string]$Region = "us-east1",
     [string]$ServiceName = "advisor-places-mcp",
     [string]$AdoptionServiceName = "advisor-adoption-mcp",
+    [string]$CarePlanServiceName = "advisor-care-plan-mcp",
     [string]$ApiServiceName = "advisor-api",
     [string]$Repository = "advisor",
     [string]$SecretName = "google-places-api-key",
@@ -100,6 +101,16 @@ $adoptionAudience = (@($adoptionAudienceOutput) -join "").Trim()
 if ($adoptionDescribeExit -eq 0 -and $adoptionAudience) {
     $apiDeployParameters.McpAdoptionUrl = "$adoptionAudience/mcp"
     $apiDeployParameters.McpAdoptionAudience = $adoptionAudience
+}
+$carePlanAudienceOutput = & $GcloudPath run services describe $CarePlanServiceName `
+    --project=$ProjectId `
+    --region=$Region `
+    --format="value(status.url)" 2>$null
+$carePlanDescribeExit = $LASTEXITCODE
+$carePlanAudience = (@($carePlanAudienceOutput) -join "").Trim()
+if ($carePlanDescribeExit -eq 0 -and $carePlanAudience) {
+    $apiDeployParameters.McpCarePlanUrl = "$carePlanAudience/mcp"
+    $apiDeployParameters.McpCarePlanAudience = $carePlanAudience
 }
 
 & (Join-Path $PSScriptRoot "deploy_current.ps1") @apiDeployParameters

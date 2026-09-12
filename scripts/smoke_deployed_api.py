@@ -9,7 +9,8 @@ from google.oauth2 import id_token
 
 def main() -> int:
     api_url = os.environ["API_URL"].rstrip("/")
-    token = id_token.fetch_id_token(Request(), api_url)
+    iap_client_id = os.environ.get("IAP_CLIENT_ID", "").strip()
+    token = id_token.fetch_id_token(Request(), iap_client_id or api_url)
     headers = {"Authorization": f"Bearer {token}"}
     payload = {
         "category": "PLANT",
