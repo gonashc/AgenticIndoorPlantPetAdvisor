@@ -3,10 +3,17 @@
 from collections.abc import Mapping
 from typing import Any, cast
 
+import httpx2
 from mcp import Client
+from mcp.client.streamable_http import streamable_http_client
+
+from services.mcp_gateway.ports import IdTokenProvider
 
 
 class McpSdkToolClient:
+    def __init__(self, token_provider: IdTokenProvider | None = None) -> None:
+        self._token_provider = token_provider
+
     async def call_tool(
         self,
         *,
@@ -14,13 +21,30 @@ class McpSdkToolClient:
         tool_name: str,
         arguments: Mapping[str, object],
         timeout_seconds: float,
+        authorization_audience: str | None = None,
     ) -> Mapping[str, object]:
-        async with Client(server_url, read_timeout_seconds=timeout_seconds) as client:
-            result = await client.call_tool(
-                tool_name,
-                dict(arguments),
-                read_timeout_seconds=timeout_seconds,
-            )
+        if authorization_audience is None:
+            async with Client(server_url, read_timeout_seconds=timeout_seconds) as client:
+                result = await client.call_tool(
+                    tool_name,
+                    dict(arguments),
+                    read_timeout_seconds=timeout_seconds,
+                )
+        else:
+            if self._token_provider is None:
+                raise ValueError("Private MCP service authentication is not configured")
+            token = await self._token_provider.token_for(authorization_audience)
+            timeout = httpx2.Timeout(timeout_seconds)
+            async with httpx2.AsyncClient(
+                headers={"Authorization": f"Bearer {token}"}, timeout=timeout
+            ) as http_client:
+                transport = streamable_http_client(server_url, http_client=http_client)
+                async with Client(transport, read_timeout_seconds=timeout_seconds) as client:
+                    result = await client.call_tool(
+                        tool_name,
+                        dict(arguments),
+                        read_timeout_seconds=timeout_seconds,
+                    )
         if result.is_error:
             raise RuntimeError(f"MCP tool {tool_name!r} reported an error")
         if result.structured_content is None:

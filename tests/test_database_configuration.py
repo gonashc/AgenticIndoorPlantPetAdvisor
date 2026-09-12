@@ -33,12 +33,34 @@ def test_openai_explanations_require_retrieval() -> None:
 
 
 def test_remote_mcp_requires_https_endpoints() -> None:
-    with pytest.raises(ValidationError, match="must both use HTTPS"):
+    with pytest.raises(ValidationError, match="must use HTTPS"):
         Settings(
             _env_file=None,
             mcp_mode="remote",
             mcp_places_url="http://places.example/mcp",
             mcp_adoption_url="https://adoption.example/mcp",
+        )
+
+
+def test_remote_mcp_can_enable_only_the_places_service() -> None:
+    settings = Settings(
+        _env_file=None,
+        mcp_mode="remote",
+        mcp_auth_mode="google_cloud_run",
+        mcp_places_url="https://places.example/mcp",
+        mcp_places_audience="https://places.example",
+    )
+
+    assert settings.mcp_adoption_url is None
+
+
+def test_private_mcp_endpoint_requires_an_audience() -> None:
+    with pytest.raises(ValidationError, match="requires an audience"):
+        Settings(
+            _env_file=None,
+            mcp_mode="remote",
+            mcp_auth_mode="google_cloud_run",
+            mcp_places_url="https://places.example/mcp",
         )
 
 

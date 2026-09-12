@@ -36,6 +36,15 @@ the LangSmith experiment with `--upload`. Enable the structured model only after
 grounding, provenance, and degradation-disclosure checks pass. Promote the exact prompt, model,
 knowledge namespace, rules, and scoring versions together.
 
-MCP endpoints are separately enabled with `MCP_MODE=remote`. The application can call only
-`find_places` and `find_adoptions`, requests at most three results, accepts only structured output,
-and rejects non-HTTPS sources or invalid verification timestamps.
+MCP endpoints are separately enabled with `MCP_MODE=remote`. Plant and adoption services can be
+enabled independently. The application can call only `find_places` and `find_adoptions`, requests
+at most three results, accepts only structured output, and rejects non-HTTPS sources or invalid
+verification timestamps.
+
+The deployed plant-location service uses Google Places Text Search (New) only to discover nearby
+nurseries. A returned place is not evidence that a particular plant is in stock. The service is a
+private Cloud Run endpoint, the API calls it with a short-lived service-identity token, and its API
+key is restricted to `places.googleapis.com` and stored in Secret Manager. Deploy it with
+`scripts/bootstrap_places_mcp_gcp.ps1` followed by `scripts/deploy_places_mcp.ps1`; deployment also
+rebuilds the API revision with the private MCP URL and audience configured. Configure a Places API
+quota alert in Google Maps Platform before widening access beyond the demo users.

@@ -12,4 +12,11 @@ class McpToolClient(Protocol):
         tool_name: str,
         arguments: Mapping[str, object],
         timeout_seconds: float,
+        authorization_audience: str | None = None,
     ) -> Mapping[str, object]: ...
+
+
+class IdTokenProvider(Protocol):
+    """Issues a short-lived identity token for a private service audience."""
+
+    async def token_for(self, audience: str) -> str: ...

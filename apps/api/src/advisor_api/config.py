@@ -57,8 +57,11 @@ class Settings(BaseSettings):
     openai_timeout_seconds: float = 20.0
     openai_max_retries: int = 2
     mcp_mode: Literal["disabled", "remote"] = "disabled"
+    mcp_auth_mode: Literal["none", "google_cloud_run"] = "none"
     mcp_places_url: str | None = None
+    mcp_places_audience: str | None = None
     mcp_adoption_url: str | None = None
+    mcp_adoption_audience: str | None = None
     mcp_timeout_seconds: float = 8.0
 
     @field_validator(
@@ -155,9 +158,22 @@ class Settings(BaseSettings):
         if self.mcp_timeout_seconds <= 0:
             raise ValueError("MCP_TIMEOUT_SECONDS must be positive")
         if self.mcp_mode == "remote":
-            urls = (self.mcp_places_url, self.mcp_adoption_url)
-            if not all(url and url.startswith("https://") for url in urls):
-                raise ValueError("Remote MCP endpoints must both use HTTPS")
+            endpoints = (self.mcp_places_url, self.mcp_adoption_url)
+            configured = tuple(url for url in endpoints if url)
+            if not configured:
+                raise ValueError("At least one remote MCP endpoint is required")
+            if not all(url.startswith("https://") for url in configured):
+                raise ValueError("Remote MCP endpoints must use HTTPS")
+            if self.mcp_auth_mode == "google_cloud_run":
+                pairs = (
+                    (self.mcp_places_url, self.mcp_places_audience),
+                    (self.mcp_adoption_url, self.mcp_adoption_audience),
+                )
+                if any(url and not audience for url, audience in pairs):
+                    raise ValueError("Each private MCP endpoint requires an audience")
+                audiences = tuple(audience for url, audience in pairs if url and audience)
+                if not all(audience.startswith("https://") for audience in audiences):
+                    raise ValueError("Private MCP audiences must use HTTPS")
         return self
 
     def enabled_category_values(self) -> frozenset[str]:

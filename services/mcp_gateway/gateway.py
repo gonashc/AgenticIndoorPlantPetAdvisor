@@ -14,6 +14,7 @@ from services.mcp_gateway.ports import McpToolClient
 class McpServerConfig:
     url: str
     tool_name: str
+    authorization_audience: str | None = None
 
 
 class McpCurrentSourceGateway:
@@ -29,12 +30,15 @@ class McpCurrentSourceGateway:
         self,
         client: McpToolClient,
         *,
-        places: McpServerConfig,
-        adoption: McpServerConfig,
+        places: McpServerConfig | None = None,
+        adoption: McpServerConfig | None = None,
         timeout_seconds: float = 8.0,
     ) -> None:
-        expected = {"find_places", "find_adoptions"}
-        if {places.tool_name, adoption.tool_name} != expected:
+        if places is None and adoption is None:
+            raise ValueError("At least one approved MCP server must be configured")
+        if places is not None and places.tool_name != "find_places":
+            raise ValueError("MCP gateway accepts only the approved live-source tools")
+        if adoption is not None and adoption.tool_name != "find_adoptions":
             raise ValueError("MCP gateway accepts only the approved live-source tools")
         self._client = client
         self._places = places
@@ -49,6 +53,8 @@ class McpCurrentSourceGateway:
         zip_code: str,
     ) -> Sequence[LocalSource]:
         config = self._places if category == Category.PLANT else self._adoption
+        if config is None:
+            return ()
         if config.tool_name != self._TOOL_BY_CATEGORY[category]:
             raise ValueError("MCP server is not authorized for this category")
         payload = await self._client.call_tool(
@@ -61,6 +67,7 @@ class McpCurrentSourceGateway:
                 "limit": 3,
             },
             timeout_seconds=self._timeout,
+            authorization_audience=config.authorization_audience,
         )
         raw_sources = payload.get("sources", [])
         if not isinstance(raw_sources, list):

@@ -27,7 +27,12 @@ from database.repositories import (
 )
 from database.runtime import DatabaseRuntime, create_database_runtime
 from services.care_plans import CarePlanService
-from services.mcp_gateway import McpCurrentSourceGateway, McpSdkToolClient, McpServerConfig
+from services.mcp_gateway import (
+    GoogleCloudRunIdTokenProvider,
+    McpCurrentSourceGateway,
+    McpSdkToolClient,
+    McpServerConfig,
+)
 from services.orchestration.service import RecommendationService
 from services.retrieval.pinecone import PineconeHybridKnowledgeAdapter
 from services.retrieval.ports import KnowledgeRetriever
@@ -181,12 +186,31 @@ def _build_explanation_generator(settings: Settings) -> ExplanationGenerator:
 def _build_current_source_gateway(settings: Settings) -> CurrentSourceGateway | None:
     if settings.mcp_mode == "disabled":
         return None
-    if settings.mcp_places_url is None or settings.mcp_adoption_url is None:
-        raise ValueError("MCP live-source configuration is incomplete")
+    token_provider = (
+        GoogleCloudRunIdTokenProvider() if settings.mcp_auth_mode == "google_cloud_run" else None
+    )
+    places = (
+        McpServerConfig(
+            settings.mcp_places_url,
+            "find_places",
+            settings.mcp_places_audience,
+        )
+        if settings.mcp_places_url
+        else None
+    )
+    adoption = (
+        McpServerConfig(
+            settings.mcp_adoption_url,
+            "find_adoptions",
+            settings.mcp_adoption_audience,
+        )
+        if settings.mcp_adoption_url
+        else None
+    )
     return McpCurrentSourceGateway(
-        McpSdkToolClient(),
-        places=McpServerConfig(settings.mcp_places_url, "find_places"),
-        adoption=McpServerConfig(settings.mcp_adoption_url, "find_adoptions"),
+        McpSdkToolClient(token_provider),
+        places=places,
+        adoption=adoption,
         timeout_seconds=settings.mcp_timeout_seconds,
     )
 

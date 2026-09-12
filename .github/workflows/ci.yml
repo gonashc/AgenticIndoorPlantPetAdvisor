@@ -119,6 +119,11 @@ jobs:
       - name: Build production container
         run: docker build --tag advisor-api:ci .
 
+      - name: Build plant-location MCP container
+        run: >-
+          docker build --file services/places_mcp/Dockerfile
+          --tag advisor-places-mcp:ci .
+
       - name: Verify migrations from production container
         run: >-
           docker run --rm --network host
@@ -147,5 +152,28 @@ jobs:
           done
 
           curl --fail --silent http://127.0.0.1:8080/health/live
+          docker rm --force "$container_id"
+          trap - EXIT
+
+      - name: Smoke test plant-location MCP container
+        shell: bash
+        run: |
+          container_id=$(docker run --detach --rm \
+            --publish 8081:8080 \
+            --env APP_ENV=test \
+            --env GOOGLE_PLACES_API_KEY=ci-placeholder \
+            advisor-places-mcp:ci)
+          trap 'docker logs "$container_id"; docker rm --force "$container_id" >/dev/null 2>&1 || true' EXIT
+
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8081/health; then
+              break
+            fi
+            if [[ "$attempt" == "20" ]]; then
+              exit 1
+            fi
+            sleep 1
+          done
+
           docker rm --force "$container_id"
           trap - EXIT

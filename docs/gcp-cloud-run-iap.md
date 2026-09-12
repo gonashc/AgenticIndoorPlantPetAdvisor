@@ -32,9 +32,9 @@ authenticated Google Cloud CLI. The script performs these operations in order:
 1. builds an immutable image containing FastAPI and the React production bundle;
 2. updates and executes `advisor-bootstrap`, which applies Alembic before loading demo data;
 3. deploys `advisor-api` with IAP required, resets the category configuration to the image default
-   (`PLANT,DOG`), uses deterministic explanations, keeps MCP disabled, and enables redacted
-   LangSmith tracing;
+   (`PLANT,DOG`), uses deterministic explanations, applies the explicitly selected MCP mode, and
+   enables redacted LangSmith tracing;
 4. grants only the IAP service agent Cloud Run invocation and the configured user/group IAP access.
 
-The LLM and MCP flags deliberately remain off during this release. Enable each only after its
-provider-specific evaluation and degradation tests pass.
+The LLM remains off until its provider-specific evaluation and degradation tests pass. The private
+plant-location MCP can be enabled independently of the adoption MCP.
