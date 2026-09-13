@@ -290,31 +290,6 @@ export function App() {
 
           <div className="recommendation-list">
             {result?.warnings?.map((warning) => <p className="warning" key={warning}>{warning}</p>)}
-            {result?.live_advisories && result.live_advisories.length > 0 && (
-              <section className="live-context" aria-labelledby="live-context-heading">
-                <div>
-                  <p className="eyebrow">Live advisory context</p>
-                  <h3 id="live-context-heading">Current conditions and guidance</h3>
-                </div>
-                <div className="live-context-grid">
-                  {result.live_advisories.map((advisory) => (
-                    <article className="live-advisory" key={`${advisory.kind}-${advisory.sources[0]?.url}-${advisory.title}`}>
-                      <span>{friendly(advisory.kind)}</span>
-                      <h4>{advisory.title}</h4>
-                      <p>{advisory.summary}</p>
-                      {advisory.sources.map((source) => (
-                        <a href={source.url} key={source.url} rel="noreferrer" target="_blank">
-                          {source.title} <span aria-hidden="true">↗</span>
-                        </a>
-                      ))}
-                    </article>
-                  ))}
-                </div>
-                <p className="live-context-note">
-                  Live context is informational and never changes safety exclusions or match scores.
-                </p>
-              </section>
-            )}
             {result?.recommendations.map((item) => {
               const carePlanId = `care-plan-${item.recommendation_id}`;
               const showPreview = preview?.recommendation_id === item.recommendation_id;
@@ -384,6 +359,31 @@ export function App() {
                 </div>
               );
             })}
+            {result?.live_advisories && result.live_advisories.length > 0 && (
+              <section className="live-context" aria-labelledby="live-context-heading">
+                <div>
+                  <p className="eyebrow">Live advisory context</p>
+                  <h3 id="live-context-heading">Current conditions and guidance</h3>
+                </div>
+                <div className="live-context-grid">
+                  {result.live_advisories.map((advisory) => (
+                    <article className="live-advisory" key={`${advisory.kind}-${advisory.sources[0]?.url}-${advisory.title}`}>
+                      <span>{friendly(advisory.kind)}</span>
+                      <h4>{advisory.title}</h4>
+                      <p>{advisory.summary}</p>
+                      {advisory.sources.map((source) => (
+                        <a href={source.url} key={source.url} rel="noreferrer" target="_blank">
+                          {source.title} <span aria-hidden="true">↗</span>
+                        </a>
+                      ))}
+                    </article>
+                  ))}
+                </div>
+                <p className="live-context-note">
+                  Live context is informational and never changes safety exclusions or match scores.
+                </p>
+              </section>
+            )}
           </div>
         </aside>
       </section>
