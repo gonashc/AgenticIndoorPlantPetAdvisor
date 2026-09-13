@@ -3,8 +3,10 @@
 from typing import Literal
 from urllib.parse import urlparse
 
-from pydantic import SecretStr, model_validator
+from pydantic import SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+from services.you_search import validate_you_api_key
 
 
 class YouMcpSettings(BaseSettings):
@@ -17,6 +19,13 @@ class YouMcpSettings(BaseSettings):
     you_timeout_seconds: float = 8.0
     you_allowed_source_hosts: str = "cdc.gov,usda.gov,aspca.org"
     mcp_allowed_hosts: str = "localhost:*,127.0.0.1:*"
+
+    @field_validator("you_api_key")
+    @classmethod
+    def validate_api_key(cls, value: SecretStr | None) -> SecretStr | None:
+        if value is not None:
+            validate_you_api_key(value.get_secret_value())
+        return value
 
     @model_validator(mode="after")
     def validate_service_settings(self) -> "YouMcpSettings":

@@ -3,6 +3,7 @@
 import httpx
 import pytest
 from mcp import Client
+from pydantic import SecretStr, ValidationError
 
 from services.you_mcp.config import YouMcpSettings
 from services.you_mcp.server import create_server
@@ -11,6 +12,46 @@ from services.you_search import YouSearchClient
 
 def settings() -> YouMcpSettings:
     return YouMcpSettings(_env_file=None, app_env="test")  # type: ignore[call-arg]
+
+
+@pytest.mark.parametrize(
+    "malformed_key",
+    [
+        '"test-key"',
+        " test-key",
+        "test-key\r\n",
+        "test\tkey",
+    ],
+)
+def test_you_mcp_startup_rejects_malformed_key_without_leaking_it(
+    malformed_key: str,
+) -> None:
+    with pytest.raises(ValidationError) as error:
+        YouMcpSettings(
+            _env_file=None,
+            app_env="production",
+            you_provider="api",
+            you_api_key=SecretStr(malformed_key),
+            mcp_allowed_hosts="advisor-you-mcp.example.run.app",
+        )
+
+    message = str(error.value)
+    assert "You.com API key format is invalid" in message
+    assert malformed_key not in message
+
+
+def test_you_search_client_rejects_malformed_key_without_leaking_it() -> None:
+    malformed_key = '"provider-secret"\r\n'
+
+    with pytest.raises(ValueError) as error:
+        YouSearchClient(
+            api_key=malformed_key,
+            base_url="https://ydc-index.io/v1/search",
+            timeout_seconds=2,
+        )
+
+    assert str(error.value) == "You.com API key format is invalid"
+    assert malformed_key not in str(error.value)
 
 
 @pytest.mark.asyncio

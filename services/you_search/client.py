@@ -7,6 +7,8 @@ from urllib.parse import urlparse
 
 import httpx
 
+from services.you_search.credentials import validate_you_api_key
+
 
 @dataclass(frozen=True, slots=True)
 class YouSearchResult:
@@ -26,9 +28,7 @@ class YouSearchClient:
         government_only: bool = False,
         transport: httpx.AsyncBaseTransport | None = None,
     ) -> None:
-        if not api_key.strip():
-            raise ValueError("You.com API key is required")
-        self._api_key = api_key
+        self._api_key = validate_you_api_key(api_key)
         self._base_url = base_url
         self._timeout = timeout_seconds
         self._allowed_hosts = allowed_source_hosts
