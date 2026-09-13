@@ -44,19 +44,20 @@ legend { margin-bottom: 16px; font-family: Georgia, "Times New Roman", serif; fo
 .contextual-section { margin-top: 24px; }
 .section-legend { margin: 0 0 16px; padding: 0 12px 0 0; color: var(--ink); font-family: inherit; font-size: .86rem; font-weight: 750; letter-spacing: .04em; }
 .category-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.category-card { position: relative; display: grid; min-width: 0; min-height: 116px; grid-template-columns: 40px minmax(0, 1fr); grid-template-rows: auto auto; align-content: center; column-gap: 12px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; color: var(--muted); cursor: pointer; transition: border-color .2s, background .2s, transform .2s, box-shadow .2s; }
+.category-card { position: relative; display: grid; min-width: 0; min-height: 116px; grid-template-columns: 40px minmax(0, 1fr); align-items: center; column-gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 16px; color: var(--muted); cursor: pointer; transition: border-color .2s, background .2s, transform .2s, box-shadow .2s; }
 .category-card:hover { transform: translateY(-2px); }
 .category-card.selected { border-color: var(--forest); background: #e7efe6; color: var(--ink); }
 .category-card.selected::after { position: absolute; top: 14px; right: 14px; display: grid; width: 24px; height: 24px; place-items: center; border-radius: 50%; background: var(--forest); color: white; content: "\2713"; font-size: .8rem; font-weight: 800; }
 .category-card:has(input:focus-visible) { outline: 3px solid rgba(22, 122, 89, .35); outline-offset: 3px; box-shadow: 0 0 0 1px var(--focus); }
 .category-card input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-.category-icon { display: grid; width: 38px; height: 38px; grid-row: 1 / span 2; place-items: center; align-self: center; border-radius: 11px; background: #f0f3eb; color: var(--forest); transition: background .2s, color .2s, transform .2s; }
+.category-icon { display: grid; width: 38px; height: 38px; grid-column: 1; place-items: center; border-radius: 11px; background: #f0f3eb; color: var(--forest); transition: background .2s, color .2s, transform .2s; }
 .category-icon svg { width: 23px; height: 23px; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.8; }
 .category-icon circle { fill: currentColor; stroke: none; }
 .category-card.selected .category-icon { background: var(--forest); color: white; transform: rotate(-3deg) scale(1.04); }
 .category-card:nth-child(3):last-child { grid-column: 1 / -1; min-height: 104px; }
-.category-name { grid-column: 2; margin-bottom: 4px; color: var(--ink); font-weight: 700; }
-.category-card > span:last-child { max-width: 14rem; grid-column: 2; font-size: .82rem; line-height: 1.4; }
+.category-copy { display: flex; min-width: 0; grid-column: 2; flex-direction: column; gap: 4px; padding-right: 28px; }
+.category-name { color: var(--ink); font-weight: 700; }
+.category-description { max-width: 15rem; font-size: .82rem; line-height: 1.4; }
 .field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .field { display: flex; min-width: 0; flex-direction: column; gap: 8px; color: var(--muted); font-size: .84rem; font-weight: 650; }
 .field input, .field select { width: 100%; height: 48px; border: 1px solid #c8cec3; border-radius: 10px; outline: none; background: white; color: var(--ink); padding: 0 13px; }

@@ -169,8 +169,10 @@ export function App() {
                     value={category.value}
                   />
                   <CategoryIcon category={category.value} />
-                  <span className="category-name">{category.label}</span>
-                  <span>{category.description}</span>
+                  <span className="category-copy">
+                    <span className="category-name">{category.label}</span>
+                    <span className="category-description">{category.description}</span>
+                  </span>
                 </label>
               ))}
             </div>
