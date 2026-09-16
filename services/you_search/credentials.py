@@ -6,8 +6,8 @@ def validate_you_api_key(value: str) -> str:
     invalid = (
         not value
         or value != value.strip()
-        or value.startswith(("\"", "'"))
-        or value.endswith(("\"", "'"))
+        or value.startswith(('"', "'"))
+        or value.endswith(('"', "'"))
         or any(ord(character) < 32 or ord(character) == 127 for character in value)
     )
     if invalid:

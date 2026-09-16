@@ -13,6 +13,10 @@ param(
     [string]$SecretName = "rescuegroups-api-key",
     [string]$ImageTag = "",
     [string]$IapMember = "user:gonashc@gmail.com",
+    [ValidateSet("deterministic", "openai")]
+    [string]$ExplanationMode = "deterministic",
+    [string]$OpenAiModel = "",
+    [string]$ExplanationApprovalFile = "",
     [string]$GcloudPath = "gcloud"
 )
 
@@ -107,6 +111,9 @@ $apiDeployParameters = @{
     McpPlacesAudience   = $placesAudience
     McpAdoptionUrl      = $mcpUrl
     McpAdoptionAudience = $mcpAudience
+    ExplanationMode     = $ExplanationMode
+    OpenAiModel         = $OpenAiModel
+    ExplanationApprovalFile = $ExplanationApprovalFile
     GcloudPath          = $GcloudPath
 }
 $carePlanAudienceOutput = & $GcloudPath run services describe $CarePlanServiceName `
