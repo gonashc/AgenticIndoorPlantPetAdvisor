@@ -54,7 +54,6 @@ class RescueGroupsClient:
         url = f"{self._base_url}/public/animals/search/available/{species}/"
         params = {
             "limit": str(limit),
-            "sort": "distance",
             "fields[animals]": self._ANIMAL_FIELDS,
             "fields[orgs]": self._ORG_FIELDS,
             "include": "orgs",
@@ -166,8 +165,8 @@ class RescueGroupsClient:
 
     @staticmethod
     def _distance(animal: Mapping[str, Any]) -> float | None:
-        meta = animal.get("meta")
-        value = meta.get("distance") if isinstance(meta, Mapping) else None
+        attributes = animal.get("attributes")
+        value = attributes.get("distance") if isinstance(attributes, Mapping) else None
         if not isinstance(value, (int, float, str)) or isinstance(value, bool):
             return None
         try:

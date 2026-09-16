@@ -45,7 +45,7 @@ async def test_rescuegroups_adapter_uses_bounded_available_search() -> None:
         assert request.headers["Content-Type"] == "application/vnd.api+json"
         assert request.url.path == "/v5/public/animals/search/available/dogs/"
         assert request.url.params["limit"] == "3"
-        assert request.url.params["sort"] == "distance"
+        assert "sort" not in request.url.params
         assert request.url.params["include"] == "orgs"
         request_body = json.loads(request.read())
         assert request_body == {"data": {"filterRadius": {"postalcode": "10001", "miles": 100}}}
@@ -60,9 +60,9 @@ async def test_rescuegroups_adapter_uses_bounded_available_search() -> None:
                             "name": "Milo",
                             "breedString": "Mixed Breed",
                             "url": ("https://city.rescuegroups.org/animals/detail?AnimalID=42"),
+                            "distance": "4.2",
                         },
                         "relationships": {"orgs": {"data": {"type": "orgs", "id": "7"}}},
-                        "meta": {"distance": "4.2"},
                     }
                 ],
                 "included": [
