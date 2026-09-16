@@ -19,3 +19,4 @@ coverage/
 *.tsbuildinfo
 *.egg-info/
 explanation-release-report.json
+output/evals/
